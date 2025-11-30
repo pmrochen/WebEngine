@@ -80,6 +80,22 @@ namespace mathematics {
  *	Constants
  */
 
+template<typename T> constexpr T /*ZERO_*/TOLERANCE = T();
+template<> constexpr float /*ZERO_*/TOLERANCE = 1e-6f;
+template<> constexpr double /*ZERO_*/TOLERANCE = 1e-15;
+template<typename T> constexpr T INFINITY = std::numeric_limits<T>::infinity();
+template<typename T> constexpr T E = T(2.71828182845904553488L);
+template<typename T> constexpr T LN2 = T(0.693147180559945309417L);
+template<typename T> constexpr T PI = T(3.14159265358979323846L);
+template<typename T> constexpr T PI_SQR = T(9.86960440108935861883L);
+template<typename T> constexpr T HALF_PI = T(1.57079632679489661923L);
+template<typename T> constexpr T TWO_PI = T(6.28318530717958647693L);
+template<typename T> constexpr T INV_PI = T(0.31830988618379069122L);
+template<typename T> constexpr T SQRT_2 = T(1.41421356237309514547L); 
+template<typename T> constexpr T SQRT_3 = T(1.73205080756887719318L);
+template<typename T> constexpr T DEG_TO_RAD = T(0.01745329251994329547L);
+template<typename T> constexpr T RAD_TO_DEG = T(57.29577951308232286465L);
+
 template<typename T>
 struct Constants
 {
