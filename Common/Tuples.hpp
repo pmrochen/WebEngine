@@ -1,6 +1,5 @@
 /*
  *	Name: Tuples
- *	Description: 
  *	Author: Pawel Mrochen
  */
 
