@@ -20,15 +20,15 @@ template<typename T>
 struct Tuple2
 {
 	constexpr Tuple2() = default; //: x(), y() {}
-	constexpr explicit Tuple2(T scalar) : x(scalar), y(scalar) {}
-	constexpr Tuple2(T x, T y) : x(x), y(y) {}
-	explicit Tuple2(const T* v) : x(v[0]), y(v[1]) {}
+	constexpr explicit Tuple2(T scalar) noexcept : x(scalar), y(scalar) {}
+	constexpr Tuple2(T x, T y) noexcept : x(x), y(y) {}
+	explicit Tuple2(const T* v) noexcept : x(v[0]), y(v[1]) {}
 
-	/*explicit*/ operator T*() { return &x; }
-	/*explicit*/ operator const T*() const { return &x; }
+	/*explicit*/ operator T*() noexcept { return &x; }
+	/*explicit*/ operator const T*() const noexcept { return &x; }
 
-	bool operator==(const Tuple2& v) const { return ((x == v.x) && (y == v.y)); }
-	bool operator!=(const Tuple2& v) const { return !(*this == v); }
+	bool operator==(const Tuple2& v) const noexcept { return ((x == v.x) && (y == v.y)); }
+	bool operator!=(const Tuple2& v) const noexcept { return !(*this == v); }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
 
@@ -44,15 +44,15 @@ template<typename T>
 struct Tuple3
 {
 	constexpr Tuple3() = default; //: x(), y(), z() {}
-	constexpr explicit Tuple3(T scalar) : x(scalar), y(scalar), z(scalar) {}
-	constexpr Tuple3(T x, T y, T z) : x(x), y(y), z(z) {}
-	explicit Tuple3(const T* v) : x(v[0]), y(v[1]), z(v[2]) {}
+	constexpr explicit Tuple3(T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
+	constexpr Tuple3(T x, T y, T z) noexcept : x(x), y(y), z(z) {}
+	explicit Tuple3(const T* v) noexcept : x(v[0]), y(v[1]), z(v[2]) {}
 
-	/*explicit*/ operator T*() { return &x; }
-	/*explicit*/ operator const T*() const { return &x; }
+	/*explicit*/ operator T*() noexcept { return &x; }
+	/*explicit*/ operator const T*() const noexcept { return &x; }
 
-	bool operator==(const Tuple3& v) const { return ((x == v.x) && (y == v.y) && (z == v.z)); }
-	bool operator!=(const Tuple3& v) const { return !(*this == v); }
+	bool operator==(const Tuple3& v) const noexcept { return ((x == v.x) && (y == v.y) && (z == v.z)); }
+	bool operator!=(const Tuple3& v) const noexcept { return !(*this == v); }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
 
@@ -68,15 +68,15 @@ template<typename T>
 struct Tuple4
 {
 	constexpr Tuple4() = default; //: x(), y(), z(), w() {}
-	constexpr explicit Tuple4(T scalar) : x(scalar), y(scalar), z(scalar), w(scalar) {}
-	constexpr Tuple4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
-	explicit Tuple4(const T* v) : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
+	constexpr explicit Tuple4(T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
+	constexpr Tuple4(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
+	explicit Tuple4(const T* v) noexcept : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
 
-	/*explicit*/ operator T*() { return &x; }
-	/*explicit*/ operator const T*() const { return &x; }
+	/*explicit*/ operator T*() noexcept { return &x; }
+	/*explicit*/ operator const T*() const noexcept { return &x; }
 
-	bool operator==(const Tuple4& v) const { return ((x == v.x) && (y == v.y) && (z == v.z) && (w == v.w)); }
-	bool operator!=(const Tuple4& v) const { return !(*this == v); }
+	bool operator==(const Tuple4& v) const noexcept { return ((x == v.x) && (y == v.y) && (z == v.z) && (w == v.w)); }
+	bool operator!=(const Tuple4& v) const noexcept { return !(*this == v); }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
@@ -92,17 +92,17 @@ template<typename T>
 struct Tuple2x2
 {
 	constexpr Tuple2x2() = default; //: m00(), m01(), m10(), m11() {}
-	constexpr Tuple2x2(T m00, T m01, T m10, T m11) : m00(m00), m01(m01), m10(m10), m11(m11) {}
-	constexpr Tuple2x2(const Tuple2<T>& row0, const Tuple2<T>& row1) : m00(row0.x), m01(row0.y), m10(row1.x), m11(row1.y) {}
-	explicit Tuple2x2(const T* m) : m00(m[0]), m01(m[1]), m10(m[2]), m11(m[3]) {}
+	constexpr Tuple2x2(T m00, T m01, T m10, T m11) noexcept : m00(m00), m01(m01), m10(m10), m11(m11) {}
+	constexpr Tuple2x2(const Tuple2<T>& row0, const Tuple2<T>& row1) noexcept : m00(row0.x), m01(row0.y), m10(row1.x), m11(row1.y) {}
+	explicit Tuple2x2(const T* m) noexcept : m00(m[0]), m01(m[1]), m10(m[2]), m11(m[3]) {}
 
-	/*explicit*/ operator T*() { return &m00; }
-	/*explicit*/ operator const T*() const { return &m00; }
-	Tuple2<T>& operator[](int i) { return reinterpret_cast<Tuple2<T>*>(&m00)[i]; }
-	const Tuple2<T>& operator[](int i) const { return reinterpret_cast<const Tuple2<T>*>(&m00)[i]; }
+	/*explicit*/ operator T*() noexcept { return &m00; }
+	/*explicit*/ operator const T*() const noexcept { return &m00; }
+	Tuple2<T>& operator[](int i) noexcept { return reinterpret_cast<Tuple2<T>*>(&m00)[i]; }
+	const Tuple2<T>& operator[](int i) const noexcept { return reinterpret_cast<const Tuple2<T>*>(&m00)[i]; }
 
-	bool operator==(const Tuple2x2& m) const { return ((m00 == m.m00) && (m01 == m.m01) && (m10 == m.m10) && (m11 == m.m11)); }
-	bool operator!=(const Tuple2x2& m) const { return !(*this == m); }
+	bool operator==(const Tuple2x2& m) const noexcept { return ((m00 == m.m00) && (m01 == m.m01) && (m10 == m.m10) && (m11 == m.m11)); }
+	bool operator!=(const Tuple2x2& m) const noexcept { return !(*this == m); }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & m00 & m01 & m10 & m11; }
 
@@ -119,21 +119,21 @@ template<typename T>
 struct Tuple3x3
 {
 	constexpr Tuple3x3() = default; //: m00(), m01(), m02(), m10(), m11(), m12(), m20(), m21(), m22() {}
-	constexpr Tuple3x3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) :
+	constexpr Tuple3x3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) noexcept :
 		m00(m00), m01(m01), m02(m02), m10(m10), m11(m11), m12(m12), m20(m20), m21(m21), m22(m22) {}
-	constexpr Tuple3x3(const Tuple3<T>& row0, const Tuple3<T>& row1, const Tuple3<T>& row2) : m00(row0.x), m01(row0.y), m02(row0.z),
+	constexpr Tuple3x3(const Tuple3<T>& row0, const Tuple3<T>& row1, const Tuple3<T>& row2) noexcept : m00(row0.x), m01(row0.y), m02(row0.z),
 		m10(row1.x), m11(row1.y), m12(row1.z), m20(row2.x), m21(row2.y), m22(row2.z) {}
-	explicit Tuple3x3(const T* m) : m00(m[0]), m01(m[1]), m02(m[2]), m10(m[3]), m11(m[4]), m12(m[5]), m20(m[6]), m21(m[7]), 
+	explicit Tuple3x3(const T* m) noexcept : m00(m[0]), m01(m[1]), m02(m[2]), m10(m[3]), m11(m[4]), m12(m[5]), m20(m[6]), m21(m[7]),
 		m22(m[8]) {}
 
-	/*explicit*/ operator T*() { return &m00; }
-	/*explicit*/ operator const T*() const { return &m00; }
-	Tuple3<T>& operator[](int i) { return reinterpret_cast<Tuple3<T>*>(&m00)[i]; }
-	const Tuple3<T>& operator[](int i) const { return reinterpret_cast<const Tuple3<T>*>(&m00)[i]; }
+	/*explicit*/ operator T*() noexcept { return &m00; }
+	/*explicit*/ operator const T*() const noexcept { return &m00; }
+	Tuple3<T>& operator[](int i) noexcept { return reinterpret_cast<Tuple3<T>*>(&m00)[i]; }
+	const Tuple3<T>& operator[](int i) const noexcept { return reinterpret_cast<const Tuple3<T>*>(&m00)[i]; }
 
-	bool operator==(const Tuple3x3& m) const { return ((m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m10 == m.m10) && 
+	bool operator==(const Tuple3x3& m) const noexcept { return ((m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m10 == m.m10) &&
 		(m11 == m.m11) && (m12 == m.m12) && (m20 == m.m20) && (m21 == m.m21) && (m22 == m.m22)); }
-	bool operator!=(const Tuple3x3& m) const { return !(*this == m); }
+	bool operator!=(const Tuple3x3& m) const noexcept { return !(*this == m); }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & m00 & m01 & m02 & m10 & m11 & m12 & m20 & m21 & m22; }
 
@@ -152,23 +152,23 @@ struct Tuple4x3
 {
 	constexpr Tuple4x3() = default; //: m00(), m01(), m02(), m10(), m11(), m12(), m20(), m21(), m22(), m30(), m31(), m32() {}
 	constexpr Tuple4x3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22, 
-		T m30, T m31, T m32) : m00(m00), m01(m01), m02(m02), m10(m10), m11(m11), m12(m12), m20(m20), m21(m21), m22(m22), 
+		T m30, T m31, T m32) noexcept : m00(m00), m01(m01), m02(m02), m10(m10), m11(m11), m12(m12), m20(m20), m21(m21), m22(m22),
 		m30(m30), m31(m31), m32(m32) {}
-	constexpr Tuple4x3(const Tuple3<T>& row0, const Tuple3<T>& row1, const Tuple3<T>& row2, const Tuple3<T>& row3) :
+	constexpr Tuple4x3(const Tuple3<T>& row0, const Tuple3<T>& row1, const Tuple3<T>& row2, const Tuple3<T>& row3) noexcept :
 		m00(row0.x), m01(row0.y), m02(row0.z), m10(row1.x), m11(row1.y), m12(row1.z), m20(row2.x), m21(row2.y), m22(row2.z),
 		m30(row3.x), m31(row3.y), m32(row3.z) {}
-	explicit Tuple4x3(const T* m) : m00(m[0]), m01(m[1]), m02(m[2]), m10(m[3]), m11(m[4]), m12(m[5]), m20(m[6]), m21(m[7]), 
+	explicit Tuple4x3(const T* m) noexcept : m00(m[0]), m01(m[1]), m02(m[2]), m10(m[3]), m11(m[4]), m12(m[5]), m20(m[6]), m21(m[7]),
 		m22(m[8]), m30(m[9]), m31(m[10]), m32(m[11]) {}
 
-	/*explicit*/ operator T*() { return &m00; }
-	/*explicit*/ operator const T*() const { return &m00; }
-	Tuple3<T>& operator[](int i) { return reinterpret_cast<Tuple3<T>*>(&m00)[i]; }
-	const Tuple3<T>& operator[](int i) const { return reinterpret_cast<const Tuple3<T>*>(&m00)[i]; }
+	/*explicit*/ operator T*() noexcept { return &m00; }
+	/*explicit*/ operator const T*() const noexcept { return &m00; }
+	Tuple3<T>& operator[](int i) noexcept { return reinterpret_cast<Tuple3<T>*>(&m00)[i]; }
+	const Tuple3<T>& operator[](int i) const noexcept { return reinterpret_cast<const Tuple3<T>*>(&m00)[i]; }
 
-	bool operator==(const Tuple4x3& m) const { return ((m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m10 == m.m10) && 
+	bool operator==(const Tuple4x3& m) const noexcept { return ((m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m10 == m.m10) &&
 		(m11 == m.m11) && (m12 == m.m12) && (m20 == m.m20) && (m21 == m.m21) && (m22 == m.m22) && (m30 == m.m30) && 
 		(m31 == m.m31) && (m32 == m.m32)); }
-	bool operator!=(const Tuple4x3& m) const { return !(*this == m); }
+	bool operator!=(const Tuple4x3& m) const noexcept { return !(*this == m); }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & m00 & m01 & m02 & m10 & m11 & m12 & m20 & m21 & m22 &
 		m30 & m31 & m32; }
@@ -189,23 +189,23 @@ struct Tuple4x4
 {
 	constexpr Tuple4x4() = default; //: m00(), m01(), m02(), m03(), m10(), m11(), m12(), m13(), m20(), m21(), m22(), m23(), m30(), m31(), m32(), m33() {}
 	constexpr Tuple4x4(T m00, T m01, T m02, T m03, T m10, T m11, T m12, T m13, T m20, T m21, 
-		T m22, T m23, T m30, T m31, T m32, T m33) : m00(m00), m01(m01), m02(m02), m03(m03), m10(m10), m11(m11),
+		T m22, T m23, T m30, T m31, T m32, T m33) noexcept : m00(m00), m01(m01), m02(m02), m03(m03), m10(m10), m11(m11),
 		m12(m12), m13(m13), m20(m20), m21(m21), m22(m22), m23(m23), m30(m30), m31(m31), m32(m32), m33(m33) {}
-	constexpr Tuple4x4(const Tuple4<T>& row0, const Tuple4<T>& row1, const Tuple4<T>& row2, const Tuple4<T>& row3) :
+	constexpr Tuple4x4(const Tuple4<T>& row0, const Tuple4<T>& row1, const Tuple4<T>& row2, const Tuple4<T>& row3) noexcept :
 		m00(row0.x), m01(row0.y), m02(row0.z), m03(row0.w), m10(row1.x), m11(row1.y), m12(row1.z), m13(row1.w), 
 		m20(row2.x), m21(row2.y), m22(row2.z), m23(row2.w), m30(row3.x), m31(row3.y), m32(row3.z), m33(row3.w) {}
-	explicit Tuple4x4(const T* m) : m00(m[0]), m01(m[1]), m02(m[2]), m03(m[3]), m10(m[4]), m11(m[5]), m12(m[6]), m13(m[7]), 
+	explicit Tuple4x4(const T* m) noexcept : m00(m[0]), m01(m[1]), m02(m[2]), m03(m[3]), m10(m[4]), m11(m[5]), m12(m[6]), m13(m[7]),
 		m20(m[8]), m21(m[9]), m22(m[10]), m23(m[11]), m30(m[12]), m31(m[13]), m32(m[14]), m33(m[15]) {}
 
-	/*explicit*/ operator T*() { return &m00; }
-	/*explicit*/ operator const T*() const { return &m00; }
-	Tuple4<T>& operator[](int i) { return reinterpret_cast<Tuple4<T>*>(&m00)[i]; }
-	const Tuple4<T>& operator[](int i) const { return reinterpret_cast<const Tuple4<T>*>(&m00)[i]; }
+	/*explicit*/ operator T*() noexcept { return &m00; }
+	/*explicit*/ operator const T*() const noexcept { return &m00; }
+	Tuple4<T>& operator[](int i) noexcept { return reinterpret_cast<Tuple4<T>*>(&m00)[i]; }
+	const Tuple4<T>& operator[](int i) const noexcept { return reinterpret_cast<const Tuple4<T>*>(&m00)[i]; }
 
-	bool operator==(const Tuple4x4& m) const { return ((m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m03 == m.m03) && 
+	bool operator==(const Tuple4x4& m) const noexcept { return ((m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m03 == m.m03) &&
 		(m10 == m.m10) && (m11 == m.m11) && (m12 == m.m12) && (m13 == m.m13) && (m20 == m.m20) && (m21 == m.m21) && (m22 == m.m22) && 
 		(m23 == m.m23) && (m30 == m.m30) && (m31 == m.m31) && (m32 == m.m32) && (m33 == m.m33)); }
-	bool operator!=(const Tuple4x4& m) const { return !(*this == m); }
+	bool operator!=(const Tuple4x4& m) const noexcept { return !(*this == m); }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & m00 & m01 & m02 & m03 & m10 & m11 & m12 & m13 & m20 &
 		m21 & m22 & m23 & m30 & m31 & m32 & m33; }
