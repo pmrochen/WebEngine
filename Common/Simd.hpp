@@ -269,65 +269,83 @@ inline __m128 broadcast(__m128 v, int index)
 	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(index, index, index, index));
 }
 
-inline bool all2(int b)
+inline bool all2(__m128 b)
 {
-	return ((b & 3) == 3);
+	return ((_mm_movemask_ps(b) & 3) == 3);
 }
 
-inline bool all3(int b)
+inline bool all3(__m128 b)
 {
-	return ((b & 7) == 7);
+	return ((_mm_movemask_ps(b) & 7) == 7);
 }
 
-inline bool all4(int b)
+inline bool all4(__m128 b)
 {
-	return ((b /*& 0xF*/) == 0xF);
+	return ((_mm_movemask_ps(b) /*& 0xF*/) == 0xF);
 }
 
-inline bool any2(int b)
+inline bool any2(__m128 b)
 {
-	return (b & 3);
+	return (_mm_movemask_ps(b) & 3);
 }
 
-inline bool any3(int b)
+inline bool any3(__m128 b)
 {
-	return (b & 7);
+	return (_mm_movemask_ps(b) & 7);
 }
 
-inline bool any4(int b)
+inline bool any4(__m128 b)
 {
-	return (b /*& 0xF*/);
+	return (_mm_movemask_ps(b) /*& 0xF*/);
 }
 
-inline int toIndex(int b)
+inline int toIndex(__m128 b)
 {
-	return detail::ctz(b);
+	return detail::ctz(_mm_movemask_ps(b));
 }
 
-inline int equal4(__m128 v1, __m128 v2)
+inline __m128 equal4(__m128 v1, __m128 v2)
 {
-	return _mm_movemask_ps(_mm_cmpeq_ps(v1, v2));
+	return _mm_cmpeq_ps(v1, v2);
 }
 
-inline int lessThan4(__m128 v1, __m128 v2)
+inline __m128 lessThan4(__m128 v1, __m128 v2)
 {
-	return _mm_movemask_ps(_mm_cmplt_ps(v1, v2));
+	return _mm_cmplt_ps(v1, v2);
 }
 
-inline int lessThanEqual4(__m128 v1, __m128 v2)
+inline __m128 lessThanEqual4(__m128 v1, __m128 v2)
 {
-	return _mm_movemask_ps(_mm_cmple_ps(v1, v2));
+	return _mm_cmple_ps(v1, v2);
 }
 
-inline int greaterThan4(__m128 v1, __m128 v2)
+inline __m128 greaterThan4(__m128 v1, __m128 v2)
 {
-	return _mm_movemask_ps(_mm_cmpgt_ps(v1, v2));
+	return _mm_cmpgt_ps(v1, v2);
 }
 
-inline int greaterThanEqual4(__m128 v1, __m128 v2)
+inline __m128 greaterThanEqual4(__m128 v1, __m128 v2)
 {
-	return _mm_movemask_ps(_mm_cmpge_ps(v1, v2));
+	return _mm_cmpge_ps(v1, v2);
 }
+
+inline __m128 select(__m128 b, __m128 v1, __m128 v2) // b ? v1 : v2
+{
+if (SIMD_SSE >= 4) // SSE4.1
+    return _mm_blendv_ps(v2, v1, b);
+#else
+    return _mm_or_ps(_mm_and_ps(b, v1), _mm_andnot_ps(b, v2));
+#endif
+}
+
+inline __m128d select(__m128d b, __m128d v1, __m128d v2) // b ? v1 : v2
+{
+if (SIMD_SSE >= 4) // SSE4.1
+    return _mm_blendv_pd(v2, v1, b);
+#else
+    return _mm_or_pd(_mm_and_pd(b, v1), _mm_andnot_pd(b, v2));
+#endif
+} 
 
 inline __m128 min4(__m128 v1, __m128 v2)
 {
