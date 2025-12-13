@@ -215,12 +215,7 @@ template<>
 	union
 	{
 		simd::Float4 xyz;
-
-		struct
-		{
-			float x, y, z;
-			float reserved_;
-		};
+		struct { float x, y, z/*, reserved_*/; };
 	};
 };
 #endif /* SIMD_HAS_FLOAT4 */
