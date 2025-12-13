@@ -23,10 +23,21 @@
 #define SIMD_AVX 1
 #endif
 
-#if defined(SIMD_SSE) || defined(SIMD_AVX)
-#define SIMD_ENABLED
-//#include <intrin.h> // for __cpuid
+#ifdef SIMD_SSE
+#define SIMD_HAS_FLOAT4 1
+#else
+#define SIMD_HAS_FLOAT4 0
 #endif
+
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#include <intrin.h> // for __popcnt
+#elif defined(__cpp_lib_bitops)
+#include <bit>
+#endif
+
+//#if defined(SIMD_SSE) || defined(SIMD_AVX)
+//#include <intrin.h> // for __cpuid
+//#endif
 
 #ifdef SIMD_SSE
 #include <xmmintrin.h>
@@ -50,7 +61,31 @@
 namespace core {
 namespace simd {
 
-#ifdef SIMD_SSE
+namespace detail {
+
+#if defined(_MSC_VER) /*&& (defined(_M_IX86) || defined(_M_X64))*/
+inline unsigned int popcount(unsigned int x) { return __popcnt(x); }
+inline unsigned int clz(unsigned int x) { return _lzcnt_u32(x); }
+inline unsigned int ctz(unsigned int x) { return _tzcnt_u32(x); }
+#elif defined(__GNUC__) || defined(__clang__)
+inline unsigned int popcount(unsigned int x) { return __builtin_popcount(x); }
+inline unsigned int clz(unsigned int x) { return __builtin_clz(x); }
+inline unsigned int ctz(unsigned int x) { return __builtin_ctz(x); }
+#elif defined(__cpp_lib_bitops)
+inline unsigned int popcount(unsigned int x) { return std::popcount(x); }
+inline unsigned int clz(unsigned int x) { return std::countl_zero(x); }
+inline unsigned int ctz(unsigned int x) { return std::countr_zero(x); }
+#else
+inline unsigned int popcount(unsigned int i) { x = x - ((x >> 1) & 0x55555555); x = (x & 0x33333333) + ((x >> 2) & 0x33333333); 
+	x = (x + (x >> 4)) & 0x0F0F0F0F; x = x + (x >> 8); x = x + (x >> 16); return x & 0x3F; }
+inline unsigned int clz(unsigned int x) { x |= (x >> 1); x |= (x >> 2); x |= (x >> 4); x |= (x >> 8); x |= (x >> 16); 
+	return 32 - popcnt(x); }
+inline unsigned int ctz(unsigned int x) { return popcnt((x & -x) - 1); }
+#endif
+
+}
+
+#if SIMD_HAS_FLOAT4
 
 using Float4 = __m128;
 
@@ -58,78 +93,40 @@ namespace detail {
 
 _MM_ALIGN16 struct UInt32M128
 {
-	union
-	{
-		std::uint32_t u[4];
-		__m128 v;
-	};
-
 	inline operator __m128() const noexcept { return v; }
 	//inline operator __m128i() const noexcept { return _mm_castps_si128(v); }
 	//inline operator __m128d() const noexcept { return _mm_castps_pd(v); }
+
+	union { std::uint32_t u[4]; __m128 v; };
 };
 
+const UInt32M128 one1 = { { { 0x3F800000, 0x00000000, 0x00000000, 0x00000000 } } };
+const UInt32M128 one4 = { { { 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 } } };
 const UInt32M128 zeroZeroZeroOne = { { { 0x00000000, 0x00000000, 0x00000000, 0x3F800000 } } };
-const UInt32M128 maskXY = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } } };
-const UInt32M128 maskXYZ = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
+const UInt32M128 mask2 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } } };
+const UInt32M128 mask3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
 const UInt32M128 addSubMask = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
+const UInt32M128 sign4 = { { { 0x80000000, 0x80000000, 0x80000000, 0x80000000 } } };
 
 //template<typename T>
 //inline bool isAligned16(const T& t) noexcept { return !((size_t)(&t) & 0xF); }
 
 } // namespace detail 
 
-//inline bool isSse3Supported()
-//{
-//	int info[4] = { -1 };
-//	__cpuid(info, 0);
-//	if (info[0] < 1)
-//		return false;
-//	__cpuid(info, 1);
-//	return ((info[2] & 0x1) != 0);
-//}
-//
-//inline bool isSse41Supported()
-//{
-//	int info[4] = { -1 };
-//	__cpuid(info, 0);
-//	if (info[0] < 1)
-//		return false;
-//	__cpuid(info, 1);
-//	return ((info[2] & 0x80000) == 0x80000);
-//}
-//
-//inline bool isAvxSupported()
-//{
-//	int info[4] = { -1 };
-//	__cpuid(info, 0);
-//	if (info[0] < 1)
-//		return false;
-//	__cpuid(info, 1);
-//	return ((info[2] & 0x18080001) == 0x18080001);
-//}
-//
-//inline bool isAvx2Supported()
-//{
-//	int info[4] = { -1 };
-//	__cpuid(info, 0);
-//	if (info[0] < 7)
-//		return false;
-//	__cpuid(info, 1);
-//	if ((info[2] & 0x38081001) != 0x38081001)
-//		return false;
-//	__cpuidex(info, 7, 0);
-//	return ((info[1] & 0x20) == 0x20);
-//}
+inline __m128 setZero()
+{
+	return _mm_setzero_ps();
+}
 
-//inline float floor(float x) // pre SSE 4.1
-//{
-//	__m128 f = _mm_set_ss(x);
-//	static const __m128 one = _mm_set_ss(1.0f);
-//	__m128 t = _mm_cvtepi32_ps(_mm_cvttps_epi32(f));
-//	__m128 r = _mm_sub_ps(t, _mm_and_ps(_mm_cmplt_ps(f, t), one));
-//	return _mm_cvtss_f32(r);
-//}
+inline __m128 set(float x, float y, float z, float w)
+{ 
+	return _mm_set_ps(w, z, y, x); 
+}
+
+inline __m128 set1(float s)
+{
+	return _mm_set_ss(s);
+}
 
 inline __m128 set4(float s)
 {
@@ -163,13 +160,13 @@ inline __m128 load4(const float* v)
 /*
 inline void load(const Matrix2& m, __m128& row0, __m128& row1)
 {
-	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::maskXY);
+	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::mask2);
 	row1 = _mm_unpacklo_ps(_mm_load_ss(&m.m10), _mm_load_ss(&m.m11));
 }
 
 inline void load(const Matrix2& m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 {
-	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::maskXY);
+	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::mask2);
 	row1 = _mm_unpacklo_ps(_mm_load_ss(&m.m10), _mm_load_ss(&m.m11));
 	row2 = _mm_setzero_ps();
 	row3 = detail::zeroZeroZeroOne;
@@ -177,24 +174,24 @@ inline void load(const Matrix2& m, __m128& row0, __m128& row1, __m128& row2, __m
 
 inline void load(const Matrix3& m, __m128& row0, __m128& row1, __m128& row2)
 {
-	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::maskXYZ);
-	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::maskXYZ);
+	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::mask3);
+	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::mask3);
 	row2 = _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.m20), _mm_load_ss(&m.m21)), _mm_load_ss(&m.m22));
 }
 
 inline void load(const Matrix3& m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 {
-	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::maskXYZ);
-	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::maskXYZ);
+	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::mask3);
+	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::mask3);
 	row2 = _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.m20), _mm_load_ss(&m.m21)), _mm_load_ss(&m.m22));
 	row3 = detail::zeroZeroZeroOne;
 }
 
 inline void load(const AffineTransform& m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 {
-	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::maskXYZ);
-	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::maskXYZ);
-	row2 = _mm_and_ps(_mm_loadu_ps(&m.m20), detail::maskXYZ);
+	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::mask3);
+	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::mask3);
+	row2 = _mm_and_ps(_mm_loadu_ps(&m.m20), detail::mask3);
 	row3 = _mm_or_ps(_mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.x), _mm_load_ss(&m.y)), _mm_load_ss(&m.z)), detail::zeroZeroZeroOne);
 }
 */
@@ -262,9 +259,94 @@ inline void store4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* 
 	_mm_storeu_ps(&m[12], row3);
 }
 
-inline float asFloat(__m128 s)
+inline float toFloat(__m128 s)
 {
 	return _mm_cvtss_f32(s);
+}
+
+inline __m128 broadcast(__m128 v, int index)
+{
+	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(index, index, index, index));
+}
+
+inline bool all2(int b)
+{
+	return ((b & 3) == 3);
+}
+
+inline bool all3(int b)
+{
+	return ((b & 7) == 7);
+}
+
+inline bool all4(int b)
+{
+	return ((b /*& 0xF*/) == 0xF);
+}
+
+inline bool any2(int b)
+{
+	return (b & 3);
+}
+
+inline bool any3(int b)
+{
+	return (b & 7);
+}
+
+inline bool any4(int b)
+{
+	return (b /*& 0xF*/);
+}
+
+inline int toIndex(int b)
+{
+	return detail::ctz(b);
+}
+
+inline int equal4(__m128 v1, __m128 v2)
+{
+	return _mm_movemask_ps(_mm_cmpeq_ps(v1, v2));
+}
+
+inline int lessThan4(__m128 v1, __m128 v2)
+{
+	return _mm_movemask_ps(_mm_cmplt_ps(v1, v2));
+}
+
+inline int lessThanEqual4(__m128 v1, __m128 v2)
+{
+	return _mm_movemask_ps(_mm_cmple_ps(v1, v2));
+}
+
+inline int greaterThan4(__m128 v1, __m128 v2)
+{
+	return _mm_movemask_ps(_mm_cmpgt_ps(v1, v2));
+}
+
+inline int greaterThanEqual4(__m128 v1, __m128 v2)
+{
+	return _mm_movemask_ps(_mm_cmpge_ps(v1, v2));
+}
+
+inline __m128 min4(__m128 v1, __m128 v2)
+{
+	return _mm_min_ps(v1, v2);
+}
+
+inline __m128 max4(__m128 v1, __m128 v2)
+{
+	return _mm_max_ps(v1, v2);
+}
+
+inline __m128 neg4(__m128 v)
+{
+	return _mm_xor_ps(v, detail::sign4);
+}
+
+inline __m128 abs4(__m128 v)
+{
+	return _mm_andnot_ps(detail::sign4, v);
 }
 
 inline __m128 add4(__m128 v1, __m128 v2)
@@ -291,23 +373,77 @@ inline __m128 mul4(__m128 v1, __m128 v2)
 	return _mm_mul_ps(v1, v2);
 }
 
+inline __m128 div4(__m128 v1, __m128 v2)
+{
+	return _mm_div_ps(v1, v2);
+}
+
 inline __m128 sqrt1(__m128 s)
 {
 	return _mm_sqrt_ss(s);
 }
 
-inline __m128 hadd2(__m128 v)
+inline __m128 rcpSqrtApprox1(__m128 s)
+{
+	__m128 b = _mm_rsqrt_ss(s);
+#if (SIMD_SSE >= 2)
+	if ((_mm_extract_epi16(_mm_castps_si128(b), 1) & 0x7F80) == 0x7F80) // NaN or infinity
+#else
+	static const __m128 zero = _mm_setzero_ps();
+	if (!(_mm_movemask_ps(_mm_cmpeq_ss(_mm_mul_ss(b, zero), zero)) & 1)) // NaN or infinity
+#endif
+		return b; // preserve NaN/infinity result
+	static const __m128 half = _mm_set_ps1(0.5f);
+	static const __m128 three = _mm_set_ps1(3.f);
+	return _mm_mul_ss(_mm_mul_ss(half, b), _mm_sub_ss(three, _mm_mul_ss(_mm_mul_ss(s, b), b))); // Newton-Raphson step
+}
+
+inline __m128 hMin2(__m128 v)
+{
+	return _mm_min_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 2, 0, 1)));
+}
+
+inline __m128 hMin3(__m128 v)
+{
+	__m128 t = _mm_min_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 1, 0, 2)));
+	return _mm_min_ps(t, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 0, 2, 1)));
+}
+
+inline __m128 hMin4(__m128 v)
+{
+	__m128 t = _mm_min_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 1, 0, 3)));
+	return _mm_min_ps(t, _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 0, 3, 2)));
+}
+
+inline __m128 hMax2(__m128 v)
+{
+	return _mm_max_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 2, 0, 1)));
+}
+
+inline __m128 hMax3(__m128 v)
+{
+	__m128 t = _mm_max_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 1, 0, 2)));
+	return _mm_max_ps(t, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 0, 2, 1)));
+}
+
+inline __m128 hMax4(__m128 v)
+{
+	__m128 t = _mm_max_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 1, 0, 3)));
+	return _mm_max_ps(t, _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 0, 3, 2)));
+}
+
+inline __m128 hAdd2(__m128 v)
 {
 	return _mm_add_ss(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)));
 }
 
-inline __m128 hadd3(__m128 v)
+inline __m128 hAdd3(__m128 v)
 {
 	__m128 t = _mm_add_ps(v, _mm_movehl_ps(v, v));
 	return _mm_add_ss(t, _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)));
 }
 
-inline __m128 hadd4(__m128 v)
+inline __m128 hAdd4(__m128 v)
 {
 	__m128 t = _mm_add_ps(v, _mm_movehl_ps(v, v));
 	return _mm_add_ss(t, _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1)));
@@ -345,22 +481,27 @@ inline __m128 dot4(__m128 v1, __m128 v2)
 #endif
 }
 
-//inline __m128 length2(__m128 v)
+//inline float floor(float x) // pre SSE 4.1
 //{
-//	return _mm_sqrt_ss(dot2(v, v));
+//	__m128 f = _mm_set_ss(x);
+//	static const __m128 one = _mm_set_ss(1.0f);
+//	__m128 t = _mm_cvtepi32_ps(_mm_cvttps_epi32(f));
+//	__m128 r = _mm_sub_ps(t, _mm_and_ps(_mm_cmplt_ps(f, t), one));
+//	return _mm_cvtss_f32(r);
 //}
 
-//inline __m128 length3(__m128 v)
-//{
-//	return _mm_sqrt_ss(dot3(v, v));
-//}
+inline __m128 floor4(__m128 v)
+{
+#if (SIMD_SSE >= 4)
+	return _mm_floor_ps(v); // SSE 4.1
+#else
+	static const __m128 one = _mm_set_ps1(1.0f);
+	__m128 t = _mm_cvtepi32_ps(_mm_cvttps_epi32(v));
+	return _mm_sub_ps(t, _mm_and_ps(_mm_cmplt_ps(v, t), one/*detail::one4*/));
+#endif
+}
 
-//inline __m128 length4(__m128 v)
-//{
-//	return _mm_sqrt_ss(dot4(v, v));
-//}
-
-#endif /* SIMD_SSE */
+#endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace simd
 } // namespace core
