@@ -138,6 +138,13 @@ inline __m128 load2(const float* v)
 	return _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])); 
 }
 
+inline __m128 load2Broadcast(const float* v) 
+{
+	__m128 v0 = _mm_load_ss(&v[0]);
+	__m128 v1 = _mm_load_ss(&v[1]);
+	return _mm_or_ps(v0, _mm_shuffle_ps(v1, v1, _MM_SHUFFLE(0, 0, 0, 1))); 
+}
+
 inline __m128 load2ZeroOne(const float* v) 
 {
 	return _mm_or_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), detail::zeroZeroZeroOne);
@@ -146,6 +153,13 @@ inline __m128 load2ZeroOne(const float* v)
 inline __m128 load3(const float* v)
 {
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), _mm_load_ss(&v[2]));
+}
+
+inline __m128 load3Broadcast(const float* v)
+{
+	__m128 v01 = _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1]));
+	__m128 v2 = _mm_load_ss(&v[2]);
+	return _mm_or_ps(v01, _mm_shuffle_ps(v2, v2, _MM_SHUFFLE(0, 0, 1, 1))); 
 }
 
 inline __m128 load3One(const float* v) 
