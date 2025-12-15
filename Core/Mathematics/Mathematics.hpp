@@ -9,6 +9,8 @@
 
 #include "Constants.hpp"
 #include "Axis.hpp"
+#include "Vector2.hpp"
 #include "Vector3.hpp"
+#include "Vector4.hpp"
 
 #endif /* CORE_MATHEMATICS_HPP */

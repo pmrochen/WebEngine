@@ -16,6 +16,7 @@
 #include "Constants.hpp"
 #include "Axis.hpp"
 #include "Scalar.hpp"
+#include "Vector2.hpp"
 
 namespace core {
 namespace mathematics {
@@ -37,8 +38,8 @@ struct Vector3
 	constexpr Vector3() noexcept : x(), y(), z() {}
 	constexpr explicit Vector3(const T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
 	constexpr Vector3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
-	//constexpr Vector3(const Vector2<T>& v) noexcept : x(v.x), y(v.y), z() {} // #TODO
-	//constexpr Vector3(const Vector2<T>& v, T z) noexcept : x(v.x), y(v.y), z(z) {} // #TODO
+	constexpr Vector3(Vector2::Arg v) noexcept : x(v.x), y(v.y), z() {}
+	constexpr Vector3(Vector2::Arg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
 	//explicit Vector3(const IntVector3<T>& v) noexcept; // #TODO
 	explicit Vector3(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)),
 		z((axis == Axis::Z) ? T(1) : T(0)) {}
@@ -69,7 +70,7 @@ struct Vector3
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
 
 	//const Vector2& getXY() const noexcept { return *(const Vector2*)this; } // #TODO
-	//void setXY(const Vector2& v) noexcept { x = v.x; y = v.y; }
+	//void setXY(Vector2::Arg v) noexcept { x = v.x; y = v.y; }
 	//Vector2 getXZ() const noexcept { return Vector2(x, z); }
 	//Vector2 getZY() const noexcept { return Vector2(z, y); }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()); }
@@ -92,21 +93,21 @@ struct Vector3
 	T getMaxComponent() const noexcept { return std::max(std::max(x, y), z); }
 	Vector3& zero() noexcept { x = T(); y = T(); z = T(); return *this; } // setZero()
 	Vector3& set(const T x, const T y, const T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
-	Vector3& minimumOf(const Vector3& v1, const Vector3& v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y);
+	Vector3& minimumOf(Arg v1, Arg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y);
 		z = std::min(v1.z, v2.z); return *this; }
-	Vector3& maximumOf(const Vector3& v1, const Vector3& v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y);
+	Vector3& maximumOf(Arg v1, Arg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y);
 		z = std::max(v1.z, v2.z); return *this; }
 	Vector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
 #if MATHEMATICS_FAST_NORMALIZE
-	Vector3& normalize() noexcept { float m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<T>::max()) *this *= m; return *this; }
+	Vector3& normalize() noexcept { T m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<T>::max()) *this *= m; return *this; }
 #else
-	Vector3& normalize() { float m = getMagnitude(); if (m > 0.f) *this /= m; return *this; }
+	Vector3& normalize() { T m = getMagnitude(); if (m > T(0)) *this /= m; return *this; }
 #endif
-	//Vector3& rotate(const Axis axis, const float angle); // #TODO
-	//Vector3& rotate(const Quaternion& q); // #TODO
-	Vector3& scale(const Vector3& v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
-	//Vector3& transform(const Matrix3& m); // #TODO
-	//Vector3& transform(const AffineTransform& m); // #TODO
+	//Vector3& rotate(const Axis axis, const T angle); // #TODO
+	//Vector3& rotate(const Quaternion<T>& q); // #TODO
+	Vector3& scale(Arg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
+	//Vector3& transform(const Matrix3<T>& m); // #TODO
+	//Vector3& transform(const AffineTransform<T>& m); // #TODO
 	static const Vector3& getZero() noexcept { return ZERO; }
 	static const Vector3& getUnitX() noexcept { return UNIT_X; }
 	static const Vector3& getUnitY() noexcept { return UNIT_Y; }
@@ -132,14 +133,14 @@ template<>
 	/*constexpr*/ Vector3() noexcept { xyz = simd::setZero(); }
 	/*constexpr*/ explicit Vector3(const float scalar) noexcept { xyz = simd::set4(scalar); }
 	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = simd::set(x, y, z, z); }
-	//constexpr Vector3(const Vector2<float>& v) noexcept; // #TODO
-	//constexpr Vector3(const Vector2<float>& v, float z) noexcept; // #TODO
+	/*constexpr*/ Vector3(Vector2::Arg v) noexcept; // #TODO
+	/*constexpr*/ Vector3(Vector2::Arg v, const float z) noexcept; // #TODO
 	//explicit Vector3(const IntVector3<float>& v) noexcept; // #TODO
 	explicit Vector3(const Axis axis) noexcept { xyz = simd::set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
 		(axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
-	explicit Vector3(const float* const v) noexcept { xyz = simd::set(v[0], v[1], v[2], v[2]); /*v ? simd::load3(v) : simd::setZero()*/; }
+	explicit Vector3(const float* const v) noexcept { xyz = simd::load3Broadcast(v)/*simd::set(v[0], v[1], v[2], v[2])*/; }
 
-	Vector3(const simd::Float4 v) noexcept : xyz(v) {}
+	explicit Vector3(const simd::Float4 v) noexcept : xyz(v) {}
 	operator simd::Float4() const noexcept { return xyz; }
 	/*explicit*/ operator float* () noexcept { return &x; }
 	/*explicit*/ operator const float* () const noexcept { return &x; }
@@ -168,7 +169,7 @@ template<>
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use simd::set(x, y, z, z)
 
 	//const Vector2& getXY() const noexcept { return *(const Vector2*)this; } // #TODO
-	//void setXY(const Vector2& v) noexcept { x = v.x; y = v.y; }
+	//void setXY(Vector2::Arg v) noexcept { x = v.x; y = v.y; }
 	//Vector2 getXZ() const noexcept { return Vector2(x, z); }
 	//Vector2 getZY() const noexcept { return Vector2(z, y); }
 	bool isZero() const noexcept { return simd::all3(simd::equal4(xyz, ZERO)); }
@@ -188,8 +189,8 @@ template<>
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax3(xyz)); }
 	Vector3& zero() noexcept { xyz = simd::setZero(); return *this; } // setZero()
 	Vector3& set(const float x, const float y, const float z) noexcept { xyz = simd::set(x, y, z, z); return *this; }
-	Vector3& minimumOf(const Vector3& v1, const Vector3& v2) noexcept { xyz = simd::min4(v1, v2); return *this; }
-	Vector3& maximumOf(const Vector3& v1, const Vector3& v2) noexcept { xyz = simd::max4(v1, v2); return *this; }
+	Vector3& minimumOf(Arg v1, Arg v2) noexcept { xyz = simd::min4(v1, v2); return *this; }
+	Vector3& maximumOf(Arg v1, Arg v2) noexcept { xyz = simd::max4(v1, v2); return *this; }
 	Vector3& negate() noexcept { xyz = simd::neg4(xyz); return *this; }
 #if MATHEMATICS_FAST_NORMALIZE
 	Vector3& normalize() noexcept { float m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<float>::max()) *this *= m; return *this; }
@@ -197,10 +198,10 @@ template<>
 	Vector3& normalize() noexcept { float m = getMagnitude(); if (m > 0.f) *this /= m; return *this; }
 #endif
 	//Vector3& rotate(const Axis axis, const float angle); // #TODO
-	//Vector3& rotate(const Quaternion& q); // #TODO
-	Vector3& scale(const Vector3& v) noexcept { xyz = simd::mul4(xyz, v); return *this; }
-	//Vector3& transform(const Matrix3& m); // #TODO
-	//Vector3& transform(const AffineTransform& m); // #TODO
+	//Vector3& rotate(const Quaternion<float>& q); // #TODO
+	Vector3& scale(Arg v) noexcept { xyz = simd::mul4(xyz, v); return *this; }
+	//Vector3& transform(const Matrix3<float>& m); // #TODO
+	//Vector3& transform(const AffineTransform<float>& m); // #TODO
 	static const Vector3& getZero() noexcept { return ZERO; }
 	static const Vector3& getUnitX() noexcept { return UNIT_X; }
 	static const Vector3& getUnitY() noexcept { return UNIT_Y; }
