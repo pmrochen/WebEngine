@@ -88,6 +88,7 @@ inline unsigned int ctz(unsigned int x) { return popcnt((x & -x) - 1); }
 #if SIMD_HAS_FLOAT4
 
 using Float4 = __m128;
+using Bool4 = __m128;
 
 namespace detail {
 
