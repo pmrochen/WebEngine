@@ -133,14 +133,14 @@ template<>
 
 	/*constexpr*/ Vector4() noexcept { xyzw = simd::setZero(); }
 	/*constexpr*/ explicit Vector4(const float scalar) noexcept { xyzw = simd::set4(scalar); }
-	/*constexpr*/ Vector4(const float x, const float y, const float z, const float w) noexcept { xyzw = simd::set(x, y, z, w); }
+	/*constexpr*/ Vector4(const float x, const float y, const float z, const float w) noexcept { xyzw = simd::set4(x, y, z, w); }
 	/*constexpr*/ Vector4(Vector2::Arg v) noexcept; // #TODO
-	/*constexpr*/ Vector4(Vector2::Arg v, const float z, const float w) noexcept; // #TODO
-	/*constexpr*/ Vector4(Vector2::Arg xy, Vector2::Arg zw) noexcept; // #TODO
+	/*constexpr*/ Vector4(Vector2::Arg v, const float z, const float w) noexcept { xyzw = simd::set4(v, simd::set2(z, w)); }
+	/*constexpr*/ Vector4(Vector2::Arg xy, Vector2::Arg zw) noexcept { xyzw = simd::set4(xy, zw); }
 	/*constexpr*/ Vector4(Vector3::Arg v) noexcept; // #TODO
 	/*constexpr*/ Vector4(Vector3::Arg v, const float w) noexcept; // #TODO
 	//explicit Vector4(const IntVector4<float>& v) noexcept; // #TODO
-	explicit Vector4(const Axis axis) noexcept { xyzw = simd::set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
+	explicit Vector4(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
 		(axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::W) ? 1.f : 0.f); }
 	explicit Vector4(const float* const v) noexcept { xyzw = simd::load4(v); }
 
@@ -191,7 +191,7 @@ template<>
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin4(xyzw)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax4(xyzw)); }
 	Vector4& zero() noexcept { xyzw = simd::setZero(); return *this; } // setZero()
-	Vector4& set(const float x, const float y, const float z, const float w) noexcept { xyzw = simd::set(x, y, z, w); return *this; }
+	Vector4& set(const float x, const float y, const float z, const float w) noexcept { xyzw = simd::set4(x, y, z, w); return *this; }
 	Vector4& minimumOf(Arg v1, Arg v2) noexcept { xyzw = simd::min4(v1, v2); return *this; }
 	Vector4& maximumOf(Arg v1, Arg v2) noexcept { xyzw = simd::max4(v1, v2); return *this; }
 	Vector4& negate() noexcept { xyzw = simd::neg4(xyzw); return *this; }

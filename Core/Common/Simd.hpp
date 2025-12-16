@@ -104,6 +104,7 @@ _MM_ALIGN16 struct UInt32M128
 const UInt32M128 one1 = { { { 0x3F800000, 0x00000000, 0x00000000, 0x00000000 } } };
 const UInt32M128 one4 = { { { 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 } } };
 const UInt32M128 zeroZeroZeroOne = { { { 0x00000000, 0x00000000, 0x00000000, 0x3F800000 } } };
+const UInt32M128 mask1 = { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } };
 const UInt32M128 mask2 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } } };
 const UInt32M128 mask3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
 const UInt32M128 addSubMask = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
@@ -119,14 +120,46 @@ inline __m128 setZero()
 	return _mm_setzero_ps();
 }
 
-inline __m128 set(float x, float y, float z, float w)
-{ 
-	return _mm_set_ps(w, z, y, x); 
-}
-
 inline __m128 set1(float s)
 {
 	return _mm_set_ss(s);
+}
+
+inline __m128 set2(__m128 xy)
+{ 
+	return _mm_and_ps(xy, detail::mask2); 
+}
+
+inline __m128 set2(float s)
+{ 
+	const __m128 t = _mm_set_ss(s);
+	return _mm_unpacklo_ps(t, t); 
+}
+
+inline __m128 set2(float x, float y)
+{ 
+	return _mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)); 
+}
+
+inline __m128 set3(__m128 xyz)
+{ 
+	return _mm_and_ps(xyz, detail::mask3); 
+}
+
+/*inline __m128 set3(__m128 xy, float z)
+{ 
+	return _mm_movelh_ps(_mm_and_ps(xy, detail::mask2), _mm_set_ss(z));
+}*/
+
+inline __m128 set3(float s)
+{
+	const __m128 t = _mm_set_ss(s);
+	return _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 0, 0, 0)));
+}
+
+inline __m128 set3(float x, float y, float z)
+{
+	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)), _mm_set_ss(z));
 }
 
 inline __m128 set4(float s)
@@ -134,19 +167,29 @@ inline __m128 set4(float s)
 	return _mm_set_ps1(s);
 }
 
+inline __m128 set4(float x, float y, float z, float w)
+{ 
+	return _mm_set_ps(w, z, y, x); 
+}
+
+inline __m128 set4(__m128 xy, __m128 zw)
+{ 
+	return _mm_movelh_ps(xy, zw); 
+}
+
 inline __m128 load2(const float* v) 
 {
 	return _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])); 
 }
-
+/*
 inline __m128 load2Broadcast(const float* v) 
 {
 	__m128 v0 = _mm_load_ss(&v[0]);
 	__m128 v1 = _mm_load_ss(&v[1]);
 	return _mm_or_ps(v0, _mm_shuffle_ps(v1, v1, _MM_SHUFFLE(0, 0, 0, 1))); 
 }
-
-inline __m128 load2ZeroOne(const float* v) 
+*/
+inline __m128 unpack2/*ZeroOne*/(const float* v) 
 {
 	return _mm_or_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), detail::zeroZeroZeroOne);
 }
@@ -155,15 +198,15 @@ inline __m128 load3(const float* v)
 {
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), _mm_load_ss(&v[2]));
 }
-
+/*
 inline __m128 load3Broadcast(const float* v)
 {
 	__m128 v01 = _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1]));
 	__m128 v2 = _mm_load_ss(&v[2]);
 	return _mm_or_ps(v01, _mm_shuffle_ps(v2, v2, _MM_SHUFFLE(0, 0, 1, 1))); 
 }
-
-inline __m128 load3One(const float* v) 
+*/
+inline __m128 unpack3/*One*/(const float* v) 
 { 
 	return _mm_or_ps(_mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), _mm_load_ss(&v[2])), detail::zeroZeroZeroOne);
 }
@@ -209,7 +252,7 @@ inline void load(const AffineTransform& m, __m128& row0, __m128& row1, __m128& r
 	row2 = _mm_and_ps(_mm_loadu_ps(&m.m20), detail::mask3);
 	row3 = _mm_or_ps(_mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.x), _mm_load_ss(&m.y)), _mm_load_ss(&m.z)), detail::zeroZeroZeroOne);
 }
-*/
+
 inline void load4x4(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 {
 	row0 = _mm_loadu_ps(&m[0]);
@@ -217,7 +260,7 @@ inline void load4x4(const float* m, __m128& row0, __m128& row1, __m128& row2, __
 	row2 = _mm_loadu_ps(&m[8]);
 	row3 = _mm_loadu_ps(&m[12]);
 }
-
+*/
 inline void store2(__m128 u, float* v) 
 { 
 	//_mm_storel_pi((__m64*)&v[0], u); 
@@ -239,12 +282,12 @@ inline void store4(__m128 u, float* v)
 	_mm_storeu_ps(v, u); 
 }
 
-inline void store2x2(__m128 row0, __m128 row1, float* m)
+inline void pack2x2(__m128 row0, __m128 row1, float* m)
 {
 	_mm_storeu_ps(m, _mm_movelh_ps(row0, row1));
 }
 
-inline void store3x3(__m128 row0, __m128 row1, __m128 row2, float* m)
+inline void pack3x3(__m128 row0, __m128 row1, __m128 row2, float* m)
 {
 	row0 = _mm_shuffle_ps(row0, _mm_shuffle_ps(row0, row1, _MM_SHUFFLE(0, 0, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
 	row1 = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 2, 1));
@@ -254,7 +297,7 @@ inline void store3x3(__m128 row0, __m128 row1, __m128 row2, float* m)
 	_mm_store_ss(&m[8], row2);
 }
 
-inline void store4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m)
+inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m)
 {
 	__m128 row1x = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 2, 1));
 	row1 = _mm_shuffle_ps(row1, row0, _MM_SHUFFLE(2, 2, 0, 0));
@@ -265,7 +308,7 @@ inline void store4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* 
 	_mm_storeu_ps(&m[4], row1x);
 	_mm_storeu_ps(&m[8], row2);
 }
-
+/*
 inline void store4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m) 
 { 
 	_mm_storeu_ps(&m[0], row0); 
@@ -273,7 +316,7 @@ inline void store4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* 
 	_mm_storeu_ps(&m[8], row2);
 	_mm_storeu_ps(&m[12], row3);
 }
-
+*/
 inline float toFloat(__m128 s)
 {
 	return _mm_cvtss_f32(s);

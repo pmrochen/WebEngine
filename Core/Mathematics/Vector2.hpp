@@ -119,11 +119,10 @@ template<>
 
 	/*constexpr*/ Vector2() noexcept { xy = simd::setZero(); }
 	/*constexpr*/ explicit Vector2(const float scalar) noexcept { xy = simd::set4(scalar); }
-	/*constexpr*/ Vector2(const float x, const float y) noexcept { xy = simd::set(x, y, y, y); }
+	/*constexpr*/ Vector2(const float x, const float y) noexcept { xy = simd::set4(x, y, y, y); }
 	//explicit Vector2(const IntVector2<float>& v) noexcept; // #TODO
-	explicit Vector2(const Axis axis) noexcept { xy = simd::set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
-		(axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f); }
-	explicit Vector2(const float* const v) noexcept { xy = simd::load2Broadcast(v)/*simd::set(v[0], v[1], v[1], v[1])*/; }
+	explicit Vector2(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f); }
+	explicit Vector2(const float* const v) noexcept { set(v[0], v[1]); }
 
 	explicit Vector2(const simd::Float4 v) noexcept : xy(v) {}
 	operator simd::Float4() const noexcept { return xy; }
@@ -169,7 +168,7 @@ template<>
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin2(xy)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax2(xy)); }
 	Vector2& zero() noexcept { xy = simd::setZero(); return *this; } // setZero()
-	Vector2& set(const float x, const float y) noexcept { xy = simd::set(x, y, y, y); return *this; }
+	Vector2& set(const float x, const float y) noexcept { xy = simd::set4(x, y, y, y); return *this; }
 	Vector2& minimumOf(Arg v1, Arg v2) noexcept { xy = simd::min4(v1, v2); return *this; }
 	Vector2& maximumOf(Arg v1, Arg v2) noexcept { xy = simd::max4(v1, v2); return *this; }
 	Vector2& negate() noexcept { xy = simd::neg4(xy); return *this; }
