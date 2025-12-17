@@ -39,11 +39,11 @@ struct Vector4
 	constexpr Vector4() noexcept : x(), y(), z(), w() {}
 	constexpr explicit Vector4(const T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
 	constexpr Vector4(const T x, const T y, const T z, const T w) noexcept : x(x), y(y), z(z), w(w) {}
-	constexpr Vector4(Vector2::Arg v) noexcept : x(v.x), y(v.y), z(), w(T(1)) {}
-	constexpr Vector4(Vector2::Arg v, const T z, const T w) noexcept : x(v.x), y(v.y), z(z), w(w) {}
-	constexpr Vector4(Vector2::Arg xy, Vector2::Arg zw) noexcept : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
-	constexpr Vector4(Vector3::Arg v) noexcept : x(v.x), y(v.y), z(v.z), w(T(1)) {}
-	constexpr Vector4(Vector3::Arg v, const T w) noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
+	constexpr Vector4(Vector2<T>::Arg v) noexcept : x(v.x), y(v.y), z(), w(T(1)) {}
+	constexpr Vector4(Vector2<T>::Arg v, const T z, const T w) noexcept : x(v.x), y(v.y), z(z), w(w) {}
+	constexpr Vector4(Vector2<T>::Arg xy, Vector2<T>::Arg zw) noexcept : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
+	constexpr Vector4(Vector3<T>::Arg v) noexcept : x(v.x), y(v.y), z(v.z), w(T(1)) {}
+	constexpr Vector4(Vector3<T>::Arg v, const T w) noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
 	//explicit Vector4(const IntVector4<T>& v) noexcept; // #TODO
 	explicit Vector4(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)),
 		z((axis == Axis::Z) ? T(1) : T(0)), w((axis == Axis::W) ? T(1) : T(0)) {}
@@ -73,10 +73,10 @@ struct Vector4
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
-	//const Vector2& getXY() const noexcept { return *(const Vector2*)this; } // #TODO
-	//void setXY(const Vector2& v) noexcept { x = v.x; y = v.y; }
-	//const Vector3& getXYZ() const noexcept { return *(const Vector3*)this; }
-	//void setXYZ(const Vector3& v) noexcept { x = v.x; y = v.y; z = v.z; }
+	const Vector2<T>& getXY() const noexcept { return *reinterpret_cast<const Vector2*>(this); }
+	void setXY(Vector2<T>::Arg v) noexcept { x = v.x; y = v.y; }
+	const Vector3<T>& getXYZ() const noexcept { return *reinterpret_cast<const Vector3*>(this); }
+	void setXYZ(Vector3<T>::Arg v) noexcept { x = v.x; y = v.y; z = v.z; }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()) && (w == T()); }
 	bool isApproxZero() const noexcept { return (std::fabs(x) < Constants<T>::TOLERANCE) &&
 		(std::fabs(y) < Constants<T>::TOLERANCE) && (std::fabs(z) < Constants<T>::TOLERANCE) && (std::fabs(w) < Constants<T>::TOLERANCE); }
@@ -134,11 +134,11 @@ template<>
 	/*constexpr*/ Vector4() noexcept { xyzw = simd::setZero(); }
 	/*constexpr*/ explicit Vector4(const float scalar) noexcept { xyzw = simd::set4(scalar); }
 	/*constexpr*/ Vector4(const float x, const float y, const float z, const float w) noexcept { xyzw = simd::set4(x, y, z, w); }
-	/*constexpr*/ Vector4(Vector2::Arg v) noexcept; // #TODO
-	/*constexpr*/ Vector4(Vector2::Arg v, const float z, const float w) noexcept { xyzw = simd::set4(v, simd::set2(z, w)); }
-	/*constexpr*/ Vector4(Vector2::Arg xy, Vector2::Arg zw) noexcept { xyzw = simd::set4(xy, zw); }
-	/*constexpr*/ Vector4(Vector3::Arg v) noexcept; // #TODO
-	/*constexpr*/ Vector4(Vector3::Arg v, const float w) noexcept; // #TODO
+	/*constexpr*/ Vector4(Vector2<float>::Arg v) noexcept { xyzw = simd::combine2(v, UNIT_W); }
+	/*constexpr*/ Vector4(Vector2<float>::Arg v, const float z, const float w) noexcept { xyzw = simd::set4(v, simd::set2(z, w)); }
+	/*constexpr*/ Vector4(Vector2<float>::Arg xy, Vector2<float>::Arg zw) noexcept { xyzw = simd::set4(xy, zw); }
+	/*constexpr*/ Vector4(Vector3<float>::Arg v) noexcept { xyzw = simd::combine3(v, UNIT_W); }
+	/*constexpr*/ Vector4(Vector3<float>::Arg v, const float w) noexcept { xyzw = simd::set4(v, w); }
 	//explicit Vector4(const IntVector4<float>& v) noexcept; // #TODO
 	explicit Vector4(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
 		(axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::W) ? 1.f : 0.f); }
@@ -166,22 +166,20 @@ template<>
 	////friend Vector4 operator*(const Matrix4<T>& m, Arg v) noexcept; // valid for column vectors only
 	bool operator==(Arg v) const noexcept { return simd::all4(simd::equal4(xyzw, v)); }
 	bool operator!=(Arg v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, Vector4& v) { float x, y, z, w; s >> x >> std::skipws >> y >> std::skipws >> z >> std::skipws >> w;
-		v.set(x, y, z); return s; }
+	friend std::istream& operator>>(std::istream& s, Vector4& v) { float x, y, z, w; s >> x >> std::skipws >> y >> std::skipws >> z >> std::skipws >> w; v.set(x, y, z, w); return s; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector4& v) { return s << v.x << ' ' << v.y << ' ' << v.z << ' ' << v.w; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
 
-	//const Vector2& getXY() const noexcept { return *(const Vector2*)this; } // #TODO
-	//void setXY(const Vector2& v) noexcept { x = v.x; y = v.y; }
-	//const Vector3& getXYZ() const noexcept { return *(const Vector3*)this; }
-	//void setXYZ(const Vector3& v) noexcept { x = v.x; y = v.y; z = v.z; }
-	bool isZero() const noexcept { return simd::all4(simd::equal4(xyzw, ZERO)); }
+	Vector2<float> getXY() const noexcept { return Vector2<float>(simd::swizzle(xyzw, simd::XYYY)); }
+	void setXY(Vector2<float>::Arg v) noexcept { xyzw = simd::combine2(v, xyzw); }
+	Vector3<float> getXYZ() const noexcept { return Vector3<float>(simd::swizzle(xyzw, simd::XYZZ)); }
+	void setXYZ(Vector3<float>::Arg v) noexcept { xyzw = simd::combine3(v, xyzw); }
+	bool isZero() const noexcept { return simd::all4(simd::equal4(xyzw, simd::setZero())); }
 	bool isApproxZero() const noexcept { simd::all4(simd::lessThan4(simd::abs4(xyzw), TOLERANCE)); }
 	bool isApproxEqualTo(Arg v) const noexcept { simd::all4(simd::lessThan4(simd::abs4(simd::sub4(xyzw, v)), TOLERANCE)); }
-	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all4(simd::lessThan4(simd::abs4(simd::sub4(xyzw, v)), 
-		simd::set4(tolerance))); }
-	bool isFinite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z) && std::isfinite(w); } // #TODO SSE
+	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all4(simd::lessThan4(simd::abs4(simd::sub4(xyzw, v)), simd::set4(tolerance))); }
+	bool isFinite() const { return simd::all4(simd::isFinite4(xyzw)); }
 	float getMagnitude() const noexcept { return simd::toFloat(simd::sqrt1(simd::dot4(xyzw, xyzw))); }
 	float getMagnitudeSquared() const noexcept { return simd::toFloat(simd::dot4(xyzw, xyzw)); }
 	void setMagnitude(const float magnitude) noexcept { float m = getMagnitude(); if (m > 0.f) *this *= magnitude/m; }

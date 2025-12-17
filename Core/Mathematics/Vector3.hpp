@@ -38,8 +38,8 @@ struct Vector3
 	constexpr Vector3() noexcept : x(), y(), z() {}
 	constexpr explicit Vector3(const T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
 	constexpr Vector3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
-	constexpr Vector3(Vector2::Arg v) noexcept : x(v.x), y(v.y), z() {}
-	constexpr Vector3(Vector2::Arg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
+	constexpr Vector3(Vector2<T>::Arg v) noexcept : x(v.x), y(v.y), z() {}
+	constexpr Vector3(Vector2<T>::Arg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
 	//explicit Vector3(const IntVector3<T>& v) noexcept; // #TODO
 	explicit Vector3(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)),
 		z((axis == Axis::Z) ? T(1) : T(0)) {}
@@ -69,10 +69,10 @@ struct Vector3
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
 
-	//const Vector2& getXY() const noexcept { return *(const Vector2*)this; } // #TODO
-	//void setXY(Vector2::Arg v) noexcept { x = v.x; y = v.y; }
-	//Vector2 getXZ() const noexcept { return Vector2(x, z); }
-	//Vector2 getZY() const noexcept { return Vector2(z, y); }
+	const Vector2<T>& getXY() const noexcept { return *reinterpret_cast<const Vector2*>(this); }
+	void setXY(Vector2<T>::Arg v) noexcept { x = v.x; y = v.y; }
+	Vector2 getXZ() const noexcept { return Vector2(x, z); }
+	Vector2 getZY() const noexcept { return Vector2(z, y); }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()); }
 	bool isApproxZero() const noexcept { return (std::fabs(x) < Constants<T>::TOLERANCE) &&
 		(std::fabs(y) < Constants<T>::TOLERANCE) && (std::fabs(z) < Constants<T>::TOLERANCE); }
@@ -133,11 +133,10 @@ template<>
 	/*constexpr*/ Vector3() noexcept { xyz = simd::setZero(); }
 	/*constexpr*/ explicit Vector3(const float scalar) noexcept { xyz = simd::set4(scalar); }
 	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = simd::set4(x, y, z, z); }
-	/*constexpr*/ Vector3(Vector2::Arg v) noexcept { xyz = simd::set2(v); }
-	/*constexpr*/ Vector3(Vector2::Arg v, const float z) noexcept { xyz = simd::set4(v, simd::set2(z)); }
+	/*constexpr*/ Vector3(Vector2<float>::Arg v) noexcept { xyz = simd::set2(v); }
+	/*constexpr*/ Vector3(Vector2<float>::Arg v, const float z) noexcept { xyz = simd::set4(v, simd::set2(z)); }
 	//explicit Vector3(const IntVector3<float>& v) noexcept; // #TODO
-	explicit Vector3(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
-		(axis == Axis::Z) ? 1.f : 0.f); }
+	explicit Vector3(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
 	explicit Vector3(const float* const v) noexcept { set(v[0], v[1], v[2]); }
 
 	explicit Vector3(const simd::Float4 v) noexcept : xyz(v) {}
@@ -162,22 +161,20 @@ template<>
 	////friend Vector3 operator*(const Matrix3<T>& m, Arg v) noexcept; // valid for column vectors only
 	bool operator==(Arg v) const noexcept { return simd::all3(simd::equal4(xyz, v)); }
 	bool operator!=(Arg v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, Vector3& v) { float x, y, z; s >> x >> std::skipws >> y >> std::skipws >> z;
-		v.set(x, y, z); return s; }
+	friend std::istream& operator>>(std::istream& s, Vector3& v) { float x, y, z; s >> x >> std::skipws >> y >> std::skipws >> z; v.set(x, y, z); return s; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector3& v) { return s << v.x << ' ' << v.y << ' ' << v.z; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use simd::set(x, y, z, z)
 
-	//const Vector2& getXY() const noexcept { return *(const Vector2*)this; } // #TODO
-	//void setXY(Vector2::Arg v) noexcept { x = v.x; y = v.y; }
-	//Vector2 getXZ() const noexcept { return Vector2(x, z); }
-	//Vector2 getZY() const noexcept { return Vector2(z, y); }
-	bool isZero() const noexcept { return simd::all3(simd::equal4(xyz, ZERO)); }
+	Vector2<float> getXY() const noexcept { return Vector2<float>(simd::swizzle(xyz, simd::XYYY)); }
+	void setXY(Vector2<float>::Arg v) noexcept { xyz = simd::combine2(v, xyz); }
+	Vector2<float> getXZ() const noexcept { return Vector2<float>(simd::swizzle(xyz, simd::XZZZ)); }
+	Vector2<float> getZY() const noexcept { return Vector2<float>(simd::swizzle(xyz, simd::ZYYY)); }
+	bool isZero() const noexcept { return simd::all3(simd::equal4(xyz, simd::setZero())); }
 	bool isApproxZero() const noexcept { simd::all3(simd::lessThan4(simd::abs4(xyz), TOLERANCE)); }
 	bool isApproxEqualTo(Arg v) const noexcept { simd::all3(simd::lessThan4(simd::abs4(simd::sub4(xyz, v)), TOLERANCE)); }
-	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all3(simd::lessThan4(simd::abs4(simd::sub4(xyz, v)), 
-		simd::set4(tolerance))); }
-	bool isFinite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z); } // #TODO SSE
+	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all3(simd::lessThan4(simd::abs4(simd::sub4(xyz, v)), simd::set4(tolerance))); }
+	bool isFinite() const { return simd::all3(simd::isFinite4(xyz)); }
 	float getMagnitude() const noexcept { return simd::toFloat(simd::sqrt1(simd::dot3(xyz, xyz))); }
 	float getMagnitudeSquared() const noexcept { return simd::toFloat(simd::dot3(xyz, xyz)); }
 	void setMagnitude(const float magnitude) noexcept { float m = getMagnitude(); if (m > 0.f) *this *= magnitude/m; }

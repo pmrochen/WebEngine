@@ -66,12 +66,9 @@ struct Vector2
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
 
 	bool isZero() const noexcept { return (x == T()) && (y == T()); }
-	bool isApproxZero() const noexcept { return (std::fabs(x) < Constants<T>::TOLERANCE) &&
-		(std::fabs(y) < Constants<T>::TOLERANCE); }
-	bool isApproxEqualTo(Arg v) const noexcept { return (std::fabs(v.x - x) < Constants<T>::TOLERANCE) && 
-		(std::fabs(v.y - y) < Constants<T>::TOLERANCE); }
-	bool isApproxEqualTo(Arg v, const T tolerance) const noexcept { return (std::fabs(v.x - x) < tolerance) &&
-		(std::fabs(v.y - y) < tolerance); }
+	bool isApproxZero() const noexcept { return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE); }
+	bool isApproxEqualTo(Arg v) const noexcept { return (std::fabs(v.x - x) < Constants<T>::TOLERANCE) && (std::fabs(v.y - y) < Constants<T>::TOLERANCE); }
+	bool isApproxEqualTo(Arg v, const T tolerance) const noexcept { return (std::fabs(v.x - x) < tolerance) && (std::fabs(v.y - y) < tolerance); }
 	bool isFinite() const { return std::isfinite(x) && std::isfinite(y); }
 	T getMagnitude() const { return std::sqrt(x*x + y*y); }
 	T getMagnitudeSquared() const noexcept { return (x*x + y*y); }
@@ -84,17 +81,15 @@ struct Vector2
 	T getMaxComponent() const noexcept { return std::max(x, y); }
 	Vector2& zero() noexcept { x = T(); y = T(); return *this; } // setZero()
 	Vector2& set(const T x, const T y) noexcept { this->x = x; this->y = y; return *this; }
-	Vector2& minimumOf(Arg v1, Arg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y);
-		return *this; }
-	Vector2& maximumOf(Arg v1, Arg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y);
-		return *this; }
+	Vector2& minimumOf(Arg v1, Arg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y); return *this; }
+	Vector2& maximumOf(Arg v1, Arg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y); return *this; }
 	Vector2& negate() noexcept { x = -x; y = -y; return *this; }
 #if MATHEMATICS_FAST_NORMALIZE
 	Vector2& normalize() noexcept { T m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<T>::max()) *this *= m; return *this; }
 #else
 	Vector2& normalize() { T m = getMagnitude(); if (m > T(0)) *this /= m; return *this; }
 #endif
-	//Vector2& rotate(const T angle); // #TODO
+	//Vector2& rotate(const T angle); //{ if (angle != T(0)) *this = rotate(*this, angle); return *this; }
 	Vector2& scale(Arg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	//Vector2& transform(const Matrix2<T>& m); // #TODO
 	static const Vector2& getZero() noexcept { return ZERO; }
@@ -107,6 +102,21 @@ struct Vector2
 
 	float x, y;
 };
+
+//template<typename T>
+//inline Vector2<T>& Vector2<T>::rotate(const T angle)
+//{
+//	if (angle != T(0))
+//	{
+//		T sinAngle, cosAngle;
+//		sinCos(angle, sinAngle, cosAngle);
+//		T vx = x, vy = y;
+//		x = vx*cosAngle - vy*sinAngle;
+//		y = vy*cosAngle + vx*sinAngle;
+//	}
+//
+//	return *this;
+//}
 
 #if SIMD_HAS_FLOAT4
 template<>
@@ -146,18 +156,16 @@ template<>
 	////friend Vector2 operator*(const Matrix2<T>& m, Arg v) noexcept; // valid for column vectors only
 	bool operator==(Arg v) const noexcept { return simd::all2(simd::equal4(xy, v)); }
 	bool operator!=(Arg v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, Vector2& v) { float x, y; s >> x >> std::skipws >> y;
-		v.set(x, y); return s; }
+	friend std::istream& operator>>(std::istream& s, Vector2& v) { float x, y; s >> x >> std::skipws >> y; v.set(x, y); return s; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; } // #FIXME use simd::set(x, y, y, y)
 
-	bool isZero() const noexcept { return simd::all2(simd::equal4(xy, ZERO)); }
+	bool isZero() const noexcept { return simd::all2(simd::equal4(xy, simd::setZero())); }
 	bool isApproxZero() const noexcept { simd::all2(simd::lessThan4(simd::abs4(xy), TOLERANCE)); }
 	bool isApproxEqualTo(Arg v) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), TOLERANCE)); }
-	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), 
-		simd::set4(tolerance))); }
-	bool isFinite() const { return std::isfinite(x) && std::isfinite(y); } // #TODO SSE
+	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), simd::set4(tolerance))); }
+	bool isFinite() const { return simd::all2(simd::isFinite4(xy)); }
 	float getMagnitude() const noexcept { return simd::toFloat(simd::sqrt1(simd::dot2(xy, xy))); }
 	float getMagnitudeSquared() const noexcept { return simd::toFloat(simd::dot2(xy, xy)); }
 	void setMagnitude(const float magnitude) noexcept { float m = getMagnitude(); if (m > 0.f) *this *= magnitude/m; }
@@ -177,7 +185,7 @@ template<>
 #else
 	Vector2& normalize() noexcept { float m = getMagnitude(); if (m > 0.f) *this /= m; return *this; }
 #endif
-	//Vector2& rotate(const float angle); // #TODO
+	//Vector2& rotate(const float angle); //{ if (angle != 0.f) *this = rotate(*this, angle); return *this; }
 	Vector2& scale(Arg v) noexcept { xy = simd::mul4(xy, v); return *this; }
 	//Vector2& transform(const Matrix2<float>& m); // #TODO
 	static const Vector2& getZero() noexcept { return ZERO; }
