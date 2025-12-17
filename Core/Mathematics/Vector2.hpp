@@ -172,7 +172,7 @@ template<>
 	float getLength() const noexcept { return getMagnitude(); }
 	float getLengthSquared() const noexcept { return getMagnitudeSquared(); }
 	void setLength(const float length) noexcept { setMagnitude(length); }
-	Axis getMajorAxis() const noexcept { (Axis)simd::toIndex(simd::equal4(xy, simd::hMax2(xy))); }
+	Axis getMajorAxis() const noexcept { (Axis)simd::asIndex(simd::equal4(xy, simd::hMax2(xy))); }
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin2(xy)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax2(xy)); }
 	Vector2& zero() noexcept { xy = simd::setZero(); return *this; } // setZero()

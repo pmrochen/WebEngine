@@ -131,6 +131,17 @@ constexpr int XYZZ = _MM_SHUFFLE(2, 2, 1, 0);
 //constexpr int XYWW = _MM_SHUFFLE(3, 3, 1, 0);
 constexpr int ZYYY = _MM_SHUFFLE(1, 1, 1, 2);
 
+/*template<int I0, int I1, int I2, int I3>
+static inline __m128i constant4i() 
+{
+    static const union 
+	{
+        int i[4];
+        __m128i xmm;
+    } u = { { I0, I1, I2, I3 } };
+    return u.xmm;
+}*/
+
 inline __m128 setZero()
 {
 	return _mm_setzero_ps();
@@ -152,12 +163,12 @@ inline __m128 set2(float x, float y)
 	return _mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)); 
 }
 
-inline __m128 set2(__m128 xy)
+inline __m128 set2(__m128 xy) // cutoff2
 {
 	return _mm_and_ps(xy, detail::MASK2);
 }
 
-inline __m128 combine2/*set2*/(__m128 xy, __m128 remainder)
+inline __m128 combine2/*insert2*/(__m128 xy, __m128 remainder) // #TODO insert2
 {
 	return _mm_shuffle_ps(xy, remainder, _MM_SHUFFLE(3, 2, 1, 0));
 }
@@ -173,7 +184,7 @@ inline __m128 set3(float x, float y, float z)
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)), _mm_set_ss(z));
 }
 
-inline __m128 set3(__m128 xyz)
+inline __m128 set3(__m128 xyz) // cutoff3
 {
 	return _mm_and_ps(xyz, detail::MASK3);
 }
@@ -183,14 +194,14 @@ inline __m128 set3(__m128 xyz)
 //	return _mm_movelh_ps(_mm_and_ps(xy, detail::MASK2), _mm_set_ss(z));
 //}
 
-inline __m128 combine3/*set3*/(__m128 xyz, __m128 remainder)
+inline __m128 combine3/*insert3*/(__m128 xyz, __m128 remainder) // #TODO Use select
 {
 	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_andnot_ps(detail::MASK3, remainder));
 }
 
 inline __m128 set4(float s)
 {
-	return _mm_set_ps1(s);
+	return _mm_set1_ps(s);
 }
 
 inline __m128 set4(float x, float y, float z, float w)
@@ -203,7 +214,7 @@ inline __m128 set4(__m128 xy, __m128 zw)
 	return _mm_movelh_ps(xy, zw); 
 }
 
-inline __m128 set4(__m128 xyz, float w)
+inline __m128 set4(__m128 xyz, float w) // #TODO Use insert instead
 {
 	const __m128 t = _mm_set_ss(w);
 	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_shuffle_ps(t, t, _MM_SHUFFLE(0, 1, 1, 1)));
@@ -360,14 +371,45 @@ inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m
 //	_mm_storeu_ps(&m[12], row3);
 //}
 
-inline float toFloat(__m128 s)
+inline float toFloat/*extract*/(__m128 s)
 {
 	return _mm_cvtss_f32(s);
 }
 
-inline __m128 broadcast(__m128 v, int index)
+template<int I>
+inline float extract(__m128 v)
 {
-	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(index, index, index, index));
+	return _mm_cvtss_f32((I == 0) ? v : _mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
+}
+
+template<int I>
+inline __m128 insert(float s, __m128 v)
+{
+#if (SIMD_SSE >= 4) // SSE4.1
+    return _mm_insert_ps(v, _mm_set_ss(s), I << 4);
+#else
+	static const int32_t mask[] = { 0, 0, 0, -1, 0, 0, 0 };
+	const __m128 t = _mm_set_ss(s);
+    return _mm_or_ps(_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))), 
+		_mm_andnot_ps(_mm_loadu_ps((const float*)(mask + 3 - (I & 3))), v));
+#endif
+}
+
+template<int I>
+inline __m128 broadcast(__m128 v)
+{
+	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I));
+}
+
+//inline __m128 broadcast(__m128 v, int index)
+//{
+//	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(index, index, index, index));
+//}
+
+template<int M>
+inline __m128 swizzle(__m128 v)
+{
+	return _mm_shuffle_ps(v, v, M);
 }
 
 inline __m128 swizzle(__m128 v, int mask)
@@ -405,7 +447,7 @@ inline bool any4(__m128 b)
 	return (_mm_movemask_ps(b) /*& 0xF*/);
 }
 
-inline int toIndex(__m128 b)
+inline int asIndex(__m128 b)
 {
 	return detail::ctz(_mm_movemask_ps(b));
 }
@@ -465,7 +507,7 @@ inline __m128 max4(__m128 v1, __m128 v2)
 
 inline __m128 neg4(__m128 v)
 {
-	return _mm_xor_ps(v, detail::SIGN4);
+	return _mm_xor_ps(v, detail::SIGN4/*_mm_castsi128_ps(_mm_set1_epi32(0x80000000))*/);
 }
 
 inline __m128 abs4(__m128 v)
@@ -627,7 +669,15 @@ inline __m128 floor4(__m128 v)
 
 inline __m128 isFinite4(__m128 v)
 {
-	return detail::MASK4; // #TODO
+    const __m128i t = mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
+	const __m128i m = _mm_set1_epi32(0xFF000000);
+	return _mm_castsi128_ps(_mm_xor_si128(_mm_cmpeq_epi32(_mm_and_si128(t, m), m), _mm_set1_epi32(-1)));
+}
+
+inline __m128 isInf4(__m128 v)
+{
+    const __m128i t = mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
+    return _mm_castsi128_ps(_mm_cmpeq_epi32(t, _mm_set1_epi32(0xFF000000)));
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
