@@ -19,25 +19,24 @@
 
 namespace core {
 namespace mathematics {
-
 namespace templates {
+
+template<typename T>
+struct IntVector2;
 
 template<typename T>
 struct Vector2
 {
 	using Real = T;
-//#if SIMD_HAS_FLOAT4
-//	using Arg = const Vector2;
-//#else
-	using Arg = const Vector2&;
-//#endif
+	using ConstArg = const Vector2&;
+	using ConstResult = const Vector2&;
 
 	static constexpr int NUM_COMPONENTS = 2;
 
 	constexpr Vector2() noexcept : x(), y() {}
 	constexpr explicit Vector2(const T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr Vector2(const T x, const T y) noexcept : x(x), y(y) {}
-	//explicit Vector2(const IntVector2<T>& v) noexcept; // #TODO
+	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
 	explicit Vector2(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)) {}
 	explicit Vector2(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; /*} else zero();*/ }
 	/*explicit*/ operator T* () noexcept { return &x; }
@@ -45,21 +44,21 @@ struct Vector2
 
 	Vector2 operator+() const noexcept { return *this; }
 	Vector2 operator-() const noexcept { return Vector2(-x, -y); }
-	Vector2& operator+=(Arg v) noexcept { x += v.x; y += v.y; return *this; }
-	Vector2& operator-=(Arg v) noexcept { x -= v.x; y -= v.y; return *this; }
+	Vector2& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; return *this; }
+	Vector2& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; return *this; }
 	Vector2& operator*=(const T f) noexcept { x *= f; y *= f; return *this; }
 	Vector2& operator/=(const T f) noexcept { T s = T(1)/f; x *= s; y *= s; return *this; }
 	//Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
-	friend Vector2 operator+(Arg v1, Arg v2) noexcept { return Vector2(v1.x + v2.x, v1.y + v2.y); }
-	friend Vector2 operator-(Arg v1, Arg v2) noexcept { return Vector2(v1.x - v2.x, v1.y - v2.y); }
-	friend Vector2 operator*(const T f, Arg v) noexcept { return Vector2(f*v.x, f*v.y); }
-	friend Vector2 operator*(Arg v, const T f) noexcept { return Vector2(v.x*f, v.y*f); }
-	friend Vector2 operator/(const T f, Arg v) noexcept { return Vector2(f/v.x, f/v.y); }
-	friend Vector2 operator/(Arg v, const T f) noexcept { T s = T(1)/f; return Vector2(v.x*s, v.y*s); }
-	//friend Vector2 operator*(Arg v, const Matrix2<T>& m) noexcept; // #TODO
-	////friend Vector2 operator*(const Matrix2<T>& m, Arg v) noexcept; // valid for column vectors only
-	bool operator==(Arg v) const noexcept { return (x == v.x) && (y == v.y); }
-	bool operator!=(Arg v) const noexcept { return !(*this == v); }
+	friend Vector2 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x + v2.x, v1.y + v2.y); }
+	friend Vector2 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x - v2.x, v1.y - v2.y); }
+	friend Vector2 operator*(const T f, ConstArg v) noexcept { return Vector2(f*v.x, f*v.y); }
+	friend Vector2 operator*(ConstArg v, const T f) noexcept { return Vector2(v.x*f, v.y*f); }
+	friend Vector2 operator/(const T f, ConstArg v) noexcept { return Vector2(f/v.x, f/v.y); }
+	friend Vector2 operator/(ConstArg v, const T f) noexcept { T s = T(1)/f; return Vector2(v.x*s, v.y*s); }
+	//friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
+	////friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y); }
+	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector2& v) { return s >> v.x >> std::skipws >> v.y; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 	
@@ -67,8 +66,16 @@ struct Vector2
 
 	bool isZero() const noexcept { return (x == T()) && (y == T()); }
 	bool isApproxZero() const noexcept { return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE); }
-	bool isApproxEqualTo(Arg v) const noexcept { return (std::fabs(v.x - x) < Constants<T>::TOLERANCE) && (std::fabs(v.y - y) < Constants<T>::TOLERANCE); }
-	bool isApproxEqualTo(Arg v, const T tolerance) const noexcept { return (std::fabs(v.x - x) < tolerance) && (std::fabs(v.y - y) < tolerance); }
+	bool isApproxEqual(ConstArg v) const noexcept { return (std::fabs(v.x - x) < Constants<T>::TOLERANCE) && (std::fabs(v.y - y) < Constants<T>::TOLERANCE); }
+	bool isApproxEqual(ConstArg v, const T tolerance) const noexcept { return (std::fabs(v.x - x) < tolerance) && (std::fabs(v.y - y) < tolerance); }
+	bool allLessThan(ConstArg v) const noexcept { return (x < v.x) && (y < v.y); }
+	bool allLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) && (y <= v.y); }
+	bool allGreaterThan(ConstArg v) const noexcept { return (x > v.x) && (y > v.y); }
+	bool allGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) && (y >= v.y); }
+	bool anyLessThan(ConstArg v) const noexcept { return (x < v.x) || (y < v.y); }
+	bool anyLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) || (y <= v.y); }
+	bool anyGreaterThan(ConstArg v) const noexcept { return (x > v.x) || (y > v.y); }
+	bool anyGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) || (y >= v.y); }
 	bool isFinite() const { return std::isfinite(x) && std::isfinite(y); }
 	T getMagnitude() const { return std::sqrt(x*x + y*y); }
 	T getMagnitudeSquared() const noexcept { return (x*x + y*y); }
@@ -79,18 +86,18 @@ struct Vector2
 	Axis getMajorAxis() const noexcept { return (std::fabs(y) > std::fabs(x)) ? Axis::Y : Axis::X; }
 	T getMinComponent() const noexcept { return std::min(x, y); }
 	T getMaxComponent() const noexcept { return std::max(x, y); }
-	Vector2& zero() noexcept { x = T(); y = T(); return *this; } // setZero()
+	Vector2& setZero() noexcept { x = T(); y = T(); return *this; }
 	Vector2& set(const T x, const T y) noexcept { this->x = x; this->y = y; return *this; }
-	Vector2& minimumOf(Arg v1, Arg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y); return *this; }
-	Vector2& maximumOf(Arg v1, Arg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y); return *this; }
+	Vector2& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y); return *this; }
+	Vector2& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y); return *this; }
 	Vector2& negate() noexcept { x = -x; y = -y; return *this; }
 #if MATHEMATICS_FAST_NORMALIZE
 	Vector2& normalize() noexcept { T m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<T>::max()) *this *= m; return *this; }
 #else
 	Vector2& normalize() { T m = getMagnitude(); if (m > T(0)) *this /= m; return *this; }
 #endif
-	//Vector2& rotate(const T angle); //{ if (angle != T(0)) *this = rotate(*this, angle); return *this; }
-	Vector2& scale(Arg v) noexcept { x *= v.x; y *= v.y; return *this; }
+	Vector2& rotate(const T angle); //{ if (angle != T(0)) *this = rotate(*this, angle); return *this; }
+	Vector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	//Vector2& transform(const Matrix2<T>& m); // #TODO
 	static const Vector2& getZero() noexcept { return ZERO; }
 	static const Vector2& getUnitX() noexcept { return UNIT_X; }
@@ -99,38 +106,50 @@ struct Vector2
 	static const Vector2 ZERO;
 	static const Vector2 UNIT_X;
 	static const Vector2 UNIT_Y;
+	static const Vector2 ONE;
+	static const Vector2 TOLERANCE;
+	static const Vector2 INF;
+	static const Vector2 MINUS_INF;
 
 	T x, y;
 };
 
-//template<typename T>
-//inline Vector2<T>& Vector2<T>::rotate(const T angle)
-//{
-//	if (angle != T(0))
-//	{
-//		T sinAngle, cosAngle;
-//		sinCos(angle, sinAngle, cosAngle);
-//		T vx = x, vy = y;
-//		x = vx*cosAngle - vy*sinAngle;
-//		y = vy*cosAngle + vx*sinAngle;
-//	}
-//
-//	return *this;
-//}
+template<typename T>
+inline Vector2<T>& Vector2<T>::rotate(const T angle)
+{
+	if (angle != T(0))
+	{
+		T sinAngle, cosAngle;
+		sinCos(angle, sinAngle, cosAngle);
+		set(x*cosAngle - y*sinAngle, y*cosAngle + x*sinAngle);
+	}
+
+	return *this;
+}
+
+template<typename T> const Vector2<T> Vector2<T>::ZERO{};
+template<typename T> const Vector2<T> Vector2<T>::UNIT_X{ T(1), T(0) };
+template<typename T> const Vector2<T> Vector2<T>::UNIT_Y{ T(0), T(1) };
+template<typename T> const Vector2<T> Vector2<T>::ONE{ T(1), T(1) };
+template<typename T> const Vector2<T> Vector2<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
+template<typename T> const Vector2<T> Vector2<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
+template<typename T> const Vector2<T> Vector2<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
 
 #if SIMD_HAS_FLOAT4
+
 template<>
 /*_MM_ALIGN16*/ struct Vector2<float>
 {
 	using Real = float;
-	using Arg = const Vector2;
+	using ConstArg = const Vector2;
+	using ConstResult = const Vector2;
 
 	static constexpr int NUM_COMPONENTS = 2;
 
 	/*constexpr*/ Vector2() noexcept { xy = simd::setZero(); }
 	/*constexpr*/ explicit Vector2(const float scalar) noexcept { xy = simd::set4(scalar); }
 	/*constexpr*/ Vector2(const float x, const float y) noexcept { xy = simd::set4(x, y, y, y); }
-	//explicit Vector2(const IntVector2<float>& v) noexcept; // #TODO
+	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
 	explicit Vector2(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f); }
 	explicit Vector2(const float* const v) noexcept { set(v[0], v[1]); }
 
@@ -141,21 +160,21 @@ template<>
 
 	Vector2 operator+() const noexcept { return *this; }
 	Vector2 operator-() const noexcept { return Vector2(simd::neg4(xy)); }
-	Vector2& operator+=(Arg v) noexcept { xy = simd::add4(xy, v); return *this; }
-	Vector2& operator-=(Arg v) noexcept { xy = simd::sub4(xy, v); return *this; }
+	Vector2& operator+=(ConstArg v) noexcept { xy = simd::add4(xy, v); return *this; }
+	Vector2& operator-=(ConstArg v) noexcept { xy = simd::sub4(xy, v); return *this; }
 	Vector2& operator*=(const float f) noexcept { xy = simd::mul4(xy, simd::set4(f)); return *this; }
 	Vector2& operator/=(const float f) noexcept { xy = simd::mul4(xy, simd::set4(1.f/f)); return *this; }
 	//Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
-	friend Vector2 operator+(Arg v1, Arg v2) noexcept { return Vector2(simd::add4(v1, v2)); }
-	friend Vector2 operator-(Arg v1, Arg v2) noexcept { return Vector2(simd::sub4(v1, v2)); }
-	friend Vector2 operator*(const float f, Arg v) noexcept { return Vector2(simd::mul4(simd::set4(f), v)); }
-	friend Vector2 operator*(Arg v, const float f) noexcept { return Vector2(simd::mul4(v, simd::set4(f))); }
-	friend Vector2 operator/(const float f, Arg v) noexcept { return Vector2(simd::div4(simd::set4(f), v)); }
-	friend Vector2 operator/(Arg v, const float f) noexcept { return Vector2(simd::mul4(v, simd::set4(1.f/f))); }
-	//friend Vector2 operator*(Arg v, const Matrix2<T>& m) noexcept; // #TODO
-	////friend Vector2 operator*(const Matrix2<T>& m, Arg v) noexcept; // valid for column vectors only
-	bool operator==(Arg v) const noexcept { return simd::all2(simd::equal4(xy, v)); }
-	bool operator!=(Arg v) const noexcept { return !(*this == v); }
+	friend Vector2 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector2(simd::add4(v1, v2)); }
+	friend Vector2 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector2(simd::sub4(v1, v2)); }
+	friend Vector2 operator*(const float f, ConstArg v) noexcept { return Vector2(simd::mul4(simd::set4(f), v)); }
+	friend Vector2 operator*(ConstArg v, const float f) noexcept { return Vector2(simd::mul4(v, simd::set4(f))); }
+	friend Vector2 operator/(const float f, ConstArg v) noexcept { return Vector2(simd::div4(simd::set4(f), v)); }
+	friend Vector2 operator/(ConstArg v, const float f) noexcept { return Vector2(simd::mul4(v, simd::set4(1.f/f))); }
+	//friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
+	////friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	bool operator==(ConstArg v) const noexcept { return simd::all2(simd::equal4(xy, v)); }
+	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector2& v) { float x, y; s >> x >> std::skipws >> y; v.set(x, y); return s; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 
@@ -163,8 +182,16 @@ template<>
 
 	bool isZero() const noexcept { return simd::all2(simd::equal4(xy, simd::setZero())); }
 	bool isApproxZero() const noexcept { simd::all2(simd::lessThan4(simd::abs4(xy), TOLERANCE)); }
-	bool isApproxEqualTo(Arg v) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), TOLERANCE)); }
-	bool isApproxEqualTo(Arg v, const float tolerance) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), simd::set4(tolerance))); }
+	bool isApproxEqual(ConstArg v) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), TOLERANCE)); }
+	bool isApproxEqual(ConstArg v, const float tolerance) const noexcept { simd::all2(simd::lessThan4(simd::abs4(simd::sub4(xy, v)), simd::set4(tolerance))); }
+	bool allLessThan(ConstArg v) const noexcept { return simd::all2(simd::lessThan4(xy, v)); }
+	bool allLessThanEqual(ConstArg v) const noexcept { return simd::all2(simd::lessThanEqual4(xy, v)); }
+	bool allGreaterThan(ConstArg v) const noexcept { return simd::all2(simd::greaterThan4(xy, v)); }
+	bool allGreaterThanEqual(ConstArg v) const noexcept { return simd::all2(simd::greaterThanEqual4(xy, v)); }
+	bool anyLessThan(ConstArg v) const noexcept { return simd::any2(simd::lessThan4(xy, v)); }
+	bool anyLessThanEqual(ConstArg v) const noexcept { return simd::any2(simd::lessThanEqual4(xy, v)); }
+	bool anyGreaterThan(ConstArg v) const noexcept { return simd::any2(simd::greaterThan4(xy, v)); }
+	bool anyGreaterThanEqual(ConstArg v) const noexcept { return simd::any2(simd::greaterThanEqual4(xy, v)); }
 	bool isFinite() const { return simd::all2(simd::isFinite4(xy)); }
 	float getMagnitude() const noexcept { return simd::toFloat(simd::sqrt1(simd::dot2(xy, xy))); }
 	float getMagnitudeSquared() const noexcept { return simd::toFloat(simd::dot2(xy, xy)); }
@@ -175,18 +202,18 @@ template<>
 	Axis getMajorAxis() const noexcept { (Axis)simd::asIndex(simd::equal4(xy, simd::hMax2(xy))); }
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin2(xy)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax2(xy)); }
-	Vector2& zero() noexcept { xy = simd::setZero(); return *this; } // setZero()
+	Vector2& setZero() noexcept { xy = simd::setZero(); return *this; }
 	Vector2& set(const float x, const float y) noexcept { xy = simd::set4(x, y, y, y); return *this; }
-	Vector2& minimumOf(Arg v1, Arg v2) noexcept { xy = simd::min4(v1, v2); return *this; }
-	Vector2& maximumOf(Arg v1, Arg v2) noexcept { xy = simd::max4(v1, v2); return *this; }
+	Vector2& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { xy = simd::min4(v1, v2); return *this; }
+	Vector2& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { xy = simd::max4(v1, v2); return *this; }
 	Vector2& negate() noexcept { xy = simd::neg4(xy); return *this; }
 #if MATHEMATICS_FAST_NORMALIZE
 	Vector2& normalize() noexcept { float m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<float>::max()) *this *= m; return *this; }
 #else
 	Vector2& normalize() noexcept { float m = getMagnitude(); if (m > 0.f) *this /= m; return *this; }
 #endif
-	//Vector2& rotate(const float angle); //{ if (angle != 0.f) *this = rotate(*this, angle); return *this; }
-	Vector2& scale(Arg v) noexcept { xy = simd::mul4(xy, v); return *this; }
+	Vector2& rotate(const float angle); //{ if (angle != 0.f) *this = rotate(*this, angle); return *this; }
+	Vector2& scale(ConstArg v) noexcept { xy = simd::mul4(xy, v); return *this; }
 	//Vector2& transform(const Matrix2<float>& m); // #TODO
 	static const Vector2& getZero() noexcept { return ZERO; }
 	static const Vector2& getUnitX() noexcept { return UNIT_X; }
@@ -195,7 +222,10 @@ template<>
 	static const Vector2 ZERO;
 	static const Vector2 UNIT_X;
 	static const Vector2 UNIT_Y;
+	static const Vector2 ONE;
 	static const Vector2 TOLERANCE;
+	static const Vector2 INF;
+	static const Vector2 MINUS_INF;
 
 	union
 	{
@@ -203,6 +233,27 @@ template<>
 		struct { float x, y; };
 	};
 };
+
+inline Vector2<float>& Vector2<float>::rotate(const float angle)
+{
+	if (angle != 0.f)
+	{
+		float sinAngle, cosAngle;
+		sinCos(angle, sinAngle, cosAngle);
+		set(x*cosAngle - y*sinAngle, y*cosAngle + x*sinAngle); // #TODO SIMD
+	}
+
+	return *this;
+}
+
+const Vector2<float> Vector2<float>::ZERO{};
+const Vector2<float> Vector2<float>::UNIT_X{ 1.f, 0.f };
+const Vector2<float> Vector2<float>::UNIT_Y{ 0.f, 1.f };
+const Vector2<float> Vector2<float>::ONE{ 1.f, 1.f };
+const Vector2<float> Vector2<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
+const Vector2<float> Vector2<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+const Vector2<float> Vector2<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
+
 #endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace templates
@@ -212,18 +263,47 @@ using Vector2d = templates::Vector2<double>;
 
 #if MATHEMATICS_DOUBLE
 using Vector2 = templates::Vector2<double>;
-using Vector2Arg = templates::Vector2<double>::Arg;
+using Vector2Arg = templates::Vector2<double>::ConstArg;
+using Vector2Result = templates::Vector2<double>::ConstResult;
 #else
 using Vector2 = templates::Vector2<float>;
-using Vector2Arg = templates::Vector2<float>::Arg;
+using Vector2Arg = templates::Vector2<float>::ConstArg;
+using Vector2Result = templates::Vector2<float>::ConstResult;
 #endif
 
 //template<typename T>
-//inline T length(templates::Vector2<T>::Arg v) { return v.getMagnitude(); }
+//inline T length(templates::Vector2<T>::ConstArg v) { return v.getMagnitude(); }
 //
 //template<typename T>
-//inline T lengthSquared(templates::Vector2<T>::Arg v) { return v.getMagnitudeSquared(); }
+//inline T lengthSquared(templates::Vector2<T>::ConstArg v) { return v.getMagnitudeSquared(); }
 
+} // namespace mathematics
+} // namespace core
+
+#include "IntVector2.hpp"
+
+namespace core {
+namespace mathematics {
+namespace templates {
+
+template<typename T>
+template<typename U> 
+inline Vector2<T>::Vector2(const IntVector2<U>& v) : x(T(v.x)), y(T(v.y))
+{
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<typename U>
+inline Vector2<float>::Vector2(const IntVector2<U>& v)
+{
+	const float t = (float)v.y;
+	xy = simd::set4((float)v.x, t, t, t);
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+} // namespace templates
 } // namespace mathematics
 } // namespace core
 

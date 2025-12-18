@@ -33,6 +33,7 @@ struct Constants
 {
 	static constexpr T TOLERANCE/*ZERO_TOLERANCE*/ = T();
 	static constexpr T INF = T();
+	static constexpr T MINUS_INF = T();
 	static constexpr T E = T();
 	static constexpr T LN2 = T();
 	static constexpr T PI = T();
@@ -65,6 +66,7 @@ struct Constants<float>
 {
 	static constexpr float TOLERANCE/*ZERO_TOLERANCE*/ = 1e-6f;
 	static constexpr float INF = std::numeric_limits<float>::infinity();
+	static constexpr float MINUS_INF = -std::numeric_limits<float>::infinity();
 	static constexpr float E = 2.71828182845904553488f;
 	static constexpr float LN2 = 0.693147180559945309417f;
 	static constexpr float PI = 3.14159265358979323846f;
@@ -97,6 +99,7 @@ struct Constants<double>
 {
 	static constexpr double TOLERANCE/*ZERO_TOLERANCE*/ = 1e-15;
 	static constexpr double INF = std::numeric_limits<double>::infinity();
+	static constexpr double MINUS_INF = -std::numeric_limits<double>::infinity();
 	static constexpr double E = 2.71828182845904553488;
 	static constexpr double LN2 = 0.693147180559945309417;
 	static constexpr double PI = 3.14159265358979323846;
