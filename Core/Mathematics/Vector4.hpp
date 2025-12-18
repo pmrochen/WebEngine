@@ -134,11 +134,11 @@ template<>
 	/*constexpr*/ Vector4() noexcept { xyzw = simd::setZero(); }
 	/*constexpr*/ explicit Vector4(const float scalar) noexcept { xyzw = simd::set4(scalar); }
 	/*constexpr*/ Vector4(const float x, const float y, const float z, const float w) noexcept { xyzw = simd::set4(x, y, z, w); }
-	/*constexpr*/ Vector4(Vector2<float>::Arg v) noexcept { xyzw = simd::combine2(v, UNIT_W); }
-	/*constexpr*/ Vector4(Vector2<float>::Arg v, const float z, const float w) noexcept { xyzw = simd::set4(v, simd::set2(z, w)); }
-	/*constexpr*/ Vector4(Vector2<float>::Arg xy, Vector2<float>::Arg zw) noexcept { xyzw = simd::set4(xy, zw); }
-	/*constexpr*/ Vector4(Vector3<float>::Arg v) noexcept { xyzw = simd::combine3(v, UNIT_W); }
-	/*constexpr*/ Vector4(Vector3<float>::Arg v, const float w) noexcept { xyzw = simd::set4(v, w); }
+	/*constexpr*/ Vector4(Vector2<float>::Arg v) noexcept { xyzw = simd::insert2(v, UNIT_W); }
+	/*constexpr*/ Vector4(Vector2<float>::Arg v, const float z, const float w) noexcept { xyzw = simd::combine2(v, simd::set2(z, w)); }
+	/*constexpr*/ Vector4(Vector2<float>::Arg xy, Vector2<float>::Arg zw) noexcept { xyzw = simd::combine2(xy, zw); }
+	/*constexpr*/ Vector4(Vector3<float>::Arg v) noexcept { xyzw = simd::insert3(v, UNIT_W); }
+	/*constexpr*/ Vector4(Vector3<float>::Arg v, const float w) noexcept { xyzw = simd::insert<simd::W>(w, v); }
 	//explicit Vector4(const IntVector4<float>& v) noexcept; // #TODO
 	explicit Vector4(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
 		(axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::W) ? 1.f : 0.f); }
@@ -171,10 +171,10 @@ template<>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
 
-	Vector2<float> getXY() const noexcept { return Vector2<float>(simd::swizzle(xyzw, simd::XYYY)); }
-	void setXY(Vector2<float>::Arg v) noexcept { xyzw = simd::combine2(v, xyzw); }
-	Vector3<float> getXYZ() const noexcept { return Vector3<float>(simd::swizzle(xyzw, simd::XYZZ)); }
-	void setXYZ(Vector3<float>::Arg v) noexcept { xyzw = simd::combine3(v, xyzw); }
+	Vector2<float> getXY() const noexcept { return Vector2<float>(simd::swizzle<simd::XYYY>(xyzw)); }
+	void setXY(Vector2<float>::Arg v) noexcept { xyzw = simd::insert2(v, xyzw); }
+	Vector3<float> getXYZ() const noexcept { return Vector3<float>(simd::swizzle<simd::XYZZ>(xyzw)); }
+	void setXYZ(Vector3<float>::Arg v) noexcept { xyzw = simd::insert3(v, xyzw); }
 	bool isZero() const noexcept { return simd::all4(simd::equal4(xyzw, simd::setZero())); }
 	bool isApproxZero() const noexcept { simd::all4(simd::lessThan4(simd::abs4(xyzw), TOLERANCE)); }
 	bool isApproxEqualTo(Arg v) const noexcept { simd::all4(simd::lessThan4(simd::abs4(simd::sub4(xyzw, v)), TOLERANCE)); }

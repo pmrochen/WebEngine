@@ -113,6 +113,12 @@ const UInt32M128 MASK3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } 
 const UInt32M128 MASK4 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF } } };
 const UInt32M128 ADD_SUB_SIGN = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN4 = { { { 0x80000000, 0x80000000, 0x80000000, 0x80000000 } } };
+const UInt32M128 COMPONENT_MASKS[] = 
+{
+{ { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } },
+{ { { 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000 } } },
+{ { { 0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000 } } },
+{ { { 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF } } } };
 
 //template<typename T>
 //inline bool isAligned16(const T& t) noexcept { return !((size_t)(&t) & 0xF); }
@@ -163,16 +169,6 @@ inline __m128 set2(float x, float y)
 	return _mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)); 
 }
 
-inline __m128 set2(__m128 xy) // cutoff2
-{
-	return _mm_and_ps(xy, detail::MASK2);
-}
-
-inline __m128 combine2/*insert2*/(__m128 xy, __m128 remainder) // #TODO insert2
-{
-	return _mm_shuffle_ps(xy, remainder, _MM_SHUFFLE(3, 2, 1, 0));
-}
-
 inline __m128 set3(float s)
 {
 	const __m128 t = _mm_set_ss(s);
@@ -184,40 +180,14 @@ inline __m128 set3(float x, float y, float z)
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)), _mm_set_ss(z));
 }
 
-inline __m128 set3(__m128 xyz) // cutoff3
-{
-	return _mm_and_ps(xyz, detail::MASK3);
-}
-
-//inline __m128 set3(__m128 xy, float z)
-//{ 
-//	return _mm_movelh_ps(_mm_and_ps(xy, detail::MASK2), _mm_set_ss(z));
-//}
-
-inline __m128 combine3/*insert3*/(__m128 xyz, __m128 remainder) // #TODO Use select
-{
-	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_andnot_ps(detail::MASK3, remainder));
-}
-
 inline __m128 set4(float s)
 {
-	return _mm_set1_ps(s);
+	return _mm_set_ps1(s);
 }
 
 inline __m128 set4(float x, float y, float z, float w)
 { 
 	return _mm_set_ps(w, z, y, x); 
-}
-
-inline __m128 set4(__m128 xy, __m128 zw)
-{ 
-	return _mm_movelh_ps(xy, zw); 
-}
-
-inline __m128 set4(__m128 xyz, float w) // #TODO Use insert instead
-{
-	const __m128 t = _mm_set_ss(w);
-	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_shuffle_ps(t, t, _MM_SHUFFLE(0, 1, 1, 1)));
 }
 
 inline __m128 load2(const float* v) 
@@ -379,25 +349,83 @@ inline float toFloat/*extract*/(__m128 s)
 template<int I>
 inline float extract(__m128 v)
 {
+	static_assert((I & ~3) == 0);
 	return _mm_cvtss_f32((I == 0) ? v : _mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
+}
+
+inline __m128 cutoff2(__m128 xy)
+{
+	return _mm_and_ps(xy, detail::MASK2);
+}
+
+inline __m128 cutoff3(__m128 xyz)
+{
+	return _mm_and_ps(xyz, detail::MASK3);
+}
+
+inline __m128 set4(__m128 xyz, float w) // #TODO Use insert instead
+{
+	const __m128 t = _mm_set_ss(w);
+	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_shuffle_ps(t, t, _MM_SHUFFLE(0, 1, 1, 1)));
 }
 
 template<int I>
 inline __m128 insert(float s, __m128 v)
 {
-#if (SIMD_SSE >= 4) // SSE4.1
-    return _mm_insert_ps(v, _mm_set_ss(s), I << 4);
+	static_assert((I & ~3) == 0);
+#if (SIMD_SSE >= 4)
+	return _mm_insert_ps(v, _mm_set_ss(s), I << 4); // SSE 4.1
 #else
-	static const int32_t mask[] = { 0, 0, 0, -1, 0, 0, 0 };
 	const __m128 t = _mm_set_ss(s);
-    return _mm_or_ps(_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))), 
-		_mm_andnot_ps(_mm_loadu_ps((const float*)(mask + 3 - (I & 3))), v));
+	//static const int32_t mask[] = { 0, 0, 0, -1, 0, 0, 0 };
+	//return _mm_or_ps(_mm_andnot_ps(_mm_loadu_ps((const float*)(mask + 3 - (I & 3))), v),
+	//	_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
+	return _mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
+		_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
 #endif
 }
+
+inline __m128 insert2(__m128 xy, __m128 v)
+{
+	return _mm_shuffle_ps(xy, v, _MM_SHUFFLE(3, 2, 1, 0));
+}
+
+inline __m128 insert3(__m128 xyz, __m128 v)
+{
+#if (SIMD_SSE >= 4)
+	return _mm_blendv_ps(v, xyz, detail::MASK3); // SSE 4.1
+#else
+	return _mm_or_ps(_mm_and_ps(detail::MASK3, xyz), _mm_andnot_ps(detail::MASK3, v));
+#endif
+}
+
+inline __m128 combine2(__m128 xy, __m128 zw)
+{
+	return _mm_movelh_ps(xy, zw);
+}
+
+inline __m128 select(__m128 b, __m128 v1, __m128 v2) // b ? v1 : v2
+{
+#if (SIMD_SSE >= 4)
+	return _mm_blendv_ps(v2, v1, b); // SSE 4.1
+#else
+	return _mm_or_ps(_mm_and_ps(b, v1), _mm_andnot_ps(b, v2));
+#endif
+}
+
+//inline __m128d select(__m128d b, __m128d v1, __m128d v2) // b ? v1 : v2
+//{
+//#if (SIMD_SSE >= 4)
+//	return _mm_blendv_pd(v2, v1, b); // SSE 4.1
+//#else
+//	return _mm_or_pd(_mm_and_pd(b, v1), _mm_andnot_pd(b, v2)); // SSE 2
+//#endif
+//}
 
 template<int I>
 inline __m128 broadcast(__m128 v)
 {
+	static_assert((I & ~3) == 0);
 	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I));
 }
 
@@ -409,13 +437,14 @@ inline __m128 broadcast(__m128 v)
 template<int M>
 inline __m128 swizzle(__m128 v)
 {
+	static_assert((M & ~0xFF) == 0);
 	return _mm_shuffle_ps(v, v, M);
 }
 
-inline __m128 swizzle(__m128 v, int mask)
-{
-	return _mm_shuffle_ps(v, v, mask);
-}
+//inline __m128 swizzle(__m128 v, int mask)
+//{
+//	return _mm_shuffle_ps(v, v, mask);
+//}
 
 inline bool all2(__m128 b)
 {
@@ -476,24 +505,6 @@ inline __m128 greaterThanEqual4(__m128 v1, __m128 v2)
 {
 	return _mm_cmpge_ps(v1, v2);
 }
-
-inline __m128 select(__m128 b, __m128 v1, __m128 v2) // b ? v1 : v2
-{
-#if (SIMD_SSE >= 4) // SSE4.1
-    return _mm_blendv_ps(v2, v1, b);
-#else
-    return _mm_or_ps(_mm_and_ps(b, v1), _mm_andnot_ps(b, v2));
-#endif
-}
-
-inline __m128d select(__m128d b, __m128d v1, __m128d v2) // b ? v1 : v2
-{
-#if (SIMD_SSE >= 4) // SSE4.1
-    return _mm_blendv_pd(v2, v1, b);
-#else
-    return _mm_or_pd(_mm_and_pd(b, v1), _mm_andnot_pd(b, v2));
-#endif
-} 
 
 inline __m128 min4(__m128 v1, __m128 v2)
 {
@@ -669,15 +680,23 @@ inline __m128 floor4(__m128 v)
 
 inline __m128 isFinite4(__m128 v)
 {
-    const __m128i t = mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
+#if (SIMD_SSE >= 2)
+	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
 	const __m128i m = _mm_set1_epi32(0xFF000000);
 	return _mm_castsi128_ps(_mm_xor_si128(_mm_cmpeq_epi32(_mm_and_si128(t, m), m), _mm_set1_epi32(-1)));
+#else
+	// #TODO
+#endif
 }
 
 inline __m128 isInf4(__m128 v)
 {
-    const __m128i t = mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
+#if (SIMD_SSE >= 2)
+	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
     return _mm_castsi128_ps(_mm_cmpeq_epi32(t, _mm_set1_epi32(0xFF000000)));
+#else
+	// #TODO
+#endif
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

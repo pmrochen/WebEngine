@@ -133,8 +133,8 @@ template<>
 	/*constexpr*/ Vector3() noexcept { xyz = simd::setZero(); }
 	/*constexpr*/ explicit Vector3(const float scalar) noexcept { xyz = simd::set4(scalar); }
 	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = simd::set4(x, y, z, z); }
-	/*constexpr*/ Vector3(Vector2<float>::Arg v) noexcept { xyz = simd::set2(v); }
-	/*constexpr*/ Vector3(Vector2<float>::Arg v, const float z) noexcept { xyz = simd::set4(v, simd::set2(z)); }
+	/*constexpr*/ Vector3(Vector2<float>::Arg v) noexcept { xyz = simd::cutoff2(v); }
+	/*constexpr*/ Vector3(Vector2<float>::Arg v, const float z) noexcept { xyz = simd::combine2(v, simd::set2(z)); }
 	//explicit Vector3(const IntVector3<float>& v) noexcept; // #TODO
 	explicit Vector3(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
 	explicit Vector3(const float* const v) noexcept { set(v[0], v[1], v[2]); }
@@ -166,10 +166,10 @@ template<>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use simd::set(x, y, z, z)
 
-	Vector2<float> getXY() const noexcept { return Vector2<float>(simd::swizzle(xyz, simd::XYYY)); }
-	void setXY(Vector2<float>::Arg v) noexcept { xyz = simd::combine2(v, xyz); }
-	Vector2<float> getXZ() const noexcept { return Vector2<float>(simd::swizzle(xyz, simd::XZZZ)); }
-	Vector2<float> getZY() const noexcept { return Vector2<float>(simd::swizzle(xyz, simd::ZYYY)); }
+	Vector2<float> getXY() const noexcept { return Vector2<float>(simd::swizzle<simd::XYYY>(xyz)); }
+	void setXY(Vector2<float>::Arg v) noexcept { xyz = simd::insert2(v, xyz); }
+	Vector2<float> getXZ() const noexcept { return Vector2<float>(simd::swizzle<simd::XZZZ>(xyz)); }
+	Vector2<float> getZY() const noexcept { return Vector2<float>(simd::swizzle<simd::ZYYY>(xyz)); }
 	bool isZero() const noexcept { return simd::all3(simd::equal4(xyz, simd::setZero())); }
 	bool isApproxZero() const noexcept { simd::all3(simd::lessThan4(simd::abs4(xyz), TOLERANCE)); }
 	bool isApproxEqualTo(Arg v) const noexcept { simd::all3(simd::lessThan4(simd::abs4(simd::sub4(xyz, v)), TOLERANCE)); }
