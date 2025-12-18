@@ -87,8 +87,8 @@ inline unsigned int ctz(unsigned int x) { return popcnt((x & -x) - 1); }
 
 #if SIMD_HAS_FLOAT4
 
-using Float4 = __m128;
-using Bool4 = __m128;
+//using Float4 = __m128;
+//using Bool4 = __m128;
 
 namespace float4 {
 
@@ -151,7 +151,7 @@ static inline __m128i constant4i()
     return u.xmm;
 }*/
 
-inline __m128 setZero()
+inline __m128 zero()
 {
 	return _mm_setzero_ps();
 }
@@ -366,12 +366,6 @@ inline __m128 cutoff3(__m128 xyz)
 	return _mm_and_ps(xyz, detail::MASK3);
 }
 
-inline __m128 set4(__m128 xyz, float w) // #TODO Use insert instead
-{
-	const __m128 t = _mm_set_ss(w);
-	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_shuffle_ps(t, t, _MM_SHUFFLE(0, 1, 1, 1)));
-}
-
 template<int I>
 inline __m128 insert(float s, __m128 v)
 {
@@ -405,6 +399,36 @@ inline __m128 insert3(__m128 xyz, __m128 v)
 inline __m128 combine2(__m128 xy, __m128 zw)
 {
 	return _mm_movelh_ps(xy, zw);
+}
+
+inline __m128 bool4(bool s)
+{
+	return _mm_castsi128_ps(_mm_set1_epi32(-(int)b));
+}
+
+inline __m128 bool4(bool x, bool y, bool z, bool w)
+{ 
+	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
+}
+
+inline __m128 and4(__m128 v1, __m128 v2)
+{
+	return _mm_and_ps(v1, v2);
+}
+
+inline __m128 or4(__m128 v1, __m128 v2)
+{
+	return _mm_or_ps(v1, v2);
+}
+
+inline __m128 andNot4(__m128 v1, __m128 v2)
+{
+	return _mm_andnot_ps(v2, v1);
+}
+
+inline __m128 not4(__m128 v)
+{
+	return _mm_xor_ps(v, _mm_castsi128_ps(_mm_set1_epi32(-1)));
 }
 
 inline __m128 select(__m128 b, __m128 v1, __m128 v2) // b ? v1 : v2
@@ -449,6 +473,11 @@ inline __m128 swizzle(__m128 v)
 //	return _mm_shuffle_ps(v, v, mask);
 //}
 
+//inline __m128 reverse(__m128 v)
+//{
+//	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 1, 2, 3));
+//}
+
 inline bool all2(__m128 b)
 {
 	return ((_mm_movemask_ps(b) & 3) == 3);
@@ -484,27 +513,27 @@ inline int asIndex(__m128 b)
 	return bitops::ctz(_mm_movemask_ps(b));
 }
 
-inline __m128 equal4(__m128 v1, __m128 v2)
+inline __m128 equal(__m128 v1, __m128 v2)
 {
 	return _mm_cmpeq_ps(v1, v2);
 }
 
-inline __m128 lessThan4(__m128 v1, __m128 v2)
+inline __m128 lessThan(__m128 v1, __m128 v2)
 {
 	return _mm_cmplt_ps(v1, v2);
 }
 
-inline __m128 lessThanEqual4(__m128 v1, __m128 v2)
+inline __m128 lessThanEqual(__m128 v1, __m128 v2)
 {
 	return _mm_cmple_ps(v1, v2);
 }
 
-inline __m128 greaterThan4(__m128 v1, __m128 v2)
+inline __m128 greaterThan(__m128 v1, __m128 v2)
 {
 	return _mm_cmpgt_ps(v1, v2);
 }
 
-inline __m128 greaterThanEqual4(__m128 v1, __m128 v2)
+inline __m128 greaterThanEqual(__m128 v1, __m128 v2)
 {
 	return _mm_cmpge_ps(v1, v2);
 }
@@ -556,6 +585,11 @@ inline __m128 mul4(__m128 v1, __m128 v2)
 inline __m128 div4(__m128 v1, __m128 v2)
 {
 	return _mm_div_ps(v1, v2);
+}
+
+inline __m128 mulAdd4(__m128 v1, __m128 v2, __m128 v3)
+{
+	return _mm_add_ps(_mm_mul_ps(v1, v2), v3);
 }
 
 inline __m128 sqrt1(__m128 s)
@@ -681,6 +715,15 @@ inline __m128 floor(__m128 v)
 #endif
 }
 
+inline __m128 round(__m128 v)
+{
+#if (SIMD_SSE >= 4)
+	return _mm_round_ps(v, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC); // SSE 4.1
+#else
+	#error // #TODO
+#endif
+}
+
 inline __m128 isFinite(__m128 v)
 {
 #if (SIMD_SSE >= 2)
@@ -688,7 +731,7 @@ inline __m128 isFinite(__m128 v)
 	const __m128i m = _mm_set1_epi32(0xFF000000);
 	return _mm_castsi128_ps(_mm_xor_si128(_mm_cmpeq_epi32(_mm_and_si128(t, m), m), _mm_set1_epi32(-1)));
 #else
-	// #TODO
+	#error // #TODO
 #endif
 }
 
@@ -698,11 +741,13 @@ inline __m128 isInf(__m128 v)
 	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
     return _mm_castsi128_ps(_mm_cmpeq_epi32(t, _mm_set1_epi32(0xFF000000)));
 #else
-	// #TODO
+	#error // #TODO
 #endif
 }
 
 } // namespace float4
+
+using Float4 = float4::Type;
 
 #endif /* SIMD_HAS_FLOAT4 */
 
