@@ -119,7 +119,7 @@ struct Vector4
 	static const Vector4 UNIT_Z; 
 	static const Vector4 UNIT_W; 
 
-	float x, y, z, w;
+	T x, y, z, w;
 };
 
 #if SIMD_HAS_FLOAT4

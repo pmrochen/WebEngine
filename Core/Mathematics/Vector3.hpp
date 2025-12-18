@@ -118,7 +118,7 @@ struct Vector3
 	static const Vector3 UNIT_Y;
 	static const Vector3 UNIT_Z; 
 
-	float x, y, z;
+	T x, y, z;
 };
 
 #if SIMD_HAS_FLOAT4

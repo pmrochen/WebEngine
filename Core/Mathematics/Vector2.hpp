@@ -100,7 +100,7 @@ struct Vector2
 	static const Vector2 UNIT_X;
 	static const Vector2 UNIT_Y;
 
-	float x, y;
+	T x, y;
 };
 
 //template<typename T>
