@@ -61,7 +61,7 @@
 namespace core {
 namespace simd {
 
-namespace detail {
+namespace bitops {
 
 #if defined(_MSC_VER) /*&& (defined(_M_IX86) || defined(_M_X64))*/
 inline unsigned int popcount(unsigned int x) { return __popcnt(x); }
@@ -83,12 +83,17 @@ inline unsigned int clz(unsigned int x) { x |= (x >> 1); x |= (x >> 2); x |= (x 
 inline unsigned int ctz(unsigned int x) { return popcnt((x & -x) - 1); }
 #endif
 
-}
+} // namespace bitops
 
 #if SIMD_HAS_FLOAT4
 
 using Float4 = __m128;
 using Bool4 = __m128;
+
+namespace float4 {
+
+using Type = __m128;
+using BoolType = __m128;
 
 namespace detail {
 
@@ -113,12 +118,10 @@ const UInt32M128 MASK3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } 
 const UInt32M128 MASK4 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF } } };
 const UInt32M128 ADD_SUB_SIGN = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN4 = { { { 0x80000000, 0x80000000, 0x80000000, 0x80000000 } } };
-const UInt32M128 COMPONENT_MASKS[] = 
-{
-{ { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } },
-{ { { 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000 } } },
-{ { { 0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000 } } },
-{ { { 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF } } } };
+const UInt32M128 COMPONENT_MASKS[] = { { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } },
+	{ { { 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000 } } },
+	{ { { 0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000 } } },
+	{ { { 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF } } } };
 
 //template<typename T>
 //inline bool isAligned16(const T& t) noexcept { return !((size_t)(&t) & 0xF); }
@@ -478,7 +481,7 @@ inline bool any4(__m128 b)
 
 inline int asIndex(__m128 b)
 {
-	return detail::ctz(_mm_movemask_ps(b));
+	return bitops::ctz(_mm_movemask_ps(b));
 }
 
 inline __m128 equal4(__m128 v1, __m128 v2)
@@ -667,7 +670,7 @@ inline __m128 dot4(__m128 v1, __m128 v2)
 //	return _mm_cvtss_f32(r);
 //}
 
-inline __m128 floor4(__m128 v)
+inline __m128 floor(__m128 v)
 {
 #if (SIMD_SSE >= 4)
 	return _mm_floor_ps(v); // SSE 4.1
@@ -678,7 +681,7 @@ inline __m128 floor4(__m128 v)
 #endif
 }
 
-inline __m128 isFinite4(__m128 v)
+inline __m128 isFinite(__m128 v)
 {
 #if (SIMD_SSE >= 2)
 	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
@@ -689,7 +692,7 @@ inline __m128 isFinite4(__m128 v)
 #endif
 }
 
-inline __m128 isInf4(__m128 v)
+inline __m128 isInf(__m128 v)
 {
 #if (SIMD_SSE >= 2)
 	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
@@ -698,6 +701,8 @@ inline __m128 isInf4(__m128 v)
 	// #TODO
 #endif
 }
+
+} // namespace float4
 
 #endif /* SIMD_HAS_FLOAT4 */
 
