@@ -57,6 +57,7 @@
 #endif
 
 #include <cstdint>
+#include <cstring> // for std::memcpy
 
 namespace core {
 namespace simd {
@@ -85,15 +86,32 @@ inline unsigned int ctz(unsigned int x) { return popcnt((x & -x) - 1); }
 
 } // namespace bitops
 
+namespace alignment {
+
+template<int A, typename T>
+inline bool isAligned(const T& t) noexcept { return !(reinterpret_cast<size_t>(&t) & (A - 1)); }
+
+template<int A, typename T>
+inline T align(const T& t) noexcept { /*_MM_ALIGN16*/ T a; std::memcpy/*_inline*/(&a, &t, sizeof(T)); return a; }
+
+} // namespace alignment
+
 #if SIMD_HAS_FLOAT4
 
 //using Float4 = __m128;
 //using Bool4 = __m128;
 
-namespace float4 {
+/*inline*/ namespace float4 {
 
 using Type = __m128;
 using BoolType = __m128;
+constexpr int ALIGNMENT = 16;
+
+template<typename T>
+inline bool isAligned(const T& t) noexcept { return alignment::isAligned<16>(t); }
+
+template<typename T>
+inline T align(const T& t) noexcept { return alignment::align<16>(t); }
 
 namespace detail {
 
@@ -172,6 +190,11 @@ inline __m128 set2(float x, float y)
 	return _mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)); 
 }
 
+//inline __m128 set2(__m128 xy) // Use cutoff2 instead
+//{
+//	return _mm_and_ps(xy, detail::MASK2);
+//}
+
 inline __m128 set3(float s)
 {
 	const __m128 t = _mm_set_ss(s);
@@ -183,6 +206,11 @@ inline __m128 set3(float x, float y, float z)
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)), _mm_set_ss(z));
 }
 
+//inline __m128 set3(__m128 xyz) // Use cutoff3 instead
+//{
+//	return _mm_and_ps(xyz, detail::MASK3);
+//}
+
 inline __m128 set4(float s)
 {
 	return _mm_set_ps1(s);
@@ -192,6 +220,17 @@ inline __m128 set4(float x, float y, float z, float w)
 { 
 	return _mm_set_ps(w, z, y, x); 
 }
+
+//inline __m128 set4(__m128 xy, __m128 zw) // Use combine2 instead
+//{
+//	return _mm_movelh_ps(xy, zw);
+//}
+
+//inline __m128 set4(__m128 xyz, float w) // Use insert instead
+//{
+//	const __m128 t = _mm_set_ss(w);
+//	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_shuffle_ps(t, t, _MM_SHUFFLE(0, 1, 1, 1)));
+//}
 
 inline __m128 load2(const float* v) 
 {
@@ -403,7 +442,7 @@ inline __m128 combine2(__m128 xy, __m128 zw)
 
 inline __m128 bool4(bool s)
 {
-	return _mm_castsi128_ps(_mm_set1_epi32(-(int)b));
+	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
 }
 
 inline __m128 bool4(bool x, bool y, bool z, bool w)
