@@ -29,10 +29,10 @@
 #define SIMD_HAS_FLOAT4 0
 #endif
 
-#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
-#include <intrin.h> // for __popcnt
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64))
+#include <intrin.h> // for _tzcnt_u32, __popcnt
 #elif defined(__cpp_lib_bitops)
-#include <bit>
+#include <bit> // C++20
 #endif
 
 //#if defined(SIMD_SSE) || defined(SIMD_AVX)
@@ -64,24 +64,17 @@ namespace simd {
 
 namespace bitops {
 
-#if defined(_MSC_VER) /*&& (defined(_M_IX86) || defined(_M_X64))*/
-inline unsigned int popcount(unsigned int x) { return __popcnt(x); }
-inline unsigned int clz(unsigned int x) { return _lzcnt_u32(x); }
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
 inline unsigned int ctz(unsigned int x) { return _tzcnt_u32(x); }
+#elif defined(_MSC_VER) && defined(_M_ARM64)
+inline unsigned int ctz(unsigned int x) { return __popcnt((x & -x) - 1); }
 #elif defined(__GNUC__) || defined(__clang__)
-inline unsigned int popcount(unsigned int x) { return __builtin_popcount(x); }
-inline unsigned int clz(unsigned int x) { return __builtin_clz(x); }
 inline unsigned int ctz(unsigned int x) { return __builtin_ctz(x); }
 #elif defined(__cpp_lib_bitops)
-inline unsigned int popcount(unsigned int x) { return std::popcount(x); }
-inline unsigned int clz(unsigned int x) { return std::countl_zero(x); }
 inline unsigned int ctz(unsigned int x) { return std::countr_zero(x); }
 #else
-inline unsigned int popcount(unsigned int i) { x = x - ((x >> 1) & 0x55555555); x = (x & 0x33333333) + ((x >> 2) & 0x33333333); 
+inline unsigned int ctz(unsigned int x) { x = (x & -x) - 1; x = x - ((x >> 1) & 0x55555555); x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
 	x = (x + (x >> 4)) & 0x0F0F0F0F; x = x + (x >> 8); x = x + (x >> 16); return x & 0x3F; }
-inline unsigned int clz(unsigned int x) { x |= (x >> 1); x |= (x >> 2); x |= (x >> 4); x |= (x >> 8); x |= (x >> 16); 
-	return 32 - popcnt(x); }
-inline unsigned int ctz(unsigned int x) { return popcnt((x & -x) - 1); }
 #endif
 
 } // namespace bitops
@@ -549,7 +542,7 @@ inline bool any4(__m128 b)
 
 inline int asIndex(__m128 b)
 {
-	return bitops::ctz(_mm_movemask_ps(b));
+	return /*std::countr_zero*/bitops::ctz(_mm_movemask_ps(b));
 }
 
 inline __m128 equal(__m128 v1, __m128 v2)
