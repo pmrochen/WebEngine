@@ -13,6 +13,7 @@
 #include <limits>
 #include <algorithm>
 #include <Simd.hpp>
+#include <Tuples.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
 #include "Scalar.hpp"
@@ -40,11 +41,15 @@ struct Vector3
 	constexpr Vector3(Vector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z() {}
 	constexpr Vector3(Vector2<T>::ConstArg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
 	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
+	explicit Vector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
+	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
 	explicit Vector3(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)),
 		z((axis == Axis::Z) ? T(1) : T(0)) {}
 	explicit Vector3(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; /*} else zero();*/ }
-	/*explicit*/ operator T* () noexcept { return &x; }
-	/*explicit*/ operator const T* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
+	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
+	explicit operator T*() noexcept { return &x; }
+	explicit operator const T*() const noexcept { return &x; }
 
 	Vector3 operator+() const noexcept { return *this; }
 	Vector3 operator-() const noexcept { return Vector3(-x, -y, -z); }
@@ -199,13 +204,17 @@ template<>
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = float4::cutoff2(v); }
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, const float z) noexcept { xyz = float4::combine2(v, float4::set2(z)); }
 	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
+	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = float4::set4(t.x, t.y, t.z, t.z); }
+	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { float z = (float)t.z; xyz = float4::set4((float)t.x, (float)t.y, z, z); }
 	explicit Vector3(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
 	explicit Vector3(const float* const v) noexcept { set(v[0], v[1], v[2]); }
 
 	explicit Vector3(const float4::Type v) noexcept : xyz(v) {}
 	operator float4::Type() const noexcept { return xyz; }
-	/*explicit*/ operator float* () noexcept { return &x; }
-	/*explicit*/ operator const float* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple3<float>() noexcept { return tuples::templates::Tuple3<float>(x, y, z); }
+	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
+	explicit operator float*() noexcept { return &x; }
+	explicit operator const float*() const noexcept { return &x; }
 
 	Vector3 operator+() const noexcept { return *this; }
 	Vector3 operator-() const noexcept { return Vector3(float4::neg4(xyz)); }

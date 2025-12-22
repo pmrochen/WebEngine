@@ -10,6 +10,7 @@
 #include <istream>
 #include <ostream>
 #include <algorithm>
+#include <Tuples.hpp>
 #include "IntVector2.hpp"
 #include "Vector3.hpp"
 
@@ -32,9 +33,13 @@ struct IntVector3
 	constexpr IntVector3(IntVector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z() {}
 	constexpr IntVector3(IntVector2<T>::ConstArg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
 	template<typename U> explicit IntVector3(Vector3<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)), z(T(v.z)) {}
+	explicit IntVector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
+	template<typename U> explicit IntVector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
 	explicit IntVector3(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; /*} else zero();*/ }
-	/*explicit*/ operator T* () noexcept { return &x; }
-	/*explicit*/ operator const T* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
+	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
+	explicit operator T*() noexcept { return &x; }
+	explicit operator const T*() const noexcept { return &x; }
 
 	IntVector3 operator+() const noexcept { return *this; }
 	IntVector3 operator-() const noexcept { return IntVector3(-x, -y, -z); }

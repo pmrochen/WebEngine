@@ -10,6 +10,7 @@
 #include <istream>
 #include <ostream>
 #include <algorithm>
+#include <Tuples.hpp>
 #include "IntVector2.hpp"
 #include "IntVector3.hpp"
 #include "Vector4.hpp"
@@ -36,9 +37,13 @@ struct IntVector4
 	constexpr IntVector4(IntVector3<T>::ConstArg v) noexcept : x(v.x), y(v.y), z(v.z), w(T(1)) {}
 	constexpr IntVector4(IntVector3<T>::ConstArg v, const T w) noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
 	template<typename U> explicit IntVector4(Vector4<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)), z(T(v.z)), w(T(v.w)) {}
+	explicit IntVector4(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
+	template<typename U> explicit IntVector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit IntVector4(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; w = v[3]; /*} else zero();*/ }
-	/*explicit*/ operator T* () noexcept { return &x; }
-	/*explicit*/ operator const T* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
+	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
+	explicit operator T*() noexcept { return &x; }
+	explicit operator const T*() const noexcept { return &x; }
 
 	IntVector4 operator+() const noexcept { return *this; }
 	IntVector4 operator-() const noexcept { return IntVector4(-x, -y, -z, -w); }

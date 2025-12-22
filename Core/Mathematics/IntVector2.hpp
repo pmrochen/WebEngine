@@ -10,6 +10,7 @@
 #include <istream>
 #include <ostream>
 #include <algorithm>
+#include <Tuples.hpp>
 #include "Vector2.hpp"
 
 namespace core {
@@ -29,9 +30,13 @@ struct IntVector2
 	constexpr explicit IntVector2(const T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr IntVector2(const T x, const T y) noexcept : x(x), y(y) {}
 	template<typename U> explicit IntVector2(Vector2<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)) {}
+	explicit IntVector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
+	template<typename U> explicit IntVector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
 	explicit IntVector2(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; /*} else zero();*/ }
-	/*explicit*/ operator T* () noexcept { return &x; }
-	/*explicit*/ operator const T* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
+	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	explicit operator T*() noexcept { return &x; }
+	explicit operator const T*() const noexcept { return &x; }
 
 	IntVector2 operator+() const noexcept { return *this; }
 	IntVector2 operator-() const noexcept { return IntVector2(-x, -y); }

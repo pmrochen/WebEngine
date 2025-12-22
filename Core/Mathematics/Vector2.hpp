@@ -13,6 +13,7 @@
 #include <limits>
 #include <algorithm>
 #include <Simd.hpp>
+#include <Tuples.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
 #include "Scalar.hpp"
@@ -37,10 +38,14 @@ struct Vector2
 	constexpr explicit Vector2(const T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr Vector2(const T x, const T y) noexcept : x(x), y(y) {}
 	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
+	explicit Vector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
+	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
 	explicit Vector2(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)) {}
 	explicit Vector2(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; /*} else zero();*/ }
-	/*explicit*/ operator T* () noexcept { return &x; }
-	/*explicit*/ operator const T* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
+	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	explicit operator T*() noexcept { return &x; }
+	explicit operator const T*() const noexcept { return &x; }
 
 	Vector2 operator+() const noexcept { return *this; }
 	Vector2 operator-() const noexcept { return Vector2(-x, -y); }
@@ -91,6 +96,7 @@ struct Vector2
 	Vector2& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y); return *this; }
 	Vector2& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y); return *this; }
 	Vector2& negate() noexcept { x = -x; y = -y; return *this; }
+	//template<std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
 #if MATHEMATICS_FAST_NORMALIZE
 	Vector2& normalize() noexcept { T m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<T>::max()) *this *= m; return *this; }
 #else
@@ -152,13 +158,17 @@ template<>
 	/*constexpr*/ explicit Vector2(const float scalar) noexcept { xy = float4::set4(scalar); }
 	/*constexpr*/ Vector2(const float x, const float y) noexcept { xy = float4::set4(x, y, y, y); }
 	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
+	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept { xy = float4::set4(t.x, t.y, t.y, t.y); }
+	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept { float y = (float)t.y; xy = float4::set4((float)t.x, y, y, y); }
 	explicit Vector2(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f); }
 	explicit Vector2(const float* const v) noexcept { set(v[0], v[1]); }
 
 	explicit Vector2(const float4::Type v) noexcept : xy(v) {}
 	operator float4::Type() const noexcept { return xy; }
-	/*explicit*/ operator float* () noexcept { return &x; }
-	/*explicit*/ operator const float* () const noexcept { return &x; }
+	explicit operator tuples::templates::Tuple2<float>() noexcept { return tuples::templates::Tuple2<float>(x, y); }
+	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	explicit operator float*() noexcept { return &x; }
+	explicit operator const float*() const noexcept { return &x; }
 
 	Vector2 operator+() const noexcept { return *this; }
 	Vector2 operator-() const noexcept { return Vector2(float4::neg4(xy)); }
