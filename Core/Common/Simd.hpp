@@ -29,6 +29,12 @@
 #define SIMD_HAS_FLOAT4 0
 #endif
 
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#define SIMD_CALL __vectorcall
+#else
+#define SIMD_CALL
+#endif
+
 #if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64))
 #include <intrin.h> // for _tzcnt_u32, __popcnt
 #elif defined(__cpp_lib_bitops)
