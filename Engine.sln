@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{02EA68
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{81B81A2A-3D56-4DFA-A357-FBB324D319F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation", "Foundation\Foundation.csproj", "{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -30,6 +32,14 @@ Global
 		{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36}.Release|ARM64.Build.0 = Release|ARM64
 		{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36}.Release|x64.ActiveCfg = Release|x64
 		{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36}.Release|x64.Build.0 = Release|x64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Debug|ARM64.Build.0 = Debug|ARM64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Debug|x64.ActiveCfg = Debug|x64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Debug|x64.Build.0 = Debug|x64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Release|ARM64.ActiveCfg = Release|ARM64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Release|ARM64.Build.0 = Release|ARM64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Release|x64.ActiveCfg = Release|x64
+		{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
