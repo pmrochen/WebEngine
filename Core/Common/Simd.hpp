@@ -134,6 +134,8 @@ const UInt32M128 MASK2 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } 
 const UInt32M128 MASK3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
 const UInt32M128 MASK4 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF } } };
 const UInt32M128 ADD_SUB_SIGN = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
+const UInt32M128 SIGN2 = { { { 0x80000000, 0x80000000, 0x00000000, 0x00000000 } } };
+const UInt32M128 SIGN3 = { { { 0x80000000, 0x80000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN4 = { { { 0x80000000, 0x80000000, 0x80000000, 0x80000000 } } };
 const UInt32M128 COMPONENT_MASKS[] = { { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } },
 	{ { { 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000 } } },
@@ -217,7 +219,7 @@ inline __m128 set4(float s)
 
 inline __m128 set4(float x, float y, float z, float w)
 { 
-	return _mm_set_ps(w, z, y, x); 
+	return _mm_setr_ps(x, y, z, w); 
 }
 
 //inline __m128 set4(__m128 xy, __m128 zw) // Use combine2 instead
@@ -416,7 +418,7 @@ inline __m128 insert(float s, __m128 v)
 	//return _mm_or_ps(_mm_andnot_ps(_mm_loadu_ps((const float*)(mask + 3 - (I & 3))), v),
 	//	_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
 	return _mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
-		_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
+		(I == 0) ? t : _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
 #endif
 }
 
@@ -586,6 +588,16 @@ inline __m128 max4(__m128 v1, __m128 v2)
 	return _mm_max_ps(v1, v2);
 }
 
+inline __m128 neg2(__m128 v)
+{
+	return _mm_xor_ps(v, detail::SIGN2);
+}
+
+inline __m128 neg3(__m128 v)
+{
+	return _mm_xor_ps(v, detail::SIGN3);
+}
+
 inline __m128 neg4(__m128 v)
 {
 	return _mm_xor_ps(v, detail::SIGN4/*_mm_castsi128_ps(_mm_set1_epi32(0x80000000))*/);
@@ -618,6 +630,22 @@ inline __m128 addSub4(__m128 v1, __m128 v2)
 inline __m128 mul4(__m128 v1, __m128 v2)
 {
 	return _mm_mul_ps(v1, v2);
+}
+
+inline __m128 div2(__m128 v1, __m128 v2)
+{
+	__m128 t = _mm_movelh_ps(v2, detail::ONE4);
+	return _mm_div_ps(v1, t);
+}
+
+inline __m128 div3(__m128 v1, __m128 v2)
+{
+#if (SIMD_SSE >= 4)
+	__m128 t = _mm_blendv_ps(detail::ZERO3_ONE1, v2, detail::MASK3); // SSE 4.1
+#else
+	__m128 t = _mm_or_ps(_mm_and_ps(detail::MASK3, v2), detail::ZERO3_ONE1);
+#endif
+	return _mm_div_ps(v1, t);
 }
 
 inline __m128 div4(__m128 v1, __m128 v2)
