@@ -33,6 +33,7 @@ struct IntVector2
 	explicit IntVector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
 	template<typename U> explicit IntVector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
 	explicit IntVector2(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; /*} else zero();*/ }
+
 	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
@@ -42,12 +43,16 @@ struct IntVector2
 	IntVector2 operator-() const noexcept { return IntVector2(-x, -y); }
 	IntVector2& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; return *this; }
 	IntVector2& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; return *this; }
+	IntVector2& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	IntVector2& operator*=(const T f) noexcept { x *= f; y *= f; return *this; }
+	IntVector2& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; return *this; }
 	IntVector2& operator/=(const T f) noexcept { x /= f; y /= f; return *this; }
 	friend IntVector2 operator+(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x + v2.x, v1.y + v2.y); }
 	friend IntVector2 operator-(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x - v2.x, v1.y - v2.y); }
+	friend IntVector2 operator*(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x*v2.x, v1.y*v2.y); }
 	friend IntVector2 operator*(const T f, ConstArg v) noexcept { return IntVector2(f*v.x, f*v.y); }
 	friend IntVector2 operator*(ConstArg v, const T f) noexcept { return IntVector2(v.x*f, v.y*f); }
+	friend IntVector2 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x/v2.x, v1.y/v2.y); }
 	friend IntVector2 operator/(const T f, ConstArg v) noexcept { return IntVector2(f/v.x, f/v.y); }
 	friend IntVector2 operator/(ConstArg v, const T f) noexcept { return IntVector2(v.x/f, v.y/f); }
 	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y); }

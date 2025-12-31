@@ -40,6 +40,7 @@ struct IntVector4
 	explicit IntVector4(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit IntVector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit IntVector4(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; w = v[3]; /*} else zero();*/ }
+
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
@@ -49,12 +50,16 @@ struct IntVector4
 	IntVector4 operator-() const noexcept { return IntVector4(-x, -y, -z, -w); }
 	IntVector4& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	IntVector4& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+	IntVector4& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 	IntVector4& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
+	IntVector4& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	IntVector4& operator/=(const T f) noexcept { x /= f; y /= f; z /= f; w /= f; return *this; }
 	friend IntVector4 operator+(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); }
 	friend IntVector4 operator-(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); }
+	friend IntVector4 operator*(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z, v1.w*v2.w); }
 	friend IntVector4 operator*(const T f, ConstArg v) noexcept { return IntVector4(f*v.x, f*v.y, f*v.z, f*v.w); }
 	friend IntVector4 operator*(ConstArg v, const T f) noexcept { return IntVector4(v.x*f, v.y*f, v.z*f, v.w*f); }
+	friend IntVector4 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
 	friend IntVector4 operator/(const T f, ConstArg v) noexcept { return IntVector4(f/v.x, f/v.y, f/v.z, f/v.w); }
 	friend IntVector4 operator/(ConstArg v, const T f) noexcept { return IntVector4(v.x/f, v.y/f, v.z/f, v.w/f); }
 	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }

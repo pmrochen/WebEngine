@@ -36,6 +36,7 @@ struct IntVector3
 	explicit IntVector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
 	template<typename U> explicit IntVector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
 	explicit IntVector3(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; /*} else zero();*/ }
+
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
@@ -45,12 +46,16 @@ struct IntVector3
 	IntVector3 operator-() const noexcept { return IntVector3(-x, -y, -z); }
 	IntVector3& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
 	IntVector3& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
+	IntVector3& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	IntVector3& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; return *this; }
+	IntVector3& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	IntVector3& operator/=(const T f) noexcept { x /= f; y /= f; z /= f; return *this; }
 	friend IntVector3 operator+(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
 	friend IntVector3 operator-(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
+	friend IntVector3 operator*(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z); }
 	friend IntVector3 operator*(const T f, ConstArg v) noexcept { return IntVector3(f*v.x, f*v.y, f*v.z); }
 	friend IntVector3 operator*(ConstArg v, const T f) noexcept { return IntVector3(v.x*f, v.y*f, v.z*f); }
+	friend IntVector3 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
 	friend IntVector3 operator/(const T f, ConstArg v) noexcept { return IntVector3(f/v.x, f/v.y, f/v.z); }
 	friend IntVector3 operator/(ConstArg v, const T f) noexcept { return IntVector3(v.x/f, v.y/f, v.z/f); }
 	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
