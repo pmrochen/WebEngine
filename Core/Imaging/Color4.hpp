@@ -41,6 +41,7 @@ struct Color4
 	explicit Color4(const tuples::templates::Tuple4<T>& t) noexcept : r(t.x), g(t.y), b(t.z), a(t.w) {}
 	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
 	explicit Color4(const T* const c) noexcept { r = c[0]; g = c[1]; b = c[2]; a = c[3]; }
+
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	explicit operator T*() noexcept { return &r; }
@@ -149,8 +150,8 @@ struct Color4<float>
 	explicit Color4(const tuples::templates::Tuple4<float>& t) noexcept { rgba = float4::set4(t.x, t.y, t.z, t.w); }
 	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept { rgba = float4::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
 	explicit Color4(const float* const c) noexcept { rgba = float4::load4(c); }
-
 	explicit Color4(const float4::Type c) noexcept : rgba(c) {}
+
 	operator float4::Type() const noexcept { return rgba; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
@@ -180,6 +181,12 @@ struct Color4<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; } // #FIXME use float4::set(r, g, b, a)
 
+#if IMAGING_SIMD_EXPAND_LAST
+	Color3<float> getRgb() const noexcept { return Color3<float>(float4::swizzle<float4::XYZZ>(rgba)); }
+#else
+	Color3<float> getRgb() const noexcept { return Color3<float>(float4::cutoff3(rgba)); }
+#endif
+	void setRgb(Color3<float>::ConstArg c) noexcept { rgba = float4::insert3(c, rgba); }
 	bool isZero() const noexcept { return float4::all4(float4::equal(rgba, float4::zero())); }
 	bool isApproxZero() const noexcept { float4::all4(float4::lessThan(float4::abs4(rgba), TOLERANCE)); }
 	bool isApproxEqual(ConstArg c) const noexcept { float4::all4(float4::lessThan(float4::abs4(float4::sub4(rgba, c)), TOLERANCE)); }

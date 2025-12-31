@@ -133,7 +133,7 @@ const UInt32M128 MASK1 = { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } 
 const UInt32M128 MASK2 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } } };
 const UInt32M128 MASK3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
 const UInt32M128 MASK4 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF } } };
-const UInt32M128 ADD_SUB_SIGN = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
+const UInt32M128 SUB_ADD_SIGN4 = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN2 = { { { 0x80000000, 0x80000000, 0x00000000, 0x00000000 } } };
 const UInt32M128 SIGN3 = { { { 0x80000000, 0x80000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN4 = { { { 0x80000000, 0x80000000, 0x80000000, 0x80000000 } } };
@@ -152,12 +152,33 @@ constexpr int Y = 1;
 constexpr int Z = 2;
 constexpr int W = 3;
 
+//constexpr int XZ = _MM_SHUFFLE(0, 0, 2, 0);
+//constexpr int ZY = _MM_SHUFFLE(0, 0, 1, 2);
+
 constexpr int XYYY = _MM_SHUFFLE(1, 1, 1, 0);
 constexpr int XZZZ = _MM_SHUFFLE(2, 2, 2, 0);
-//constexpr int XWWW = _MM_SHUFFLE(3, 3, 3, 0);
+constexpr int XWWW = _MM_SHUFFLE(3, 3, 3, 0);
 constexpr int XYZZ = _MM_SHUFFLE(2, 2, 1, 0);
-//constexpr int XYWW = _MM_SHUFFLE(3, 3, 1, 0);
+constexpr int XYWW = _MM_SHUFFLE(3, 3, 1, 0);
+constexpr int XZWW = _MM_SHUFFLE(3, 3, 2, 0);
+
+constexpr int YXXX = _MM_SHUFFLE(0, 0, 0, 1);
+constexpr int YZZZ = _MM_SHUFFLE(2, 2, 2, 1);
+constexpr int YZWW = _MM_SHUFFLE(3, 3, 2, 1);
+constexpr int YWWW = _MM_SHUFFLE(3, 3, 3, 1);
+constexpr int YXZW = _MM_SHUFFLE(3, 2, 0, 1);
+constexpr int YXWZ = _MM_SHUFFLE(2, 3, 0, 1);
+
+constexpr int ZXXX = _MM_SHUFFLE(0, 0, 0, 2);
 constexpr int ZYYY = _MM_SHUFFLE(1, 1, 1, 2);
+constexpr int ZYWW = _MM_SHUFFLE(3, 3, 1, 2);
+constexpr int ZWWW = _MM_SHUFFLE(3, 3, 3, 2);
+constexpr int ZWXY = _MM_SHUFFLE(1, 0, 3, 2);
+
+constexpr int WXXX = _MM_SHUFFLE(0, 0, 0, 3);
+constexpr int WYYY = _MM_SHUFFLE(1, 1, 1, 3);
+constexpr int WZZZ = _MM_SHUFFLE(2, 2, 2, 3);
+constexpr int WZYX = _MM_SHUFFLE(0, 1, 2, 3);
 
 /*template<int I0, int I1, int I2, int I3>
 static inline __m128i constant4i() 
@@ -384,6 +405,21 @@ inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m
 //	_mm_storeu_ps(&m[12], row3);
 //}
 
+inline void transpose2x2(__m128& row0, __m128& row1)
+{
+	// #TODO
+}
+
+inline void transpose3x3(__m128& row0, __m128& row1, __m128& row2)
+{
+	// #TODO
+}
+
+inline void transpose4x4(__m128& row0, __m128& row1, __m128& row2, __m128& row3)
+{
+	_MM_TRANSPOSE4_PS(row0, row1, row2, row3);
+}
+
 inline float toFloat/*extract*/(__m128 s)
 {
 	return _mm_cvtss_f32(s);
@@ -502,7 +538,21 @@ inline __m128 broadcast(__m128 v)
 //}
 
 template<int M>
-inline __m128 swizzle(__m128 v)
+inline __m128 swizzle2(__m128 v)
+{
+	static_assert((M & ~0xFF/*0xF*/) == 0);
+	return _mm_shuffle_ps(v, _mm_setzero_ps(), M);
+}
+
+template<int M>
+inline __m128 swizzle3(__m128 v)
+{
+	static_assert((M & ~0xFF/*0x3F*/) == 0);
+	return _mm_and_ps(_mm_shuffle_ps(v, v, M), detail::MASK3);
+}
+
+template<int M>
+inline __m128 swizzle/*4*/(__m128 v)
 {
 	static_assert((M & ~0xFF) == 0);
 	return _mm_shuffle_ps(v, v, M);
@@ -618,12 +668,12 @@ inline __m128 sub4(__m128 v1, __m128 v2)
 	return _mm_sub_ps(v1, v2);
 }
 
-inline __m128 addSub4(__m128 v1, __m128 v2)
+inline __m128 subAdd4(__m128 v1, __m128 v2)
 {
 #if (SIMD_SSE >= 3)
 	return _mm_addsub_ps(v1, v2);
 #else
-	return _mm_add_ps(v1, _mm_xor_ps(v2, detail::ADD_SUB_SIGN));
+	return _mm_add_ps(v1, _mm_xor_ps(v2, detail::SUB_ADD_SIGN4));
 #endif
 }
 

@@ -47,9 +47,10 @@ struct Vector4
 	template<typename U> explicit Vector4(const IntVector4<U>&/*IntVector4<U>::ConstArg*/ v) noexcept;
 	explicit Vector4(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
+	explicit Vector4(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; w = v[3]; /*} else zero();*/ }
 	explicit Vector4(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)),
 		z((axis == Axis::Z) ? T(1) : T(0)), w((axis == Axis::W) ? T(1) : T(0)) {}
-	explicit Vector4(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; w = v[3]; /*} else zero();*/ }
+
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
@@ -59,13 +60,17 @@ struct Vector4
 	Vector4 operator-() const noexcept { return Vector4(-x, -y, -z, -w); }
 	Vector4& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	Vector4& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+	Vector4& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 	Vector4& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
+	Vector4& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	Vector4& operator/=(const T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; w *= s; return *this; }
 	//Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
 	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); }
 	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); }
+	friend Vector4 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z, v1.w*v2.w); }
 	friend Vector4 operator*(const T f, ConstArg v) noexcept { return Vector4(f*v.x, f*v.y, f*v.z, f*v.w); }
 	friend Vector4 operator*(ConstArg v, const T f) noexcept { return Vector4(v.x*f, v.y*f, v.z*f, v.w*f); }
+	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
 	friend Vector4 operator/(const T f, ConstArg v) noexcept { return Vector4(f/v.x, f/v.y, f/v.z, f/v.w); }
 	friend Vector4 operator/(ConstArg v, const T f) noexcept { T s = T(1)/f; return Vector4(v.x*s, v.y*s, v.z*s, v.w*s); }
 	//friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
@@ -175,11 +180,11 @@ template<>
 	template<typename U> explicit Vector4(const IntVector4<U>&/*IntVector4<U>::ConstArg*/ v) noexcept;
 	explicit Vector4(const tuples::templates::Tuple4<float>& t) noexcept { xyzw = float4::set4(t.x, t.y, t.z, t.w); }
 	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept { xyzw = float4::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
+	explicit Vector4(const float* const v) noexcept { xyzw = float4::load4(v); }
 	explicit Vector4(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f,
 		(axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::W) ? 1.f : 0.f); }
-	explicit Vector4(const float* const v) noexcept { xyzw = float4::load4(v); }
-
 	explicit Vector4(const float4::Type v) noexcept : xyzw(v) {}
+
 	operator float4::Type() const noexcept { return xyzw; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
@@ -190,13 +195,17 @@ template<>
 	Vector4 operator-() const noexcept { return Vector4(float4::neg4(xyzw)); }
 	Vector4& operator+=(ConstArg v) noexcept { xyzw = float4::add4(xyzw, v); return *this; }
 	Vector4& operator-=(ConstArg v) noexcept { xyzw = float4::sub4(xyzw, v); return *this; }
+	Vector4& operator*=(ConstArg v) noexcept { xyzw = float4::mul4(xyzw, v); return *this; }
 	Vector4& operator*=(const float f) noexcept { xyzw = float4::mul4(xyzw, float4::set4(f)); return *this; }
+	Vector4& operator/=(ConstArg v) noexcept { xyzw = float4::div4(xyzw, v); return *this; }
 	Vector4& operator/=(const float f) noexcept { xyzw = float4::mul4(xyzw, float4::set4(1.f/f)); return *this; }
 	//Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
 	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::add4(v1, v2)); }
 	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::sub4(v1, v2)); }
+	friend Vector4 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::mul4(v1, v2)); }
 	friend Vector4 operator*(const float f, ConstArg v) noexcept { return Vector4(float4::mul4(float4::set4(f), v)); }
 	friend Vector4 operator*(ConstArg v, const float f) noexcept { return Vector4(float4::mul4(v, float4::set4(f))); }
+	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::div4(v1, v2)); }
 	friend Vector4 operator/(const float f, ConstArg v) noexcept { return Vector4(float4::div4(float4::set4(f), v)); }
 	friend Vector4 operator/(ConstArg v, const float f) noexcept { return Vector4(float4::mul4(v, float4::set4(1.f/f))); }
 	//friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
@@ -208,9 +217,14 @@ template<>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use float4::set(x, y, z, w)
 
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector2<float> getXY() const noexcept { return Vector2<float>(float4::swizzle<float4::XYYY>(xyzw)); }
-	void setXY(Vector2<float>::ConstArg v) noexcept { xyzw = float4::insert2(v, xyzw); }
 	Vector3<float> getXYZ() const noexcept { return Vector3<float>(float4::swizzle<float4::XYZZ>(xyzw)); }
+#else
+	Vector2<float> getXY() const noexcept { return Vector2<float>(float4::cutoff2(xyzw)); }
+	Vector3<float> getXYZ() const noexcept { return Vector3<float>(float4::cutoff3(xyzw)); }
+#endif
+	void setXY(Vector2<float>::ConstArg v) noexcept { xyzw = float4::insert2(v, xyzw); }
 	void setXYZ(Vector3<float>::ConstArg v) noexcept { xyzw = float4::insert3(v, xyzw); }
 	bool isZero() const noexcept { return float4::all4(float4::equal(xyzw, float4::zero())); }
 	bool isApproxZero() const noexcept { float4::all4(float4::lessThan(float4::abs4(xyzw), TOLERANCE)); }

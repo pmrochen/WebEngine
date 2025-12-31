@@ -38,6 +38,7 @@ struct Color3
 	explicit Color3(const tuples::templates::Tuple3<T>& t) noexcept : r(t.x), g(t.y), b(t.z) {}
 	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)) {}
 	explicit Color3(const T* const c) noexcept { r = c[0]; g = c[1]; b = c[2]; }
+
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(r, g, b); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(r), U(g), U(b)); }
 	explicit operator T*() noexcept { return &r; }
@@ -133,14 +134,23 @@ struct Color3<float>
 	static constexpr int NUM_COMPONENTS = 3;
 
 	/*constexpr*/ Color3() noexcept { rgb = float4::zero(); }
+#if IMAGING_SIMD_EXPAND_LAST
 	/*constexpr*/ explicit Color3(const float scalar) noexcept { rgb = float4::set4(scalar); }
 	/*constexpr*/ Color3(const float r, const float g, const float b) noexcept { rgb = float4::set4(r, g, b, b); }
 	//template<typename U> explicit Color3(const IntColor3<U>&/*IntColor3<U>::ConstArg*/ c) noexcept;
 	explicit Color3(const tuples::templates::Tuple3<float>& t) noexcept { rgb = float4::set4(t.x, t.y, t.z, t.z); }
 	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept { float z = (float)t.z; rgb = float4::set4((float)t.x, (float)t.y, z, z); }
 	explicit Color3(const float* const c) noexcept { set(c[0], c[1], c[2]); }
-
+#else
+	/*constexpr*/ explicit Color3(const float scalar) noexcept { rgb = float4::set3(scalar); }
+	/*constexpr*/ Color3(const float r, const float g, const float b) noexcept { rgb = float4::set3(r, g, b); }
+	//template<typename U> explicit Color3(const IntColor3<U>&/*IntColor3<U>::ConstArg*/ c) noexcept;
+	explicit Color3(const tuples::templates::Tuple3<float>& t) noexcept { rgb = float4::set3(t.x, t.y, t.z); }
+	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept { rgb = float4::set3((float)t.x, (float)t.y, (float)t.z); }
+	explicit Color3(const float* const c) noexcept { rgb = float4::load3(c); }
+#endif
 	explicit Color3(const float4::Type c) noexcept : rgb(c) {}
+
 	operator float4::Type() const noexcept { return rgb; }
 	explicit operator tuples::templates::Tuple3<float>() noexcept { return tuples::templates::Tuple3<float>(r, g, b); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(r), U(g), U(b)); }
@@ -148,20 +158,33 @@ struct Color3<float>
 	explicit operator const float*() const noexcept { return &r; }
 
 	Color3 operator+() const noexcept { return *this; }
+#if IMAGING_SIMD_EXPAND_LAST
 	Color3 operator-() const noexcept { return Color3(float4::neg4(rgb)); }
+#else
+	Color3 operator-() const noexcept { return Color3(float4::neg3(rgb)); }
+#endif
 	Color3& operator+=(ConstArg c) noexcept { rgb = float4::add4(rgb, c); return *this; }
 	Color3& operator-=(ConstArg c) noexcept { rgb = float4::sub4(rgb, c); return *this; }
 	Color3& operator*=(ConstArg c) noexcept { rgb = float4::mul4(rgb, c); return *this; }
 	Color3& operator*=(const float f) noexcept { rgb = float4::mul4(rgb, float4::set4(f)); return *this; }
+#if IMAGING_SIMD_EXPAND_LAST
 	Color3& operator/=(ConstArg c) noexcept { rgb = float4::div4(rgb, c); return *this; }
+#else
+	Color3& operator/=(ConstArg c) noexcept { rgb = float4::div3(rgb, c); return *this; }
+#endif
 	Color3& operator/=(const float f) noexcept { rgb = float4::mul4(rgb, float4::set4(1.f/f)); return *this; }
 	friend Color3 operator+(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::add4(c1, c2)); }
 	friend Color3 operator-(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::sub4(c1, c2)); }
 	friend Color3 operator*(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::mul4(c1, c2)); }
 	friend Color3 operator*(const float f, ConstArg c) noexcept { return Color3(float4::mul4(float4::set4(f), c)); }
 	friend Color3 operator*(ConstArg c, const float f) noexcept { return Color3(float4::mul4(c, float4::set4(f))); }
+#if IMAGING_SIMD_EXPAND_LAST
 	friend Color3 operator/(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::div4(c1, c2)); }
 	friend Color3 operator/(const float f, ConstArg c) noexcept { return Color3(float4::div4(float4::set4(f), c)); }
+#else
+	friend Color3 operator/(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::div3(c1, c2)); }
+	friend Color3 operator/(const float f, ConstArg c) noexcept { return Color3(float4::div3(float4::set3(f), c)); }
+#endif
 	friend Color3 operator/(ConstArg c, const float f) noexcept { return Color3(float4::mul4(c, float4::set4(1.f/f))); }
 	bool operator==(ConstArg c) const noexcept { return float4::all3(float4::equal(rgb, c)); }
 	bool operator!=(ConstArg c) const noexcept { return !(*this == c); }
@@ -186,7 +209,11 @@ struct Color3<float>
 	float getMinComponent() const noexcept { return float4::toFloat(float4::hMin3(rgb)); }
 	float getMaxComponent() const noexcept { return float4::toFloat(float4::hMax3(rgb)); }
 	Color3& setZero() noexcept { rgb = float4::zero(); return *this; }
+#if IMAGING_SIMD_EXPAND_LAST
 	Color3& set(const float r, const float g, const float b) noexcept { rgb = float4::set4(r, g, b, b); return *this; }
+#else
+	Color3& set(const float r, const float g, const float b) noexcept { rgb = float4::set3(r, g, b); return *this; }
+#endif
 	Color3& setMinimum(ConstArg c1, ConstArg c2) noexcept { rgb = float4::min4(c1, c2); return *this; }
 	Color3& setMaximum(ConstArg c1, ConstArg c2) noexcept { rgb = float4::max4(c1, c2); return *this; }
 	static const Color3& getZero() noexcept { return ZERO; }

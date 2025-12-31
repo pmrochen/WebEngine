@@ -43,9 +43,10 @@ struct Vector3
 	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
+	explicit Vector3(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; /*} else zero();*/ }
 	explicit Vector3(const Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)),
 		z((axis == Axis::Z) ? T(1) : T(0)) {}
-	explicit Vector3(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; /*} else zero();*/ }
+
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
@@ -55,13 +56,17 @@ struct Vector3
 	Vector3 operator-() const noexcept { return Vector3(-x, -y, -z); }
 	Vector3& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
 	Vector3& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
+	Vector3& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	Vector3& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; return *this; }
+	Vector3& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	Vector3& operator/=(const T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; return *this; }
 	//Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
 	friend Vector3 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
 	friend Vector3 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
+	friend Vector3 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z); }
 	friend Vector3 operator*(const T f, ConstArg v) noexcept { return Vector3(f*v.x, f*v.y, f*v.z); }
 	friend Vector3 operator*(ConstArg v, const T f) noexcept { return Vector3(v.x*f, v.y*f, v.z*f); }
+	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
 	friend Vector3 operator/(const T f, ConstArg v) noexcept { return Vector3(f/v.x, f/v.y, f/v.z); }
 	friend Vector3 operator/(ConstArg v, const T f) noexcept { T s = T(1)/f; return Vector3(v.x*s, v.y*s, v.z*s); }
 	//friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
@@ -150,21 +155,21 @@ inline Vector3<T>& Vector3<T>::rotate(const Axis axis, const T angle)
 			case Axis::X:
 			{
 				const float j = y, k = z;
-				y = j*cosAngle - k*sinAngle;
+				y = j*cosAngle - k*sinAngle; // #TODO SIMD
 				z = k*cosAngle + j*sinAngle;
 			} break;
 
 			case Axis::Y:
 			{
 				const float i = x, k = z;
-				x = i*cosAngle + k*sinAngle;
+				x = i*cosAngle + k*sinAngle; // #TODO SIMD
 				z = k*cosAngle - i*sinAngle;
 			} break;
 
 			case Axis::Z:
 			{
 				const float i = x, j = y;
-				x = i*cosAngle - j*sinAngle;
+				x = i*cosAngle - j*sinAngle; // #TODO SIMD
 				y = j*cosAngle + i*sinAngle;
 			} break;
 		}
@@ -199,6 +204,7 @@ template<>
 	static constexpr int NUM_COMPONENTS = 3;
 
 	/*constexpr*/ Vector3() noexcept { xyz = float4::zero(); }
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	/*constexpr*/ explicit Vector3(const float scalar) noexcept { xyz = float4::set4(scalar); }
 	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = float4::set4(x, y, z, z); }
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = float4::cutoff2(v); }
@@ -206,10 +212,20 @@ template<>
 	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = float4::set4(t.x, t.y, t.z, t.z); }
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { float z = (float)t.z; xyz = float4::set4((float)t.x, (float)t.y, z, z); }
-	explicit Vector3(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
 	explicit Vector3(const float* const v) noexcept { set(v[0], v[1], v[2]); }
-
+#else
+	/*constexpr*/ explicit Vector3(const float scalar) noexcept { xyz = float4::set3(scalar); }
+	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = float4::set3(x, y, z); }
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = float4::cutoff2(v); }
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, const float z) noexcept { xyz = float4::combine2(v, float4::set1(z)); }
+	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
+	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = float4::set3(t.x, t.y, t.z); }
+	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { xyz = float4::set3((float)t.x, (float)t.y, (float)t.z); }
+	explicit Vector3(const float* const v) noexcept { xyz = float4::load3(v); }
+#endif
+	explicit Vector3(const Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
 	explicit Vector3(const float4::Type v) noexcept : xyz(v) {}
+
 	operator float4::Type() const noexcept { return xyz; }
 	explicit operator tuples::templates::Tuple3<float>() noexcept { return tuples::templates::Tuple3<float>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
@@ -217,17 +233,34 @@ template<>
 	explicit operator const float*() const noexcept { return &x; }
 
 	Vector3 operator+() const noexcept { return *this; }
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector3 operator-() const noexcept { return Vector3(float4::neg4(xyz)); }
+#else
+	Vector3 operator-() const noexcept { return Vector3(float4::neg3(xyz)); }
+#endif
 	Vector3& operator+=(ConstArg v) noexcept { xyz = float4::add4(xyz, v); return *this; }
 	Vector3& operator-=(ConstArg v) noexcept { xyz = float4::sub4(xyz, v); return *this; }
+	Vector3& operator*=(ConstArg v) noexcept { xyz = float4::mul4(xyz, v); return *this; }
 	Vector3& operator*=(const float f) noexcept { xyz = float4::mul4(xyz, float4::set4(f)); return *this; }
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	Vector3& operator/=(ConstArg v) noexcept { xyz = float4::div4(xyz, v); return *this; }
+#else
+	Vector3& operator/=(ConstArg v) noexcept { xyz = float4::div3(xyz, v); return *this; }
+#endif
 	Vector3& operator/=(const float f) noexcept { xyz = float4::mul4(xyz, float4::set4(1.f/f)); return *this; }
 	//Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
 	friend Vector3 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::add4(v1, v2)); }
 	friend Vector3 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::sub4(v1, v2)); }
+	friend Vector3 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::mul4(v1, v2)); }
 	friend Vector3 operator*(const float f, ConstArg v) noexcept { return Vector3(float4::mul4(float4::set4(f), v)); }
 	friend Vector3 operator*(ConstArg v, const float f) noexcept { return Vector3(float4::mul4(v, float4::set4(f))); }
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::div4(v1, v2)); }
 	friend Vector3 operator/(const float f, ConstArg v) noexcept { return Vector3(float4::div4(float4::set4(f), v)); }
+#else
+	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::div3(v1, v2)); }
+	friend Vector3 operator/(const float f, ConstArg v) noexcept { return Vector3(float4::div3(float4::set3(f), v)); }
+#endif
 	friend Vector3 operator/(ConstArg v, const float f) noexcept { return Vector3(float4::mul4(v, float4::set4(1.f/f))); }
 	//friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
 	////friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
@@ -238,10 +271,16 @@ template<>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use float4::set(x, y, z, z)
 
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector2<float> getXY() const noexcept { return Vector2<float>(float4::swizzle<float4::XYYY>(xyz)); }
-	void setXY(Vector2<float>::ConstArg v) noexcept { xyz = float4::insert2(v, xyz); }
 	Vector2<float> getXZ() const noexcept { return Vector2<float>(float4::swizzle<float4::XZZZ>(xyz)); }
 	Vector2<float> getZY() const noexcept { return Vector2<float>(float4::swizzle<float4::ZYYY>(xyz)); }
+#else
+	Vector2<float> getXY() const noexcept { return Vector2<float>(float4::cutoff2(xyz)); }
+	Vector2<float> getXZ() const noexcept { return Vector2<float>(float4::swizzle/*2*/<float4::XZWW>(xyz)); }
+	Vector2<float> getZY() const noexcept { return Vector2<float>(float4::swizzle/*2*/<float4::ZYWW>(xyz)); }
+#endif
+	void setXY(Vector2<float>::ConstArg v) noexcept { xyz = float4::insert2(v, xyz); }
 	bool isZero() const noexcept { return float4::all3(float4::equal(xyz, float4::zero())); }
 	bool isApproxZero() const noexcept { float4::all3(float4::lessThan(float4::abs4(xyz), TOLERANCE)); }
 	bool isApproxEqual(ConstArg v) const noexcept { float4::all3(float4::lessThan(float4::abs4(float4::sub4(xyz, v)), TOLERANCE)); }
@@ -265,10 +304,18 @@ template<>
 	float getMinComponent() const noexcept { return float4::toFloat(float4::hMin3(xyz)); }
 	float getMaxComponent() const noexcept { return float4::toFloat(float4::hMax3(xyz)); }
 	Vector3& setZero() noexcept { xyz = float4::zero(); return *this; }
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector3& set(const float x, const float y, const float z) noexcept { xyz = float4::set4(x, y, z, z); return *this; }
+#else
+	Vector3& set(const float x, const float y, const float z) noexcept { xyz = float4::set3(x, y, z); return *this; }
+#endif
 	Vector3& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { xyz = float4::min4(v1, v2); return *this; }
 	Vector3& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { xyz = float4::max4(v1, v2); return *this; }
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector3& negate() noexcept { xyz = float4::neg4(xyz); return *this; }
+#else
+	Vector3& negate() noexcept { xyz = float4::neg3(xyz); return *this; }
+#endif
 #if MATHEMATICS_FAST_NORMALIZE
 	Vector3& normalize() noexcept { float m = rcpSqrtApprox(getMagnitudeSquared()); if (m <= std::numeric_limits<float>::max()) *this *= m; return *this; }
 #else
