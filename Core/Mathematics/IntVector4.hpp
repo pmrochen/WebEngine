@@ -39,12 +39,14 @@ struct IntVector4
 	template<typename U> explicit IntVector4(Vector4<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)), z(T(v.z)), w(T(v.w)) {}
 	explicit IntVector4(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit IntVector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
-	explicit IntVector4(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; w = v[3]; /*} else zero();*/ }
+	explicit IntVector4(const T* const v) noexcept { x = v[0]; y = v[1]; z = v[2]; w = v[3]; }
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
+	T& operator[](int i) { return (&x)[i]; }
+	const T& operator[](int i) const { return (&x)[i]; }
 
 	IntVector4 operator+() const noexcept { return *this; }
 	IntVector4 operator-() const noexcept { return IntVector4(-x, -y, -z, -w); }
@@ -86,10 +88,8 @@ struct IntVector4
 	T getMaxComponent() const noexcept { return std::max(std::max(std::max(x, y), z), w); }
 	IntVector4& setZero() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
 	IntVector4& set(const T x, const T y, const T z, const T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
-	IntVector4& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y);
-		z = std::min(v1.z, v2.z); w = std::min(v1.w, v2.w); return *this; }
-	IntVector4& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y);
-		z = std::max(v1.z, v2.z); w = std::max(v1.w, v2.w); return *this; }
+	IntVector4& setMinimum(ConstArg v1, ConstArg v2) noexcept;
+	IntVector4& setMaximum(ConstArg v1, ConstArg v2) noexcept;
 	IntVector4& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
 	IntVector4& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 	static const IntVector4&/*IntVector4::ConstResult*/ getZero() noexcept { return ZERO; }
@@ -98,6 +98,26 @@ struct IntVector4
 
 	T x, y, z, w;
 };
+
+template<typename T>
+inline IntVector4<T>& IntVector4<T>::setMinimum(ConstArg v1, ConstArg v2)
+{
+	x = std::min(v1.x, v2.x); 
+	y = std::min(v1.y, v2.y);
+	z = std::min(v1.z, v2.z); 
+	w = std::min(v1.w, v2.w); 
+	return *this; 
+}
+
+template<typename T>
+inline IntVector4<T>& IntVector4<T>::setMaximum(ConstArg v1, ConstArg v2)
+{
+	x = std::max(v1.x, v2.x); 
+	y = std::max(v1.y, v2.y);
+	z = std::max(v1.z, v2.z); 
+	w = std::max(v1.w, v2.w); 
+	return *this; 
+}
 
 template<typename T> const IntVector4<T> IntVector4<T>::ZERO{};
 

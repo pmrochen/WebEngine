@@ -35,12 +35,14 @@ struct IntVector3
 	template<typename U> explicit IntVector3(Vector3<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)), z(T(v.z)) {}
 	explicit IntVector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
 	template<typename U> explicit IntVector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
-	explicit IntVector3(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; z = v[2]; /*} else zero();*/ }
+	explicit IntVector3(const T* const v) noexcept { x = v[0]; y = v[1]; z = v[2]; }
 
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
+	T& operator[](int i) { return (&x)[i]; }
+	const T& operator[](int i) const { return (&x)[i]; }
 
 	IntVector3 operator+() const noexcept { return *this; }
 	IntVector3 operator-() const noexcept { return IntVector3(-x, -y, -z); }
@@ -82,10 +84,8 @@ struct IntVector3
 	T getMaxComponent() const noexcept { return std::max(std::max(x, y), z); }
 	IntVector3& setZero() noexcept { x = T(); y = T(); z = T(); return *this; }
 	IntVector3& set(const T x, const T y, const T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
-	IntVector3& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y);
-		z = std::min(v1.z, v2.z); return *this; }
-	IntVector3& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y);
-		z = std::max(v1.z, v2.z); return *this; }
+	IntVector3& setMinimum(ConstArg v1, ConstArg v2) noexcept;
+	IntVector3& setMaximum(ConstArg v1, ConstArg v2) noexcept;
 	IntVector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	IntVector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	static const IntVector3&/*IntVector3::ConstResult*/ getZero() noexcept { return ZERO; }
@@ -94,6 +94,24 @@ struct IntVector3
 
 	T x, y, z;
 };
+
+template<typename T>
+inline IntVector3<T>& IntVector3<T>::setMinimum(ConstArg v1, ConstArg v2)
+{
+	x = std::min(v1.x, v2.x); 
+	y = std::min(v1.y, v2.y);
+	z = std::min(v1.z, v2.z); 
+	return *this; 
+}
+
+template<typename T>
+inline IntVector3<T>& IntVector3<T>::setMaximum(ConstArg v1, ConstArg v2)
+{
+	x = std::max(v1.x, v2.x); 
+	y = std::max(v1.y, v2.y);
+	z = std::max(v1.z, v2.z); 
+	return *this; 
+}
 
 template<typename T> const IntVector3<T> IntVector3<T>::ZERO{};
 

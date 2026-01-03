@@ -46,6 +46,8 @@ struct Color4
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	explicit operator T*() noexcept { return &r; }
 	explicit operator const T*() const noexcept { return &r; }
+	T& operator[](int i) { return (&r)[i]; }
+	const T& operator[](int i) const { return (&r)[i]; }
 
 	Color4 operator+() const noexcept { return *this; }
 	Color4 operator-() const noexcept { return Color4(-r, -g, -b, -a); }
@@ -73,12 +75,9 @@ struct Color4
 	Color3<T>::ConstResult getRgb() const noexcept { return *reinterpret_cast<const Color3*>(this); }
 	void setRgb(Color3<T>::ConstArg c) noexcept { r = c.r; g = c.g; b = c.b; }
 	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()) && (a == T()); }
-	bool isApproxZero() const noexcept { return (std::fabs(r) < Constants<T>::TOLERANCE) &&
-		(std::fabs(g) < Constants<T>::TOLERANCE) && (std::fabs(b) < Constants<T>::TOLERANCE) && (std::fabs(a) < Constants<T>::TOLERANCE); }
-	bool isApproxEqual(ConstArg c) const noexcept { return (std::fabs(c.r - r) < Constants<T>::TOLERANCE) && 
-		(std::fabs(c.g - g) < Constants<T>::TOLERANCE) && (std::fabs(c.b - b) < Constants<T>::TOLERANCE) && (std::fabs(c.a - a) < Constants<T>::TOLERANCE); }
-	bool isApproxEqual(ConstArg c, const T tolerance) const noexcept { return (std::fabs(c.r - r) < tolerance) &&
-		(std::fabs(c.g - g) < tolerance) && (std::fabs(c.b - b) < tolerance) && (std::fabs(c.a - a) < tolerance); }
+	bool isApproxZero() const noexcept;
+	bool isApproxEqual(ConstArg c) const noexcept;
+	bool isApproxEqual(ConstArg c, const T tolerance) const noexcept;
 	bool allLessThan(ConstArg c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b) && (a < c.a); }
 	bool allLessThanEqual(ConstArg c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b) && (a <= c.a); }
 	bool allGreaterThan(ConstArg c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b) && (a > c.a); }
@@ -92,10 +91,8 @@ struct Color4
 	T getMaxComponent() const noexcept { return std::max(std::max(std::max(r, g), b), a); }
 	Color4& setZero() noexcept { r = T(); g = T(); b = T(); a = T(); return *this; }
 	Color4& set(const T r, const T g, const T b, const T a) noexcept { this->r = r; this->g = g; this->b = b; this->a = a; return *this; }
-	Color4& setMinimum(ConstArg c1, ConstArg c2) noexcept { r = std::min(c1.r, c2.r); g = std::min(c1.g, c2.g);
-		b = std::min(c1.b, c2.b); a = std::min(c1.a, c2.a); return *this; }
-	Color4& setMaximum(ConstArg c1, ConstArg c2) noexcept { r = std::max(c1.r, c2.r); g = std::max(c1.g, c2.g);
-		b = std::max(c1.b, c2.b); a = std::max(c1.a, c2.a); return *this; }
+	Color4& setMinimum(ConstArg c1, ConstArg c2) noexcept;
+	Color4& setMaximum(ConstArg c1, ConstArg c2) noexcept;
 	static const Color4& getZero() noexcept { return ZERO; }
 	static const Color4& getUnitR() noexcept { return UNIT_R; }
 	static const Color4& getUnitG() noexcept { return UNIT_G; }
@@ -115,18 +112,56 @@ struct Color4
 	T r, g, b, a;
 };
 
+template<typename T>
+inline bool Color4<T>::isApproxZero() const
+{ 
+	return (std::fabs(r) < Constants<T>::TOLERANCE) && (std::fabs(g) < Constants<T>::TOLERANCE) && 
+		(std::fabs(b) < Constants<T>::TOLERANCE) && (std::fabs(a) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Color4<T>::isApproxEqual(ConstArg c) const
+{ 
+	return (std::fabs(c.r - r) < Constants<T>::TOLERANCE) && (std::fabs(c.g - g) < Constants<T>::TOLERANCE) && 
+		(std::fabs(c.b - b) < Constants<T>::TOLERANCE) && (std::fabs(c.a - a) < Constants<T>::TOLERANCE); 
+}
+
+template<typename T>
+inline bool Color4<T>::isApproxEqual(ConstArg c, const T tolerance) const
+{ 
+	return (std::fabs(c.r - r) < tolerance) && (std::fabs(c.g - g) < tolerance) && 
+		(std::fabs(c.b - b) < tolerance) && (std::fabs(c.a - a) < tolerance); 
+}
+
+template<typename T>
+inline Color4<T>& Color4<T>::setMinimum(ConstArg c1, ConstArg c2)
+{ 
+	r = std::min(c1.r, c2.r); 
+	g = std::min(c1.g, c2.g);
+	b = std::min(c1.b, c2.b); 
+	a = std::min(c1.a, c2.a); 
+	return *this;
+}
+
+template<typename T>
+inline Color4<T>& Color4<T>::setMaximum(ConstArg c1, ConstArg c2)
+{ 
+	r = std::max(c1.r, c2.r); 
+	g = std::max(c1.g, c2.g);
+	b = std::max(c1.b, c2.b); 
+	a = std::max(c1.a, c2.a); 
+	return *this;
+}
+
 template<typename T> const Color4<T> Color4<T>::ZERO{};
 template<typename T> const Color4<T> Color4<T>::UNIT_R{ T(1), T(0), T(0), T(0) };
 template<typename T> const Color4<T> Color4<T>::UNIT_G{ T(0), T(1), T(0), T(0) };
 template<typename T> const Color4<T> Color4<T>::UNIT_B{ T(0), T(0), T(1), T(0) };
 template<typename T> const Color4<T> Color4<T>::UNIT_A{ T(0), T(0), T(0), T(1) };
 template<typename T> const Color4<T> Color4<T>::ONE{ T(1), T(1), T(1), T(1) };
-template<typename T> const Color4<T> Color4<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE,
-	Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
-template<typename T> const Color4<T> Color4<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), 
-	std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
-template<typename T> const Color4<T> Color4<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(),
-	-std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+template<typename T> const Color4<T> Color4<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
+template<typename T> const Color4<T> Color4<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
+template<typename T> const Color4<T> Color4<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
 
 #if SIMD_HAS_FLOAT4
 
@@ -157,6 +192,8 @@ struct Color4<float>
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	explicit operator float*() noexcept { return &r; }
 	explicit operator const float*() const noexcept { return &r; }
+	float& operator[](int i) { return (&r)[i]; }
+	const float& operator[](int i) const { return (&r)[i]; }
 
 	Color4 operator+() const noexcept { return *this; }
 	Color4 operator-() const noexcept { return Color4(float4::neg4(rgba)); }
@@ -176,7 +213,7 @@ struct Color4<float>
 	friend Color4 operator/(ConstArg c, const float f) noexcept { return Color4(float4::mul4(c, float4::set4(1.f/f))); }
 	bool operator==(ConstArg c) const noexcept { return float4::all4(float4::equal(rgba, c)); }
 	bool operator!=(ConstArg c) const noexcept { return !(*this == c); }
-	friend std::istream& operator>>(std::istream& s, Color4& c) { float r, g, b, a; s >> r >> std::skipws >> g >> std::skipws >> b >> std::skipws >> a; c.set(r, g, b, a); return s; }
+	friend std::istream& operator>>(std::istream& s, Color4& c);
 	friend std::ostream& operator<<(std::ostream& s, const Color4& c) { return s << c.r << ' ' << c.g << ' ' << c.b << ' ' << c.a; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; } // #FIXME use float4::set(r, g, b, a)
@@ -229,18 +266,23 @@ struct Color4<float>
 	};
 };
 
+inline std::istream& Color4<float>::operator>>(std::istream& s, Color4<float>& c) 
+{ 
+	float r, g, b, a; 
+	s >> r >> std::skipws >> g >> std::skipws >> b >> std::skipws >> a; 
+	c.set(r, g, b, a); 
+	return s;
+}
+
 const Color4<float> Color4<float>::ZERO{};
 const Color4<float> Color4<float>::UNIT_R{ 1.f, 0.f, 0.f, 0.f };
 const Color4<float> Color4<float>::UNIT_G{ 0.f, 1.f, 0.f, 0.f };
 const Color4<float> Color4<float>::UNIT_B{ 0.f, 0.f, 1.f, 0.f };
 const Color4<float> Color4<float>::UNIT_A{ 0.f, 0.f, 0.f, 1.f };
 const Color4<float> Color4<float>::ONE{ 1.f, 1.f, 1.f, 1.f };
-const Color4<float> Color4<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE,
-	Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
-const Color4<float> Color4<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(),
-	std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
-const Color4<float> Color4<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(),
-	-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
+const Color4<float> Color4<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
+const Color4<float> Color4<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+const Color4<float> Color4<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
 
 #endif /* SIMD_HAS_FLOAT4 */
 

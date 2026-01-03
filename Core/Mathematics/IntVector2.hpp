@@ -32,12 +32,14 @@ struct IntVector2
 	template<typename U> explicit IntVector2(Vector2<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)) {}
 	explicit IntVector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
 	template<typename U> explicit IntVector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
-	explicit IntVector2(const T* const v) noexcept { /*if (v) {*/ x = v[0]; y = v[1]; /*} else zero();*/ }
+	explicit IntVector2(const T* const v) noexcept { x = v[0]; y = v[1]; }
 
 	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
+	T& operator[](int i) { return (&x)[i]; }
+	const T& operator[](int i) const { return (&x)[i]; }
 
 	IntVector2 operator+() const noexcept { return *this; }
 	IntVector2 operator-() const noexcept { return IntVector2(-x, -y); }
@@ -75,8 +77,8 @@ struct IntVector2
 	T getMaxComponent() const noexcept { return std::max(x, y); }
 	IntVector2& setZero() noexcept { x = T(); y = T(); return *this; }
 	IntVector2& set(const T x, const T y) noexcept { this->x = x; this->y = y; return *this; }
-	IntVector2& setMinimumOf(ConstArg v1, ConstArg v2) noexcept { x = std::min(v1.x, v2.x); y = std::min(v1.y, v2.y); return *this; }
-	IntVector2& setMaximumOf(ConstArg v1, ConstArg v2) noexcept { x = std::max(v1.x, v2.x); y = std::max(v1.y, v2.y); return *this; }
+	IntVector2& setMinimum(ConstArg v1, ConstArg v2) noexcept;
+	IntVector2& setMaximum(ConstArg v1, ConstArg v2) noexcept;
 	IntVector2& negate() noexcept { x = -x; y = -y; return *this; }
 	IntVector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	static const IntVector2&/*IntVector2::ConstResult*/ getZero() noexcept { return ZERO; }
@@ -85,6 +87,22 @@ struct IntVector2
 
 	T x, y;
 };
+
+template<typename T>
+inline IntVector2<T>& IntVector2<T>::setMinimum(ConstArg v1, ConstArg v2)
+{
+	x = std::min(v1.x, v2.x); 
+	y = std::min(v1.y, v2.y); 
+	return *this; 
+}
+
+template<typename T>
+inline IntVector2<T>& IntVector2<T>::setMaximum(ConstArg v1, ConstArg v2)
+{
+	x = std::max(v1.x, v2.x); 
+	y = std::max(v1.y, v2.y); 
+	return *this; 
+}
 
 template<typename T> const IntVector2<T> IntVector2<T>::ZERO{};
 
