@@ -343,9 +343,13 @@ inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, 
 {
 	const __m128 t0 = _mm_loadu_ps(&m[0]);
 	const __m128 t1 = _mm_loadu_ps(&m[4]);
-	const __m128 t2 = _mm_loadu_ps(&m[8]);
 	const __m128 mask3 = detail::MASK3;
-	// #TODO
+	const __m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3)); 	
+	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
+	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
+	const __m128 t3 = _mm_loadu_ps(&m[8]); 									
+	row2 = _mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3); 	// 0, m22, m21, m20
+	row3 = _mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3); 	// 0, m32, m31, m30
 }
 
 inline void pack2x2(__m128 row0, __m128 row1, float* m)
@@ -403,7 +407,9 @@ template<int I>
 inline float extract(__m128 v)
 {
 	static_assert((I & ~3) == 0);
-	return _mm_cvtss_f32((I == 0) ? v : _mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
+	return (I == 0) ? 
+		_mm_cvtss_f32(v) :
+		_mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
 }
 
 inline __m128 cutoff2(__m128 xy)
