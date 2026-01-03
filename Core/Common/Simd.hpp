@@ -407,9 +407,10 @@ template<int I>
 inline float extract(__m128 v)
 {
 	static_assert((I & ~3) == 0);
-	return (I == 0) ? 
-		_mm_cvtss_f32(v) :
-		_mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
+	if constexpr (I == 0)
+		return _mm_cvtss_f32(v);
+	else
+		return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
 }
 
 inline __m128 cutoff2(__m128 xy)
@@ -427,12 +428,13 @@ inline __m128 insert(float s, __m128 v)
 {
 	static_assert((I & ~3) == 0);
 	const __m128 t = _mm_set_ss(s);
-	return (I == 0) ?
-		_mm_move_ss(v, t) :
+	if constexpr (I == 0)
+		return _mm_move_ss(v, t);
+	else
 #if (SIMD_SSE >= 4)
-		_mm_insert_ps(v, t, I << 4); // SSE 4.1
+		return _mm_insert_ps(v, t, I << 4); // SSE 4.1
 #else
-		_mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
+		return _mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
 			_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
 #endif
 }
@@ -441,12 +443,13 @@ template<int I>
 inline __m128 insert1(__m128 x, __m128 v)
 {
 	static_assert((I & ~3) == 0);
-	return (I == 0) ?
-		_mm_move_ss(v, x) :
+	if constexpr (I == 0)
+		return _mm_move_ss(v, x);
+	else
 #if (SIMD_SSE >= 4)
-		_mm_insert_ps(v, x, I << 4); // SSE 4.1
+		return _mm_insert_ps(v, x, I << 4); // SSE 4.1
 #else
-		_mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
+		return _mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
 			_mm_shuffle_ps(x, x, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
 #endif
 }
