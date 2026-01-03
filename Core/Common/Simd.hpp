@@ -212,11 +212,6 @@ inline __m128 set2(float x, float y)
 	return _mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)); 
 }
 
-//inline __m128 set2(__m128 xy) // Use cutoff2 instead
-//{
-//	return _mm_and_ps(xy, detail::MASK2);
-//}
-
 inline __m128 set3(float s)
 {
 	const __m128 t = _mm_set_ss(s);
@@ -228,11 +223,6 @@ inline __m128 set3(float x, float y, float z)
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_set_ss(x), _mm_set_ss(y)), _mm_set_ss(z));
 }
 
-//inline __m128 set3(__m128 xyz) // Use cutoff3 instead
-//{
-//	return _mm_and_ps(xyz, detail::MASK3);
-//}
-
 inline __m128 set4(float s)
 {
 	return _mm_set_ps1(s);
@@ -242,17 +232,6 @@ inline __m128 set4(float x, float y, float z, float w)
 { 
 	return _mm_setr_ps(x, y, z, w); 
 }
-
-//inline __m128 set4(__m128 xy, __m128 zw) // Use combine2 instead
-//{
-//	return _mm_movelh_ps(xy, zw);
-//}
-
-//inline __m128 set4(__m128 xyz, float w) // Use insert instead
-//{
-//	const __m128 t = _mm_set_ss(w);
-//	return _mm_or_ps(_mm_and_ps(xyz, detail::MASK3), _mm_shuffle_ps(t, t, _MM_SHUFFLE(0, 1, 1, 1)));
-//}
 
 inline __m128 load2(const float* v) 
 {
@@ -304,43 +283,6 @@ inline __m128 load4(const float* v)
 	return _mm_loadu_ps(v); 
 }
 
-//inline void load(const Matrix2& m, __m128& row0, __m128& row1)
-//{
-//	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::MASK2);
-//	row1 = _mm_unpacklo_ps(_mm_load_ss(&m.m10), _mm_load_ss(&m.m11));
-//}
-//
-//inline void load(const Matrix2& m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
-//{
-//	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::MASK2);
-//	row1 = _mm_unpacklo_ps(_mm_load_ss(&m.m10), _mm_load_ss(&m.m11));
-//	row2 = _mm_setzero_ps();
-//	row3 = detail::ZERO3_ONE1;
-//}
-//
-//inline void load(const Matrix3& m, __m128& row0, __m128& row1, __m128& row2)
-//{
-//	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::MASK3);
-//	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::MASK3);
-//	row2 = _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.m20), _mm_load_ss(&m.m21)), _mm_load_ss(&m.m22));
-//}
-//
-//inline void load(const Matrix3& m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
-//{
-//	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::MASK3);
-//	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::MASK3);
-//	row2 = _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.m20), _mm_load_ss(&m.m21)), _mm_load_ss(&m.m22));
-//	row3 = detail::ZERO3_ONE1;
-//}
-//
-//inline void load(const AffineTransform& m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
-//{
-//	row0 = _mm_and_ps(_mm_loadu_ps(&m.m00), detail::MASK3);
-//	row1 = _mm_and_ps(_mm_loadu_ps(&m.m10), detail::MASK3);
-//	row2 = _mm_and_ps(_mm_loadu_ps(&m.m20), detail::MASK3);
-//	row3 = _mm_or_ps(_mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&m.x), _mm_load_ss(&m.y)), _mm_load_ss(&m.z)), detail::ZERO3_ONE1);
-//}
-//
 //inline void load4x4(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 //{
 //	row0 = _mm_loadu_ps(&m[0]);
@@ -370,6 +312,42 @@ inline void store4(__m128 u, float* v)
 	_mm_storeu_ps(v, u); 
 }
 
+//inline void store4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m) 
+//{ 
+//	_mm_storeu_ps(&m[0], row0); 
+//	_mm_storeu_ps(&m[4], row1);
+//	_mm_storeu_ps(&m[8], row2);
+//	_mm_storeu_ps(&m[12], row3);
+//}
+
+inline void unpack2x2(const float* m, __m128& row0, __m128& row1)
+{
+	const __m128 t = _mm_loadu_ps(m);
+	const __m128 zero = _mm_setzero_ps();
+	row0 = _mm_movelh_ps(t, zero);
+	row1 = _mm_movehl_ps(zero, t);
+}
+
+inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
+{
+	const __m128 t0 = _mm_loadu_ps(&m[0]);
+	const __m128 t1 = _mm_loadu_ps(&m[4]);
+	const __m128 mask3 = detail::MASK3;
+	const __m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
+	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
+	row2 = _mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2));		// 0, m22, m21, m20
+}
+
+inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
+{
+	const __m128 t0 = _mm_loadu_ps(&m[0]);
+	const __m128 t1 = _mm_loadu_ps(&m[4]);
+	const __m128 t2 = _mm_loadu_ps(&m[8]);
+	const __m128 mask3 = detail::MASK3;
+	// #TODO
+}
+
 inline void pack2x2(__m128 row0, __m128 row1, float* m)
 {
 	_mm_storeu_ps(m, _mm_movelh_ps(row0, row1));
@@ -387,32 +365,28 @@ inline void pack3x3(__m128 row0, __m128 row1, __m128 row2, float* m)
 
 inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m)
 {
-	__m128 row1x = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 2, 1));
+	const __m128 t = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 2, 1));
 	row1 = _mm_shuffle_ps(row1, row0, _MM_SHUFFLE(2, 2, 0, 0));
 	row0 = _mm_shuffle_ps(row0, row1, _MM_SHUFFLE(0, 2, 1, 0));
 	row2 = _mm_shuffle_ps(row2, row3, _MM_SHUFFLE(0, 0, 2, 2));
 	row2 = _mm_shuffle_ps(row2, row3, _MM_SHUFFLE(2, 1, 2, 0));
 	_mm_storeu_ps(&m[0], row0);
-	_mm_storeu_ps(&m[4], row1x);
+	_mm_storeu_ps(&m[4], t);
 	_mm_storeu_ps(&m[8], row2);
 }
 
-//inline void store4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m) 
-//{ 
-//	_mm_storeu_ps(&m[0], row0); 
-//	_mm_storeu_ps(&m[4], row1);
-//	_mm_storeu_ps(&m[8], row2);
-//	_mm_storeu_ps(&m[12], row3);
-//}
-
 inline void transpose2x2(__m128& row0, __m128& row1)
 {
-	// #TODO
+	const __m128 t = _mm_unpacklo_ps(row0, row1);
+	const __m128 zero = _mm_setzero_ps();
+	row0 = _mm_movelh_ps(t, zero);
+	row1 = _mm_movehl_ps(zero, t);
 }
 
 inline void transpose3x3(__m128& row0, __m128& row1, __m128& row2)
 {
-	// #TODO
+	__m128 row3 = _mm_setzero_ps();
+	_MM_TRANSPOSE4_PS(row0, row1, row2, row3);
 }
 
 inline void transpose4x4(__m128& row0, __m128& row1, __m128& row2, __m128& row3)
@@ -434,7 +408,7 @@ inline float extract(__m128 v)
 
 inline __m128 cutoff2(__m128 xy)
 {
-	return _mm_and_ps(xy, detail::MASK2);
+	return _mm_movelh_ps(xy, _mm_setzero_ps());
 }
 
 inline __m128 cutoff3(__m128 xyz)
@@ -446,15 +420,28 @@ template<int I>
 inline __m128 insert(float s, __m128 v)
 {
 	static_assert((I & ~3) == 0);
-#if (SIMD_SSE >= 4)
-	return _mm_insert_ps(v, _mm_set_ss(s), I << 4); // SSE 4.1
-#else
 	const __m128 t = _mm_set_ss(s);
-	//static const int32_t mask[] = { 0, 0, 0, -1, 0, 0, 0 };
-	//return _mm_or_ps(_mm_andnot_ps(_mm_loadu_ps((const float*)(mask + 3 - (I & 3))), v),
-	//	_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
-	return _mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
-		(I == 0) ? t : _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
+	return (I == 0) ?
+		_mm_move_ss(v, t) :
+#if (SIMD_SSE >= 4)
+		_mm_insert_ps(v, t, I << 4); // SSE 4.1
+#else
+		_mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
+			_mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
+#endif
+}
+
+template<int I>
+inline __m128 insert1(__m128 x, __m128 v)
+{
+	static_assert((I & ~3) == 0);
+	return (I == 0) ?
+		_mm_move_ss(v, x) :
+#if (SIMD_SSE >= 4)
+		_mm_insert_ps(v, x, I << 4); // SSE 4.1
+#else
+		_mm_or_ps(_mm_andnot_ps(detail::COMPONENT_MASKS[I], v),
+			_mm_shuffle_ps(x, x, _MM_SHUFFLE(1, 1, 1, 1) ^ (1 << (I + I))));
 #endif
 }
 
@@ -468,7 +455,8 @@ inline __m128 insert3(__m128 xyz, __m128 v)
 #if (SIMD_SSE >= 4)
 	return _mm_blendv_ps(v, xyz, detail::MASK3); // SSE 4.1
 #else
-	return _mm_or_ps(_mm_and_ps(detail::MASK3, xyz), _mm_andnot_ps(detail::MASK3, v));
+	const __m128 mask3 = detail::MASK3;
+	return _mm_or_ps(_mm_and_ps(mask3, xyz), _mm_andnot_ps(mask3, v));
 #endif
 }
 
