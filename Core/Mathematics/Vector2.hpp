@@ -47,8 +47,8 @@ struct Vector2
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
-	T& operator[](int i) { return (&x)[i]; }
-	const T& operator[](int i) const { return (&x)[i]; }
+	T& operator[](int i) noexcept { return (&x)[i]; }
+	const T& operator[](int i) const noexcept { return (&x)[i]; }
 
 	Vector2 operator+() const noexcept { return *this; }
 	Vector2 operator-() const noexcept { return Vector2(-x, -y); }
@@ -57,7 +57,7 @@ struct Vector2
 	Vector2& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	Vector2& operator*=(const T f) noexcept { x *= f; y *= f; return *this; }
 	Vector2& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; return *this; }
-	Vector2& operator/=(const T f) noexcept { T s = T(1)/f; x *= s; y *= s; return *this; }
+	Vector2& operator/=(const T f) noexcept { const T s = T(1)/f; x *= s; y *= s; return *this; }
 	//Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
 	friend Vector2 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x + v2.x, v1.y + v2.y); }
 	friend Vector2 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x - v2.x, v1.y - v2.y); }
@@ -66,11 +66,11 @@ struct Vector2
 	friend Vector2 operator*(ConstArg v, const T f) noexcept { return Vector2(v.x*f, v.y*f); }
 	friend Vector2 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x/v2.x, v1.y/v2.y); }
 	friend Vector2 operator/(const T f, ConstArg v) noexcept { return Vector2(f/v.x, f/v.y); }
-	friend Vector2 operator/(ConstArg v, const T f) noexcept { T s = T(1)/f; return Vector2(v.x*s, v.y*s); }
+	friend Vector2 operator/(ConstArg v, const T f) noexcept { const T s = T(1)/f; return Vector2(v.x*s, v.y*s); }
 	//friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
 	////friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
-	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const Vector2& v) const noexcept { return (x == v.x) && (y == v.y); }
+	bool operator!=(const Vector2& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector2& v) { return s >> v.x >> std::skipws >> v.y; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 	
@@ -108,6 +108,7 @@ struct Vector2
 	Vector2& rotate(const T angle);
 	Vector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	//Vector2& transform(const Matrix2<T>& m); // #TODO
+
 	static const Vector2& getZero() noexcept { return ZERO; }
 	static const Vector2& getUnitX() noexcept { return UNIT_X; }
 	static const Vector2& getUnitY() noexcept { return UNIT_Y; }
@@ -238,8 +239,8 @@ struct Vector2<float>
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	explicit operator float*() noexcept { return &x; }
 	explicit operator const float*() const noexcept { return &x; }
-	float& operator[](int i) { return (&x)[i]; }
-	const float& operator[](int i) const { return (&x)[i]; }
+	float& operator[](int i) noexcept { return (&x)[i]; }
+	const float& operator[](int i) const noexcept { return (&x)[i]; }
 
 	Vector2 operator+() const noexcept { return *this; }
 #if MATHEMATICS_SIMD_EXPAND_LAST
@@ -273,8 +274,8 @@ struct Vector2<float>
 	friend Vector2 operator/(ConstArg v, const float f) noexcept { return Vector2(float4::mul4(v, float4::set4(1.f/f))); }
 	//friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
 	////friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
-	bool operator==(ConstArg v) const noexcept { return float4::all2(float4::equal(xy, v)); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const Vector2& v) const noexcept { return float4::all2(float4::equal(xy, v)); }
+	bool operator!=(const Vector2& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector2& v);
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 
@@ -319,6 +320,7 @@ struct Vector2<float>
 	Vector2& rotate(const float angle);
 	Vector2& scale(ConstArg v) noexcept { xy = float4::mul4(xy, v); return *this; }
 	//Vector2& transform(const Matrix2<float>& m); // #TODO
+
 	static const Vector2& getZero() noexcept { return ZERO; }
 	static const Vector2& getUnitX() noexcept { return UNIT_X; }
 	static const Vector2& getUnitY() noexcept { return UNIT_Y; }

@@ -43,8 +43,8 @@ struct Color3
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(r), U(g), U(b)); }
 	explicit operator T*() noexcept { return &r; }
 	explicit operator const T*() const noexcept { return &r; }
-	T& operator[](int i) { return (&r)[i]; }
-	const T& operator[](int i) const { return (&r)[i]; }
+	T& operator[](int i) noexcept { return (&r)[i]; }
+	const T& operator[](int i) const noexcept { return (&r)[i]; }
 
 	Color3 operator+() const noexcept { return *this; }
 	Color3 operator-() const noexcept { return Color3(-r, -g, -b); }
@@ -53,7 +53,7 @@ struct Color3
 	Color3& operator*=(ConstArg c) noexcept { r *= c.r; g *= c.g; b *= c.b; return *this; }
 	Color3& operator*=(const T f) noexcept { r *= f; g *= f; b *= f; return *this; }
 	Color3& operator/=(ConstArg c) noexcept { r /= c.r; g /= c.g; b /= c.b; return *this; }
-	Color3& operator/=(const T f) noexcept { T s = T(1)/f; r *= s; g *= s; b *= s; return *this; }
+	Color3& operator/=(const T f) noexcept { const T s = T(1)/f; r *= s; g *= s; b *= s; return *this; }
 	friend Color3 operator+(ConstArg c1, ConstArg c2) noexcept { return Color3(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b); }
 	friend Color3 operator-(ConstArg c1, ConstArg c2) noexcept { return Color3(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b); }
 	friend Color3 operator*(ConstArg c1, ConstArg c2) noexcept { return Color3(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b); }
@@ -61,9 +61,9 @@ struct Color3
 	friend Color3 operator*(ConstArg c, const T f) noexcept { return Color3(c.r*f, c.g*f, c.b*f); }
 	friend Color3 operator/(ConstArg c1, ConstArg c2) noexcept { return Color3(c1.r/c2.r, c1.g/c2.g, c1.b/c2.b); }
 	friend Color3 operator/(const T f, ConstArg c) noexcept { return Color3(f/c.r, f/c.g, f/c.b); }
-	friend Color3 operator/(ConstArg c, const T f) noexcept { T s = T(1)/f; return Color3(c.r*s, c.g*s, c.b*s); }
-	bool operator==(ConstArg c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b); }
-	bool operator!=(ConstArg c) const noexcept { return !(*this == c); }
+	friend Color3 operator/(ConstArg c, const T f) noexcept { const T s = T(1)/f; return Color3(c.r*s, c.g*s, c.b*s); }
+	bool operator==(const Color3& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b); }
+	bool operator!=(const Color3& c) const noexcept { return !(*this == c); }
 	friend std::istream& operator>>(std::istream& s, Color3& c) { return s >> c.r >> std::skipws >> c.g >> std::skipws >> c.b; }
 	friend std::ostream& operator<<(std::ostream& s, const Color3& c) { return s << c.r << ' ' << c.g << ' ' << c.b; }
 	
@@ -88,6 +88,7 @@ struct Color3
 	Color3& set(const T r, const T g, const T b) noexcept { this->r = r; this->g = g; this->b = b; return *this; }
 	Color3& setMinimum(ConstArg c1, ConstArg c2) noexcept;
 	Color3& setMaximum(ConstArg c1, ConstArg c2) noexcept;
+
 	static const Color3& getZero() noexcept { return ZERO; }
 	static const Color3& getUnitR() noexcept { return UNIT_R; }
 	static const Color3& getUnitG() noexcept { return UNIT_G; }
@@ -189,8 +190,8 @@ struct Color3<float>
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(r), U(g), U(b)); }
 	explicit operator float*() noexcept { return &r; }
 	explicit operator const float*() const noexcept { return &r; }
-	float& operator[](int i) { return (&r)[i]; }
-	const float& operator[](int i) const { return (&r)[i]; }
+	float& operator[](int i) noexcept { return (&r)[i]; }
+	const float& operator[](int i) const noexcept { return (&r)[i]; }
 
 	Color3 operator+() const noexcept { return *this; }
 #if IMAGING_SIMD_EXPAND_LAST
@@ -221,8 +222,8 @@ struct Color3<float>
 	friend Color3 operator/(const float f, ConstArg c) noexcept { return Color3(float4::div3(float4::set3(f), c)); }
 #endif
 	friend Color3 operator/(ConstArg c, const float f) noexcept { return Color3(float4::mul4(c, float4::set4(1.f/f))); }
-	bool operator==(ConstArg c) const noexcept { return float4::all3(float4::equal(rgb, c)); }
-	bool operator!=(ConstArg c) const noexcept { return !(*this == c); }
+	bool operator==(const Color3& c) const noexcept { return float4::all3(float4::equal(rgb, c)); }
+	bool operator!=(const Color3& c) const noexcept { return !(*this == c); }
 	friend std::istream& operator>>(std::istream& s, Color3& c);
 	friend std::ostream& operator<<(std::ostream& s, const Color3& c) { return s << c.r << ' ' << c.g << ' ' << c.b; }
 
@@ -251,6 +252,7 @@ struct Color3<float>
 #endif
 	Color3& setMinimum(ConstArg c1, ConstArg c2) noexcept { rgb = float4::min4(c1, c2); return *this; }
 	Color3& setMaximum(ConstArg c1, ConstArg c2) noexcept { rgb = float4::max4(c1, c2); return *this; }
+
 	static const Color3& getZero() noexcept { return ZERO; }
 	static const Color3& getUnitR() noexcept { return UNIT_R; }
 	static const Color3& getUnitG() noexcept { return UNIT_G; }

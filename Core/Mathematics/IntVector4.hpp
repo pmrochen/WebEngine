@@ -45,8 +45,8 @@ struct IntVector4
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
-	T& operator[](int i) { return (&x)[i]; }
-	const T& operator[](int i) const { return (&x)[i]; }
+	T& operator[](int i) noexcept { return (&x)[i]; }
+	const T& operator[](int i) const noexcept { return (&x)[i]; }
 
 	IntVector4 operator+() const noexcept { return *this; }
 	IntVector4 operator-() const noexcept { return IntVector4(-x, -y, -z, -w); }
@@ -64,8 +64,8 @@ struct IntVector4
 	friend IntVector4 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
 	friend IntVector4 operator/(const T f, ConstArg v) noexcept { return IntVector4(f/v.x, f/v.y, f/v.z, f/v.w); }
 	friend IntVector4 operator/(ConstArg v, const T f) noexcept { return IntVector4(v.x/f, v.y/f, v.z/f, v.w/f); }
-	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const IntVector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
+	bool operator!=(const IntVector4& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, IntVector4& v) { return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z >> std::skipws >> v.w; }
 	friend std::ostream& operator<<(std::ostream& s, const IntVector4& v) { return s << v.x << ' ' << v.y << ' ' << v.z << ' ' << v.w; }
 	
@@ -92,6 +92,7 @@ struct IntVector4
 	IntVector4& setMaximum(ConstArg v1, ConstArg v2) noexcept;
 	IntVector4& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
 	IntVector4& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+
 	static const IntVector4&/*IntVector4::ConstResult*/ getZero() noexcept { return ZERO; }
 
 	static const IntVector4 ZERO;

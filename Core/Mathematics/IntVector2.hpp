@@ -38,8 +38,8 @@ struct IntVector2
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
-	T& operator[](int i) { return (&x)[i]; }
-	const T& operator[](int i) const { return (&x)[i]; }
+	T& operator[](int i) noexcept { return (&x)[i]; }
+	const T& operator[](int i) const noexcept { return (&x)[i]; }
 
 	IntVector2 operator+() const noexcept { return *this; }
 	IntVector2 operator-() const noexcept { return IntVector2(-x, -y); }
@@ -57,8 +57,8 @@ struct IntVector2
 	friend IntVector2 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x/v2.x, v1.y/v2.y); }
 	friend IntVector2 operator/(const T f, ConstArg v) noexcept { return IntVector2(f/v.x, f/v.y); }
 	friend IntVector2 operator/(ConstArg v, const T f) noexcept { return IntVector2(v.x/f, v.y/f); }
-	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const IntVector2& v) const noexcept { return (x == v.x) && (y == v.y); }
+	bool operator!=(const IntVector2& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, IntVector2& v) { return s >> v.x >> std::skipws >> v.y; }
 	friend std::ostream& operator<<(std::ostream& s, const IntVector2& v) { return s << v.x << ' ' << v.y; }
 	
@@ -81,6 +81,7 @@ struct IntVector2
 	IntVector2& setMaximum(ConstArg v1, ConstArg v2) noexcept;
 	IntVector2& negate() noexcept { x = -x; y = -y; return *this; }
 	IntVector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
+
 	static const IntVector2&/*IntVector2::ConstResult*/ getZero() noexcept { return ZERO; }
 
 	static const IntVector2 ZERO;

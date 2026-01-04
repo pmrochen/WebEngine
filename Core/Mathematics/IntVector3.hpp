@@ -41,8 +41,8 @@ struct IntVector3
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
-	T& operator[](int i) { return (&x)[i]; }
-	const T& operator[](int i) const { return (&x)[i]; }
+	T& operator[](int i) noexcept { return (&x)[i]; }
+	const T& operator[](int i) const noexcept { return (&x)[i]; }
 
 	IntVector3 operator+() const noexcept { return *this; }
 	IntVector3 operator-() const noexcept { return IntVector3(-x, -y, -z); }
@@ -60,8 +60,8 @@ struct IntVector3
 	friend IntVector3 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
 	friend IntVector3 operator/(const T f, ConstArg v) noexcept { return IntVector3(f/v.x, f/v.y, f/v.z); }
 	friend IntVector3 operator/(ConstArg v, const T f) noexcept { return IntVector3(v.x/f, v.y/f, v.z/f); }
-	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const IntVector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
+	bool operator!=(const IntVector3& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, IntVector3& v) { return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z; }
 	friend std::ostream& operator<<(std::ostream& s, const IntVector3& v) { return s << v.x << ' ' << v.y << ' ' << v.z; }
 	
@@ -88,6 +88,7 @@ struct IntVector3
 	IntVector3& setMaximum(ConstArg v1, ConstArg v2) noexcept;
 	IntVector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	IntVector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
+
 	static const IntVector3&/*IntVector3::ConstResult*/ getZero() noexcept { return ZERO; }
 
 	static const IntVector3 ZERO;

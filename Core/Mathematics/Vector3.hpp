@@ -50,8 +50,8 @@ struct Vector3
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
-	T& operator[](int i) { return (&x)[i]; }
-	const T& operator[](int i) const { return (&x)[i]; }
+	T& operator[](int i) noexcept { return (&x)[i]; }
+	const T& operator[](int i) const noexcept { return (&x)[i]; }
 
 	Vector3 operator+() const noexcept { return *this; }
 	Vector3 operator-() const noexcept { return Vector3(-x, -y, -z); }
@@ -60,7 +60,7 @@ struct Vector3
 	Vector3& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	Vector3& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; return *this; }
 	Vector3& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
-	Vector3& operator/=(const T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; return *this; }
+	Vector3& operator/=(const T f) noexcept { const T s = T(1)/f; x *= s; y *= s; z *= s; return *this; }
 	//Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
 	friend Vector3 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
 	friend Vector3 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
@@ -69,11 +69,11 @@ struct Vector3
 	friend Vector3 operator*(ConstArg v, const T f) noexcept { return Vector3(v.x*f, v.y*f, v.z*f); }
 	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
 	friend Vector3 operator/(const T f, ConstArg v) noexcept { return Vector3(f/v.x, f/v.y, f/v.z); }
-	friend Vector3 operator/(ConstArg v, const T f) noexcept { T s = T(1)/f; return Vector3(v.x*s, v.y*s, v.z*s); }
+	friend Vector3 operator/(ConstArg v, const T f) noexcept { const T s = T(1)/f; return Vector3(v.x*s, v.y*s, v.z*s); }
 	//friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
 	////friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
-	bool operator==(ConstArg v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const Vector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
+	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector3& v) { return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z; }
 	friend std::ostream& operator<<(std::ostream& s, const Vector3& v) { return s << v.x << ' ' << v.y << ' ' << v.z; }
 	
@@ -116,6 +116,7 @@ struct Vector3
 	Vector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	//Vector3& transform(const Matrix3<T>& m); // #TODO
 	//Vector3& transform(const AffineTransform<T>& m); // #TODO
+
 	static const Vector3& getZero() noexcept { return ZERO; }
 	static const Vector3& getUnitX() noexcept { return UNIT_X; }
 	static const Vector3& getUnitY() noexcept { return UNIT_Y; }
@@ -292,8 +293,8 @@ struct Vector3<float>
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
 	explicit operator float*() noexcept { return &x; }
 	explicit operator const float*() const noexcept { return &x; }
-	float& operator[](int i) { return (&x)[i]; }
-	const float& operator[](int i) const { return (&x)[i]; }
+	float& operator[](int i) noexcept { return (&x)[i]; }
+	const float& operator[](int i) const noexcept { return (&x)[i]; }
 
 	Vector3 operator+() const noexcept { return *this; }
 #if MATHEMATICS_SIMD_EXPAND_LAST
@@ -327,8 +328,8 @@ struct Vector3<float>
 	friend Vector3 operator/(ConstArg v, const float f) noexcept { return Vector3(float4::mul4(v, float4::set4(1.f/f))); }
 	//friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
 	////friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
-	bool operator==(ConstArg v) const noexcept { return float4::all3(float4::equal(xyz, v)); }
-	bool operator!=(ConstArg v) const noexcept { return !(*this == v); }
+	bool operator==(const Vector3& v) const noexcept { return float4::all3(float4::equal(xyz, v)); }
+	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector3& v);
 	friend std::ostream& operator<<(std::ostream& s, const Vector3& v) { return s << v.x << ' ' << v.y << ' ' << v.z; }
 
@@ -385,6 +386,7 @@ struct Vector3<float>
 	Vector3& scale(ConstArg v) noexcept { xyz = float4::mul4(xyz, v); return *this; }
 	//Vector3& transform(const Matrix3<float>& m); // #TODO
 	//Vector3& transform(const AffineTransform<float>& m); // #TODO
+
 	static const Vector3& getZero() noexcept { return ZERO; }
 	static const Vector3& getUnitX() noexcept { return UNIT_X; }
 	static const Vector3& getUnitY() noexcept { return UNIT_Y; }
