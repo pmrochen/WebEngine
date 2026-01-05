@@ -26,6 +26,9 @@ template<typename T>
 struct IntVector2;
 
 template<typename T>
+struct Matrix2;
+
+template<typename T>
 struct Vector2
 {
 	using Real = T;
@@ -37,7 +40,7 @@ struct Vector2
 	constexpr Vector2() noexcept : x(), y() {}
 	constexpr explicit Vector2(const T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr Vector2(const T x, const T y) noexcept : x(x), y(y) {}
-	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
 	explicit Vector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
 	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
 	explicit Vector2(const T* const v) noexcept { x = v[0]; y = v[1]; }
@@ -58,7 +61,7 @@ struct Vector2
 	Vector2& operator*=(const T f) noexcept { x *= f; y *= f; return *this; }
 	Vector2& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; return *this; }
 	Vector2& operator/=(const T f) noexcept { const T s = T(1)/f; x *= s; y *= s; return *this; }
-	//Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
+	Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
 	friend Vector2 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x + v2.x, v1.y + v2.y); }
 	friend Vector2 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x - v2.x, v1.y - v2.y); }
 	friend Vector2 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x*v2.x, v1.y*v2.y); }
@@ -67,8 +70,8 @@ struct Vector2
 	friend Vector2 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x/v2.x, v1.y/v2.y); }
 	friend Vector2 operator/(const T f, ConstArg v) noexcept { return Vector2(f/v.x, f/v.y); }
 	friend Vector2 operator/(ConstArg v, const T f) noexcept { const T s = T(1)/f; return Vector2(v.x*s, v.y*s); }
-	//friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
-	////friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
+	//friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector2& v) const noexcept { return (x == v.x) && (y == v.y); }
 	bool operator!=(const Vector2& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector2& v) { return s >> v.x >> std::skipws >> v.y; }
@@ -107,7 +110,7 @@ struct Vector2
 	Vector2& normalize();
 	Vector2& rotate(const T angle);
 	Vector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
-	//Vector2& transform(const Matrix2<T>& m); // #TODO
+	Vector2& transform(const Matrix2<T>& m); // #TODO
 
 	static const Vector2& getZero() noexcept { return ZERO; }
 	static const Vector2& getUnitX() noexcept { return UNIT_X; }
@@ -186,8 +189,8 @@ inline Vector2<T>& Vector2<T>::rotate(const T angle)
 {
 	if (angle != T(0))
 	{
-		T sinAngle, cosAngle;
-		sinCos(angle, sinAngle, cosAngle);
+		const T sinAngle = std::sin(angle);
+		const T cosAngle = std::cos(angle);
 		set(x*cosAngle - y*sinAngle, y*cosAngle + x*sinAngle);
 	}
 
@@ -219,14 +222,14 @@ struct Vector2<float>
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	/*constexpr*/ explicit Vector2(const float scalar) noexcept { xy = float4::set4(scalar); }
 	/*constexpr*/ Vector2(const float x, const float y) noexcept { xy = float4::set4(x, y, y, y); }
-	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
 	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept { xy = float4::set4(t.x, t.y, t.y, t.y); }
 	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept { float y = (float)t.y; xy = float4::set4((float)t.x, y, y, y); }
 	explicit Vector2(const float* const v) noexcept { set(v[0], v[1]); }
 #else
 	/*constexpr*/ explicit Vector2(const float scalar) noexcept { xy = float4::set2(scalar); }
 	/*constexpr*/ Vector2(const float x, const float y) noexcept { xy = float4::set2(x, y); }
-	template<typename U> explicit Vector2(const IntVector2<U>&/*IntVector2<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
 	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept { xy = float4::set2(t.x, t.y); }
 	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept { xy = float4::set2((float)t.x, (float)t.y); }
 	explicit Vector2(const float* const v) noexcept { xy = float4::load2(v); }
@@ -257,8 +260,8 @@ struct Vector2<float>
 #else
 	Vector2& operator/=(ConstArg v) noexcept { xy = float4::div2(xy, v); return *this; }
 #endif
-	Vector2& operator/=(const float f) noexcept { xy = float4::mul4(xy, float4::set4(1.f/f)); return *this; }
-	//Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
+	Vector2& operator/=(const float f) noexcept { xy = float4::div4(xy, float4::set4(f)); return *this; }
+	Vector2& operator*=(const Matrix2<float>& m) noexcept; // #TODO
 	friend Vector2 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector2(float4::add4(v1, v2)); }
 	friend Vector2 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector2(float4::sub4(v1, v2)); }
 	friend Vector2 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector2(float4::mul4(v1, v2)); }
@@ -271,9 +274,9 @@ struct Vector2<float>
 	friend Vector2 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector2(float4::div2(v1, v2)); }
 	friend Vector2 operator/(const float f, ConstArg v) noexcept { return Vector2(float4::div2(float4::set2(f), v)); }
 #endif
-	friend Vector2 operator/(ConstArg v, const float f) noexcept { return Vector2(float4::mul4(v, float4::set4(1.f/f))); }
-	//friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
-	////friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	friend Vector2 operator/(ConstArg v, const float f) noexcept { return Vector2(float4::div4(v, float4::set4(f))); }
+	friend Vector2 operator*(ConstArg v, const Matrix2<float>& m) noexcept; // #TODO
+	//friend Vector2 operator*(const Matrix2<float>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector2& v) const noexcept { return float4::all2(float4::equal(xy, v)); }
 	bool operator!=(const Vector2& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector2& v);
@@ -319,7 +322,7 @@ struct Vector2<float>
 	Vector2& normalize() noexcept;
 	Vector2& rotate(const float angle);
 	Vector2& scale(ConstArg v) noexcept { xy = float4::mul4(xy, v); return *this; }
-	//Vector2& transform(const Matrix2<float>& m); // #TODO
+	Vector2& transform(const Matrix2<float>& m); // #TODO
 
 	static const Vector2& getZero() noexcept { return ZERO; }
 	static const Vector2& getUnitX() noexcept { return UNIT_X; }
@@ -373,10 +376,10 @@ inline Vector2<float>& Vector2<float>::rotate(const float angle)
 {
 	if (angle != 0.f)
 	{
-		float sinAngle, cosAngle;
-		sinCos(angle, sinAngle, cosAngle);
-		xy = float4::subAdd4(float4::mul4(xy, float4::set2/*4*/(cosAngle)), 
-			float4::mul4(float4::swizzle<float4::YXWZ>(xy), float4::set2/*4*/(sinAngle)));
+		const float4::Type sinAngle = float4::set2/*4*/(std::sin(angle));
+		const float4::Type cosAngle = float4::set2/*4*/(std::cos(angle));
+		xy = float4::subAdd4(float4::mul4(xy, cosAngle), 
+			float4::mul4(float4::swizzle4<float4::YXXX>/*swizzle2<float4::YX>*/(xy), sinAngle));
 	}
 
 	return *this;
@@ -433,8 +436,12 @@ inline Vector2<T>::Vector2(const IntVector2<U>& v) : x(T(v.x)), y(T(v.y))
 template<typename U>
 inline Vector2<float>::Vector2(const IntVector2<U>& v)
 {
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	const float t = (float)v.y;
-	xy = simd::float4::set4((float)v.x, t, t, t);
+	xy = float4::set4((float)v.x, t, t, t);
+#else
+	xy = float4::set2((float)v.x, (float)v.y);
+#endif
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

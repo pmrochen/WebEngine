@@ -208,7 +208,7 @@ struct Color3<float>
 #else
 	Color3& operator/=(ConstArg c) noexcept { rgb = float4::div3(rgb, c); return *this; }
 #endif
-	Color3& operator/=(const float f) noexcept { rgb = float4::mul4(rgb, float4::set4(1.f/f)); return *this; }
+	Color3& operator/=(const float f) noexcept { rgb = float4::div4(rgb, float4::set4(f)); return *this; }
 	friend Color3 operator+(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::add4(c1, c2)); }
 	friend Color3 operator-(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::sub4(c1, c2)); }
 	friend Color3 operator*(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::mul4(c1, c2)); }
@@ -221,7 +221,7 @@ struct Color3<float>
 	friend Color3 operator/(ConstArg c1, ConstArg c2) noexcept { return Color3(float4::div3(c1, c2)); }
 	friend Color3 operator/(const float f, ConstArg c) noexcept { return Color3(float4::div3(float4::set3(f), c)); }
 #endif
-	friend Color3 operator/(ConstArg c, const float f) noexcept { return Color3(float4::mul4(c, float4::set4(1.f/f))); }
+	friend Color3 operator/(ConstArg c, const float f) noexcept { return Color3(float4::div4(c, float4::set4(f))); }
 	bool operator==(const Color3& c) const noexcept { return float4::all3(float4::equal(rgb, c)); }
 	bool operator!=(const Color3& c) const noexcept { return !(*this == c); }
 	friend std::istream& operator>>(std::istream& s, Color3& c);

@@ -164,12 +164,14 @@ constexpr int XZWW = _MM_SHUFFLE(3, 3, 2, 0);
 
 constexpr int YXXX = _MM_SHUFFLE(0, 0, 0, 1);
 constexpr int YZZZ = _MM_SHUFFLE(2, 2, 2, 1);
+constexpr int YZXX = _MM_SHUFFLE(0, 0, 2, 1);
 constexpr int YZWW = _MM_SHUFFLE(3, 3, 2, 1);
 constexpr int YWWW = _MM_SHUFFLE(3, 3, 3, 1);
 constexpr int YXZW = _MM_SHUFFLE(3, 2, 0, 1);
 constexpr int YXWZ = _MM_SHUFFLE(2, 3, 0, 1);
 
 constexpr int ZXXX = _MM_SHUFFLE(0, 0, 0, 2);
+constexpr int ZXYY = _MM_SHUFFLE(1, 1, 0, 2);
 constexpr int ZYYY = _MM_SHUFFLE(1, 1, 1, 2);
 constexpr int ZYWW = _MM_SHUFFLE(3, 3, 1, 2);
 constexpr int ZWWW = _MM_SHUFFLE(3, 3, 3, 2);
@@ -534,19 +536,19 @@ inline __m128 broadcast(__m128 v)
 //	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(index, index, index, index));
 //}
 
-template<int M>
-inline __m128 swizzle2(__m128 v)
-{
-	static_assert((M & ~0xFF/*0xF*/) == 0);
-	return _mm_shuffle_ps(v, _mm_setzero_ps(), M);
-}
+//template<int M>
+//inline __m128 swizzle2(__m128 v)
+//{
+//	static_assert((M & ~0xFF/*0xF*/) == 0);
+//	return _mm_shuffle_ps(v, _mm_setzero_ps(), M);
+//}
 
-template<int M>
-inline __m128 swizzle3(__m128 v)
-{
-	static_assert((M & ~0xFF/*0x3F*/) == 0);
-	return _mm_and_ps(_mm_shuffle_ps(v, v, M), detail::MASK3);
-}
+//template<int M>
+//inline __m128 swizzle3(__m128 v)
+//{
+//	static_assert((M & ~0xFF/*0x3F*/) == 0);
+//	return _mm_and_ps(_mm_shuffle_ps(v, v, M), detail::MASK3);
+//}
 
 template<int M>
 inline __m128 swizzle/*4*/(__m128 v)

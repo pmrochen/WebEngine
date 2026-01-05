@@ -28,6 +28,9 @@ template<typename T>
 struct IntVector4;
 
 template<typename T>
+struct Matrix4;
+
+template<typename T>
 struct Vector4
 {
 	using Real = T;
@@ -44,7 +47,7 @@ struct Vector4
 	constexpr Vector4(Vector2<T>::ConstArg xy, Vector2<T>::ConstArg zw) noexcept : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
 	constexpr Vector4(Vector3<T>::ConstArg v) noexcept : x(v.x), y(v.y), z(v.z), w(T(1)) {}
 	constexpr Vector4(Vector3<T>::ConstArg v, const T w) noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
-	template<typename U> explicit Vector4(const IntVector4<U>&/*IntVector4<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector4(const IntVector4<U>& v) noexcept;
 	explicit Vector4(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit Vector4(const T* const v) noexcept { x = v[0]; y = v[1]; z = v[2]; w = v[3]; }
@@ -65,7 +68,7 @@ struct Vector4
 	Vector4& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
 	Vector4& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	Vector4& operator/=(const T f) noexcept { const T s = T(1)/f; x *= s; y *= s; z *= s; w *= s; return *this; }
-	//Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
+	Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
 	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); }
 	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); }
 	friend Vector4 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z, v1.w*v2.w); }
@@ -74,8 +77,8 @@ struct Vector4
 	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
 	friend Vector4 operator/(const T f, ConstArg v) noexcept { return Vector4(f/v.x, f/v.y, f/v.z, f/v.w); }
 	friend Vector4 operator/(ConstArg v, const T f) noexcept { const T s = T(1)/f; return Vector4(v.x*s, v.y*s, v.z*s, v.w*s); }
-	//friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
-	////friend Vector4 operator*(const Matrix4<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
+	//friend Vector4 operator*(const Matrix4<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator!=(const Vector4& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector4& v) { return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z >> std::skipws >> v.w; }
@@ -115,7 +118,7 @@ struct Vector4
 	Vector4& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
 	Vector4& normalize();
 	Vector4& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
-	//Vector4& transform(const Matrix4<T>& m); // #TODO
+	Vector4& transform(const Matrix4<T>& m); // #TODO
 
 	static const Vector4& getZero() noexcept { return ZERO; }
 	static const Vector4& getUnitX() noexcept { return UNIT_X; }
@@ -231,7 +234,7 @@ struct Vector4<float>
 	/*constexpr*/ Vector4(Vector2<float>::ConstArg xy, Vector2<float>::ConstArg zw) noexcept { xyzw = float4::combine2(xy, zw); }
 	/*constexpr*/ Vector4(Vector3<float>::ConstArg v) noexcept { xyzw = float4::insert3(v, UNIT_W); }
 	/*constexpr*/ Vector4(Vector3<float>::ConstArg v, const float w) noexcept { xyzw = float4::insert<float4::W>(w, v); }
-	template<typename U> explicit Vector4(const IntVector4<U>&/*IntVector4<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector4(const IntVector4<U>& v) noexcept;
 	explicit Vector4(const tuples::templates::Tuple4<float>& t) noexcept { xyzw = float4::set4(t.x, t.y, t.z, t.w); }
 	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept { xyzw = float4::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
 	explicit Vector4(const float* const v) noexcept { xyzw = float4::load4(v); }
@@ -253,8 +256,8 @@ struct Vector4<float>
 	Vector4& operator*=(ConstArg v) noexcept { xyzw = float4::mul4(xyzw, v); return *this; }
 	Vector4& operator*=(const float f) noexcept { xyzw = float4::mul4(xyzw, float4::set4(f)); return *this; }
 	Vector4& operator/=(ConstArg v) noexcept { xyzw = float4::div4(xyzw, v); return *this; }
-	Vector4& operator/=(const float f) noexcept { xyzw = float4::mul4(xyzw, float4::set4(1.f/f)); return *this; }
-	//Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
+	Vector4& operator/=(const float f) noexcept { xyzw = float4::div4(xyzw, float4::set4(f)); return *this; }
+	Vector4& operator*=(const Matrix4<float>& m) noexcept; // #TODO
 	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::add4(v1, v2)); }
 	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::sub4(v1, v2)); }
 	friend Vector4 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::mul4(v1, v2)); }
@@ -262,9 +265,9 @@ struct Vector4<float>
 	friend Vector4 operator*(ConstArg v, const float f) noexcept { return Vector4(float4::mul4(v, float4::set4(f))); }
 	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(float4::div4(v1, v2)); }
 	friend Vector4 operator/(const float f, ConstArg v) noexcept { return Vector4(float4::div4(float4::set4(f), v)); }
-	friend Vector4 operator/(ConstArg v, const float f) noexcept { return Vector4(float4::mul4(v, float4::set4(1.f/f))); }
-	//friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
-	////friend Vector4 operator*(const Matrix4<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	friend Vector4 operator/(ConstArg v, const float f) noexcept { return Vector4(float4::div4(v, float4::set4(f))); }
+	friend Vector4 operator*(ConstArg v, const Matrix4<float>& m) noexcept; // #TODO
+	//friend Vector4 operator*(const Matrix4<float>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector4& v) const noexcept { return float4::all4(float4::equal(xyzw, v)); }
 	bool operator!=(const Vector4& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector4& v);
@@ -309,7 +312,7 @@ struct Vector4<float>
 	Vector4& negate() noexcept { xyzw = float4::neg4(xyzw); return *this; }
 	Vector4& normalize() noexcept;
 	Vector4& scale(ConstArg v) noexcept { xyzw = float4::mul4(xyzw, v); return *this; }
-	//Vector4& transform(const Matrix4<float>& m); // #TODO
+	Vector4& transform(const Matrix4<float>& m); // #TODO
 
 	static const Vector4& getZero() noexcept { return ZERO; }
 	static const Vector4& getUnitX() noexcept { return UNIT_X; }
@@ -416,7 +419,7 @@ inline Vector4<T>::Vector4(const IntVector4<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v
 template<typename U> 
 inline Vector4<float>::Vector4(const IntVector4<U>& v)
 { 
-	xyzw = simd::float4::set4((float)v.x, (float)v.y, (float)v.z, (float)v.w); 
+	xyzw = float4::set4((float)v.x, (float)v.y, (float)v.z, (float)v.w); 
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

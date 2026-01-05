@@ -41,11 +41,11 @@ inline T log2(T x) { return std::log(x)/Constants<T>::LN2; } // base-2 logarithm
 //inline void sinCos(float x, float& sine, float& cosine) { sine = std::sin(x); cosine = std::cos(x); }
 //inline void sinCos(double x, double& sine, double& cosine) { sine = std::sin(x); cosine = std::cos(x); }
 
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline std::pair<T, T> sinCos(T x) { return std::pair<T, T>(std::sin(x), std::cos(x)); }
+//template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+//inline std::pair<T, T> sinCos(T x) { return std::pair<T, T>(std::sin(x), std::cos(x)); }
 
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline void sinCos(T x, T& sine, T& cosine) { sine = std::sin(x); cosine = std::cos(x); }
+//template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+//inline void sinCos(T x, T& sine, T& cosine) { sine = std::sin(x); cosine = std::cos(x); }
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
 inline T radians(T x) { return x*Constants<T>::DEG_TO_RAD; } // degree/radian conversion

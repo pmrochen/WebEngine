@@ -27,6 +27,15 @@ template<typename T>
 struct IntVector3;
 
 template<typename T>
+struct Quaternion;
+
+template<typename T>
+struct Matrix3;
+
+template<typename T>
+struct AffineTransform;
+
+template<typename T>
 struct Vector3
 {
 	using Real = T;
@@ -40,7 +49,7 @@ struct Vector3
 	constexpr Vector3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
 	constexpr Vector3(Vector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z() {}
 	constexpr Vector3(Vector2<T>::ConstArg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
-	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
 	explicit Vector3(const T* const v) noexcept { x = v[0]; y = v[1]; z = v[2]; }
@@ -61,7 +70,7 @@ struct Vector3
 	Vector3& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; return *this; }
 	Vector3& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	Vector3& operator/=(const T f) noexcept { const T s = T(1)/f; x *= s; y *= s; z *= s; return *this; }
-	//Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
+	Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
 	friend Vector3 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
 	friend Vector3 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
 	friend Vector3 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z); }
@@ -70,8 +79,8 @@ struct Vector3
 	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
 	friend Vector3 operator/(const T f, ConstArg v) noexcept { return Vector3(f/v.x, f/v.y, f/v.z); }
 	friend Vector3 operator/(ConstArg v, const T f) noexcept { const T s = T(1)/f; return Vector3(v.x*s, v.y*s, v.z*s); }
-	//friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
-	////friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
+	//friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector3& v) { return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z; }
@@ -112,10 +121,10 @@ struct Vector3
 	Vector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Vector3& normalize();
 	Vector3& rotate(const Axis axis, const T angle);
-	//Vector3& rotate(const Quaternion<T>& q); // #TODO
+	Vector3& rotate(const Quaternion<T>& q);
 	Vector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
-	//Vector3& transform(const Matrix3<T>& m); // #TODO
-	//Vector3& transform(const AffineTransform<T>& m); // #TODO
+	Vector3& transform(const Matrix3<T>& m); // #TODO
+	Vector3& transform(const AffineTransform<T>& m); // #TODO
 
 	static const Vector3& getZero() noexcept { return ZERO; }
 	static const Vector3& getUnitX() noexcept { return UNIT_X; }
@@ -212,28 +221,28 @@ inline Vector3<T>& Vector3<T>::rotate(const Axis axis, const T angle)
 {
 	if (angle != T(0))
 	{
-		float sinAngle, cosAngle;
-		sinCos(angle, sinAngle, cosAngle);
+		const T sinAngle = std::sin(angle);
+		const T cosAngle = std::cos(angle);
 
 		switch (axis)
 		{
 			case Axis::X:
 			{
-				const float j = y, k = z;
+				const T j = y, k = z;
 				y = j*cosAngle - k*sinAngle;
 				z = k*cosAngle + j*sinAngle;
 			} break;
 
 			case Axis::Y:
 			{
-				const float i = x, k = z;
+				const T i = x, k = z;
 				x = i*cosAngle + k*sinAngle;
 				z = k*cosAngle - i*sinAngle;
 			} break;
 
 			case Axis::Z:
 			{
-				const float i = x, j = y;
+				const T i = x, j = y;
 				x = i*cosAngle - j*sinAngle;
 				y = j*cosAngle + i*sinAngle;
 			} break;
@@ -271,7 +280,7 @@ struct Vector3<float>
 	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = float4::set4(x, y, z, z); }
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = float4::cutoff2(v); }
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, const float z) noexcept { xyz = float4::combine2(v, float4::set2(z)); }
-	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = float4::set4(t.x, t.y, t.z, t.z); }
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { float z = (float)t.z; xyz = float4::set4((float)t.x, (float)t.y, z, z); }
 	explicit Vector3(const float* const v) noexcept { set(v[0], v[1], v[2]); }
@@ -280,7 +289,7 @@ struct Vector3<float>
 	/*constexpr*/ Vector3(const float x, const float y, const float z) noexcept { xyz = float4::set3(x, y, z); }
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = float4::cutoff2(v); }
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, const float z) noexcept { xyz = float4::combine2(v, float4::set1(z)); }
-	template<typename U> explicit Vector3(const IntVector3<U>&/*IntVector3<U>::ConstArg*/ v) noexcept;
+	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = float4::set3(t.x, t.y, t.z); }
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { xyz = float4::set3((float)t.x, (float)t.y, (float)t.z); }
 	explicit Vector3(const float* const v) noexcept { xyz = float4::load3(v); }
@@ -311,8 +320,8 @@ struct Vector3<float>
 #else
 	Vector3& operator/=(ConstArg v) noexcept { xyz = float4::div3(xyz, v); return *this; }
 #endif
-	Vector3& operator/=(const float f) noexcept { xyz = float4::mul4(xyz, float4::set4(1.f/f)); return *this; }
-	//Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
+	Vector3& operator/=(const float f) noexcept { xyz = float4::div4(xyz, float4::set4(f)); return *this; }
+	Vector3& operator*=(const Matrix3<float>& m) noexcept; // #TODO
 	friend Vector3 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::add4(v1, v2)); }
 	friend Vector3 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::sub4(v1, v2)); }
 	friend Vector3 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::mul4(v1, v2)); }
@@ -325,9 +334,9 @@ struct Vector3<float>
 	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(float4::div3(v1, v2)); }
 	friend Vector3 operator/(const float f, ConstArg v) noexcept { return Vector3(float4::div3(float4::set3(f), v)); }
 #endif
-	friend Vector3 operator/(ConstArg v, const float f) noexcept { return Vector3(float4::mul4(v, float4::set4(1.f/f))); }
-	//friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
-	////friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	friend Vector3 operator/(ConstArg v, const float f) noexcept { return Vector3(float4::div4(v, float4::set4(f))); }
+	friend Vector3 operator*(ConstArg v, const Matrix3<float>& m) noexcept; // #TODO
+	//friend Vector3 operator*(const Matrix3<float>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector3& v) const noexcept { return float4::all3(float4::equal(xyz, v)); }
 	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, Vector3& v);
@@ -382,10 +391,10 @@ struct Vector3<float>
 #endif
 	Vector3& normalize() noexcept;
 	Vector3& rotate(const Axis axis, const float angle);
-	//Vector3& rotate(const Quaternion<float>& q); // #TODO
+	Vector3& rotate(const Quaternion<float>& q);
 	Vector3& scale(ConstArg v) noexcept { xyz = float4::mul4(xyz, v); return *this; }
-	//Vector3& transform(const Matrix3<float>& m); // #TODO
-	//Vector3& transform(const AffineTransform<float>& m); // #TODO
+	Vector3& transform(const Matrix3<float>& m); // #TODO
+	Vector3& transform(const AffineTransform<float>& m); // #TODO
 
 	static const Vector3& getZero() noexcept { return ZERO; }
 	static const Vector3& getUnitX() noexcept { return UNIT_X; }
@@ -441,8 +450,8 @@ inline Vector3<float>& Vector3<float>::rotate(const Axis axis, const float angle
 {
 	if (angle != 0.f)
 	{
-		float sinAngle, cosAngle;
-		sinCos(angle, sinAngle, cosAngle);
+		const float sinAngle = std::sin(angle);
+		const float cosAngle = std::cos(angle);
 
 		switch (axis)
 		{
@@ -505,6 +514,7 @@ using Vector3Result = templates::Vector3<float>::ConstResult;
 } // namespace core
 
 #include "IntVector3.hpp"
+#include "Quaternion.hpp"
 
 namespace core {
 namespace mathematics {
@@ -516,13 +526,47 @@ inline Vector3<T>::Vector3(const IntVector3<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v
 {
 }
 
+template<typename T>
+Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
+{
+	const T x1 = q.y*z - q.z*y;
+    const T y1 = q.z*x - q.x*z;
+    const T z1 = q.x*y - q.y*x;
+    const T x2 = q.w*x1 + q.y*z1 - q.z*y1;
+    const T y2 = q.w*y1 + q.z*x1 - q.x*z1;
+    const T z2 = q.w*z1 + q.x*y1 - q.y*x1;
+    x += T(2)*x2;
+    y += T(2)*y2;
+    z += T(2)*z2;
+	return *this;
+}
+
 #if SIMD_HAS_FLOAT4
 
 template<typename U> 
 inline Vector3<float>::Vector3(const IntVector3<U>& v)
 {
+#if MATHEMATICS_SIMD_EXPAND_LAST
 	const float t = (float)v.z;
-	xyz = simd::float4::set4((float)v.x, (float)v.y, t, t); 
+	xyz = float4::set4((float)v.x, (float)v.y, t, t); 
+#else
+	xyz = float4::set4((float)v.x, (float)v.y, (float)v.z);
+#endif
+}
+
+Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
+{
+	const float4::Type yzx = float4::swizzle<float4::YZXX>(q);
+	const float4::Type zxy = float4::swizzle<float4::ZXYY>(q);
+	const float4::Type w = float4::broadcast<float4::W>(q);
+	const float4::Type t1 = float4::sub4(float4::mul4(yzx, float4::swizzle<float4::ZXYY>(xyz)),
+		float4::mul4(zxy, float4::swizzle<float4::YZXX>(xyz)));
+	const float4::Type t2 = float4::mulAdd4(w, t1, 
+		float4::sub4(float4::mul4(yzx, float4::swizzle<float4::ZXYY>(t1)),
+			float4::mul4(zxy, float4::swizzle<float4::YZXX>(t1))));
+	static const float4::Type two = float4::set3(2.0f);
+	xyz = float4::mulAdd4(two, t2, xyz);
+	return *this;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
