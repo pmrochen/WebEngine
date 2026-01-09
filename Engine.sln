@@ -7,14 +7,29 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mathematics", "Core\Mathema
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
-		Core\Common\Simd.hpp = Core\Common\Simd.hpp
 		Core\Common\Strings.hpp = Core\Common\Strings.hpp
-		Core\Common\Tuples.hpp = Core\Common\Tuples.hpp
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{81B81A2A-3D56-4DFA-A357-FBB324D319F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation", "Foundation\Foundation.csproj", "{A70176CE-EA3B-B7C6-2DDD-E37B831EF80B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simd", "Simd", "{8459C3E9-810E-493C-89E2-2B70D5CEBE54}"
+	ProjectSection(SolutionItems) = preProject
+		Core\Common\Simd\AvxIntrinsics.hpp = Core\Common\Simd\AvxIntrinsics.hpp
+		Core\Common\Simd\Float4.hpp = Core\Common\Simd\Float4.hpp
+		Core\Common\Simd\Intrinsics.hpp = Core\Common\Simd\Intrinsics.hpp
+		Core\Common\Simd\Simd.hpp = Core\Common\Simd\Simd.hpp
+		Core\Common\Simd\SseIntrinsics.hpp = Core\Common\Simd\SseIntrinsics.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tuples", "Tuples", "{6C04E3CA-9173-4A6A-A433-E14DC2BBAA88}"
+	ProjectSection(SolutionItems) = preProject
+		Core\Common\Tuples\Tuple2.hpp = Core\Common\Tuples\Tuple2.hpp
+		Core\Common\Tuples\Tuple3.hpp = Core\Common\Tuples\Tuple3.hpp
+		Core\Common\Tuples\Tuple4.hpp = Core\Common\Tuples\Tuple4.hpp
+		Core\Common\Tuples\Tuples.hpp = Core\Common\Tuples\Tuples.hpp
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +62,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
+		{8459C3E9-810E-493C-89E2-2B70D5CEBE54} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{6C04E3CA-9173-4A6A-A433-E14DC2BBAA88} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6ECD0FC-F61B-4893-8157-CAE31C590939}
