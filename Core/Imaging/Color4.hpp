@@ -109,6 +109,7 @@ struct Color4
 	static const Color4 TOLERANCE;
 	static const Color4 INF;
 	static const Color4 MINUS_INF;
+	static const Color4 LUMINANCE;
 
 	T r, g, b, a;
 };
@@ -187,6 +188,7 @@ template<typename T> const Color4<T> Color4<T>::ONE{ T(1), T(1), T(1), T(1) };
 template<typename T> const Color4<T> Color4<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
 template<typename T> const Color4<T> Color4<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
 template<typename T> const Color4<T> Color4<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+template<typename T> const Color4<T> Color4<T>::LUMINANCE{ T(0.2126), T(0.7152), T(0.0722), T(0) };
 
 #if SIMD_HAS_FLOAT4
 
@@ -282,6 +284,7 @@ struct Color4<float>
 	static const Color4 TOLERANCE;
 	static const Color4 INF;
 	static const Color4 MINUS_INF;
+	static const Color4 LUMINANCE;
 
 	union
 	{
@@ -293,16 +296,16 @@ struct Color4<float>
 template<>
 inline Color4<float> saturate(const Color4<float>& c) noexcept
 {
-	static const simd::float4 one = simd::set4(1.f);
+	//static const simd::float4 one = simd::set4(1.f);
 	const simd::float4 zero = simd::zero<simd::float4>();
-	return Color4<float>(simd::min4(simd::max4(c, zero), one));
+	return Color4<float>(simd::min4(simd::max4(c, zero), ONE/*one*/));
 }
 
 template<>
 inline float luminance(const Color4<float>& c) noexcept
 {
-	static const simd::float4 factors = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(c, factors));
+	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
+	return simd::toFloat(simd::dot3(c, LUMINANCE/*coeff*/));
 }
 
 template<>
@@ -334,6 +337,7 @@ const Color4<float> Color4<float>::ONE{ 1.f, 1.f, 1.f, 1.f };
 const Color4<float> Color4<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
 const Color4<float> Color4<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 const Color4<float> Color4<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
+const Color4<float> Color4<float>::LUMINANCE{ 0.2126f, 0.7152f, 0.0722f, 0.f };
 
 #endif /* SIMD_HAS_FLOAT4 */
 
@@ -363,7 +367,7 @@ namespace templates {
 //template<typename U> 
 //inline Color4<float>::Color4(const IntColor4<U>& c)
 //{ 
-//	rgba = simd::simd::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a); 
+//	rgba = simd::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a); 
 //}
 
 #endif /* SIMD_HAS_FLOAT4 */

@@ -102,6 +102,7 @@ struct Color3
 	static const Color3 TOLERANCE;
 	static const Color3 INF;
 	static const Color3 MINUS_INF;
+	static const Color3 LUMINANCE;
 
 	T r, g, b;
 };
@@ -177,6 +178,7 @@ template<typename T> const Color3<T> Color3<T>::ONE{ T(1), T(1), T(1) };
 template<typename T> const Color3<T> Color3<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
 template<typename T> const Color3<T> Color3<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
 template<typename T> const Color3<T> Color3<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+template<typename T> const Color3<T> Color3<T>::LUMINANCE{ T(0.2126), T(0.7152), T(0.0722) };
 
 #if SIMD_HAS_FLOAT4
 
@@ -288,6 +290,7 @@ struct Color3<float>
 	static const Color3 TOLERANCE;
 	static const Color3 INF;
 	static const Color3 MINUS_INF;
+	static const Color3 LUMINANCE;
 
 	union
 	{
@@ -299,16 +302,16 @@ struct Color3<float>
 template<>
 inline Color3<float> saturate(const Color3<float>& c) noexcept
 {
-	static const simd::float4 one = simd::set4(1.f);
+	//static const simd::float4 one = simd::set4(1.f);
 	const simd::float4 zero = simd::zero<simd::float4>();
-	return Color3<float>(simd::min4(simd::max4(c, zero), one));
+	return Color3<float>(simd::min4(simd::max4(c, zero), ONE/*one*/));
 }
 
 template<>
 inline float luminance(const Color3<float>& c) noexcept
 {
-	static const simd::float4 factors = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(c, factors));
+	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
+	return simd::toFloat(simd::dot3(c, LUMINANCE/*coeff*/));
 }
 
 template<>
@@ -339,6 +342,7 @@ const Color3<float> Color3<float>::ONE{ 1.f, 1.f, 1.f };
 const Color3<float> Color3<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
 const Color3<float> Color3<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 const Color3<float> Color3<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
+const Color3<float> Color3<float>::LUMINANCE{ 0.2126f, 0.7152f, 0.0722f };
 
 #endif /* SIMD_HAS_FLOAT4 */
 
@@ -369,7 +373,7 @@ namespace templates {
 //inline Color3<float>::Color3(const IntColor3<U>& c)
 //{
 //	float t = (float)c.b;
-//	rgb = simd::simd::set4((float)c.r, (float)c.g, t, t); 
+//	rgb = simd::set4((float)c.r, (float)c.g, t, t); 
 //}
 
 #endif /* SIMD_HAS_FLOAT4 */
