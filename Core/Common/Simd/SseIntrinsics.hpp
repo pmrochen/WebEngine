@@ -21,7 +21,7 @@
 
 #if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64))
 #include <intrin.h> // for _tzcnt_u32, __popcnt
-#elif !defined(__GNUC__) && !defined(__clang__)
+#elif !defined(__clang__) && !defined(__GNUC__)
 #include <bit>
 #endif
 
@@ -38,66 +38,55 @@
 
 #include <cstdint>
 
+#define SIMD_HAS_FLOAT4 1
+
+#if !defined(__clang__) && !defined(__GNUC__) && defined(_MSC_VER) && (!defined(_XM_SSE_INTRINSICS_) || defined(_XM_NO_XMVECTOR_OVERLOADS_))
+
+#ifndef _XM_NO_XMVECTOR_OVERLOADS_
+#define _XM_NO_XMVECTOR_OVERLOADS_
+#endif
+
+inline __m128 operator+(const __m128 v) { return v; }
+inline __m128 operator-(const __m128 v) { return _mm_xor_ps(v, _mm_castsi128_ps(_mm_set1_epi32(0x80000000))); }
+inline __m128& operator+=(__m128& v1, const __m128 v2) { v1 = _mm_add_ps(v1, v2); return v1; }
+inline __m128& operator-=(__m128& v1, const __m128 v2) { v1 = _mm_sub_ps(v1, v2); return v1; }
+inline __m128& operator*=(__m128& v1, const __m128 v2) { v1 = _mm_mul_ps(v1, v2); return v1; }
+inline __m128& operator/=(__m128& v1, const __m128 v2) { v1 = _mm_div_ps(v1, v2); return v1; }
+inline __m128& operator*=(__m128& v1, float s) { v1 = _mm_mul_ps(v1, _mm_set_ps1(s)); return v1; }
+inline __m128& operator/=(__m128& v1, float s) { v1 = _mm_div_ps(v1, _mm_set_ps1(s)); return v1; }
+inline __m128 operator+(const __m128 v1, const __m128 v2) { return _mm_add_ps(v1, v2); }
+inline __m128 operator-(const __m128 v1, const __m128 v2) { return _mm_sub_ps(v1, v2); }
+inline __m128 operator*(const __m128 v1, const __m128 v2) { return _mm_mul_ps(v1, v2); }
+inline __m128 operator/(const __m128 v1, const __m128 v2) { return _mm_div_ps(v1, v2); }
+inline __m128 operator*(const __m128 v, float s) { return _mm_mul_ps(v, _mm_set_ps1(s)); }
+inline __m128 operator*(float s, const __m128 v) { return _mm_mul_ps(_mm_set_ps1(s), v); }
+inline __m128 operator/(const __m128 v, float s) { return _mm_div_ps(v, _mm_set_ps1(s)); }
+
+#endif
+
 namespace core::simd::sse {
 
 namespace bitops {
 
-#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#if defined(__clang__) || defined(__GNUC__)
+inline unsigned int ctz(unsigned int x) { return __builtin_ctz(x); }
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
 inline unsigned int ctz(unsigned int x) { return _tzcnt_u32(x); }
 #elif defined(_MSC_VER) && defined(_M_ARM64)
 inline unsigned int ctz(unsigned int x) { return __popcnt((x & -x) - 1); }
-#elif defined(__GNUC__) || defined(__clang__)
-inline unsigned int ctz(unsigned int x) { return __builtin_ctz(x); }
 #else
 inline unsigned int ctz(unsigned int x) { return std::countr_zero(x); }
 #endif
 
 } // namespace bitops
 
-/*template<typename T>
-inline T zero() { return {}; }
-
-template<typename T, typename U>
-inline T set1(U s) { return {}; }
-
-template<typename T, typename U>
-inline T set2(U s) { return {}; }
-
-template<typename T, typename U>
-inline T set2(U x, U y) { return {}; }
-
-template<typename T, typename U>
-inline T set3(U s) { return {}; }
-
-template<typename T, typename U>
-inline T set3(U x, U y, U z) { return {}; }
-
-template<typename T, typename U>
-inline T set4(U s) { return {}; }
-
-template<typename T, typename U>
-inline T set4(U x, U y, U z, U w) { return {}; }
-
-template<typename T, typename U>
-inline T load2(const U* v) { return {}; }
-
-template<typename T, typename U>
-inline T load3(const U* v) { return {}; }
-
-template<typename T, typename U>
-inline T load4(const U* v) { return {}; }*/
-
-/*inline*/ namespace float4 {
-
-using Type = __m128;
-
 namespace detail {
 
 _MM_ALIGN16 struct UInt32M128
 {
-	inline operator __m128() const noexcept { return v; }
-	//inline operator __m128i() const noexcept { return _mm_castps_si128(v); }
-	//inline operator __m128d() const noexcept { return _mm_castps_pd(v); }
+	inline operator __m128() const { return v; }
+	//inline operator __m128i() const { return _mm_castps_si128(v); }
+	//inline operator __m128d() const { return _mm_castps_pd(v); }
 
 	union 
     { 
@@ -127,6 +116,21 @@ const UInt32M128 COMPONENT_MASKS[] = { { { { 0xFFFFFFFF, 0x00000000, 0x00000000,
 	{ { { 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF } } } };
 
 } // namespace detail 
+
+using float4/*Float4*/ = __m128;
+
+//struct X { static constexpr int index = 0; };
+//struct Y { static constexpr int index = 1; };
+//struct Z { static constexpr int index = 2; };
+//struct W { static constexpr int index = 3; };
+//
+//template<typename/*auto*/ A, typename/*auto*/ B, typename/*auto*/ C, typename/*auto*/ D>
+//struct Swizzle { static constexpr int mask = _MM_SHUFFLE(D::index, C::index, B::index, A::index); };
+//
+//struct XYYY : public Swizzle<X, Y, Y, Y> {};
+//struct XY00 : public Swizzle<X, Y, 0, 0> {};
+//struct XZZZ : public Swizzle<X, Z, Z, Z> {};
+//struct XWWW : public Swizzle<X, W, W, W> {};
 
 constexpr int X = 0;
 constexpr int Y = 1;
@@ -174,9 +178,43 @@ static inline __m128i constant4i()
     return u.xmm;
 }*/
 
+template<typename T>
+inline T zero() { return {}; }
+
+template<>
 inline __m128 zero()
 {
 	return _mm_setzero_ps();
+}
+
+template<typename T, typename U>
+inline T make(U s) { return {}; }
+
+template<>
+inline __m128 make(float s)
+{
+	return _mm_set_ps1(s);
+}
+
+template<>
+inline __m128 make(bool s)
+{
+	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
+}
+
+template<typename T, typename U>
+inline T make(U x, U y, U z, U w) { return {}; }
+
+template<>
+inline __m128 make(float x, float y, float z, float w)
+{
+	return _mm_setr_ps(x, y, z, w);
+}
+
+template<>
+inline __m128 make(bool x, bool y, bool z, bool w)
+{
+	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
 }
 
 inline __m128 set1(float s)
@@ -186,7 +224,7 @@ inline __m128 set1(float s)
 
 inline __m128 set2(float s)
 { 
-	const __m128 t = _mm_set_ss(s);
+	__m128 t = _mm_set_ss(s);
 	return _mm_unpacklo_ps(t, t); 
 }
 
@@ -197,7 +235,7 @@ inline __m128 set2(float x, float y)
 
 inline __m128 set3(float s)
 {
-	const __m128 t = _mm_set_ss(s);
+	__m128 t = _mm_set_ss(s);
 	return _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 0, 0, 0));
 }
 
@@ -211,22 +249,12 @@ inline __m128 set4(float s)
 	return _mm_set_ps1(s);
 }
 
-inline __m128 set4(bool s)
-{
-	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
-}
-
 inline __m128 set4(float x, float y, float z, float w)
 { 
 	return _mm_setr_ps(x, y, z, w); 
 }
 
-inline __m128 set4(bool x, bool y, bool z, bool w)
-{ 
-	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
-}
-
-inline __m128 load2(const float* v) 
+inline __m128 load2(const float* v)
 {
 	return _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])); 
 }
@@ -271,7 +299,7 @@ inline __m128 load3(const float* v)
 //		remainder/*_mm_andnot_ps(detail::MASK3, remainder)*/);
 //}
 
-inline __m128 load4(const float* v) 
+inline __m128 load4(const float* v)
 { 
 	return _mm_loadu_ps(v); 
 }
@@ -315,18 +343,18 @@ inline void store4(__m128 u, float* v)
 
 inline void unpack2x2(const float* m, __m128& row0, __m128& row1)
 {
-	const __m128 t = _mm_loadu_ps(m);
-	const __m128 zero = _mm_setzero_ps();
+	__m128 t = _mm_loadu_ps(m);
+	__m128 zero = _mm_setzero_ps();
 	row0 = _mm_movelh_ps(t, zero);
 	row1 = _mm_movehl_ps(zero, t);
 }
 
 inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
 {
-	const __m128 t0 = _mm_loadu_ps(&m[0]);
-	const __m128 t1 = _mm_loadu_ps(&m[4]);
-	const __m128 mask3 = detail::MASK3;
-	const __m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+	__m128 t0 = _mm_loadu_ps(&m[0]);
+	__m128 t1 = _mm_loadu_ps(&m[4]);
+	__m128 mask3 = detail::MASK3;
+	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
 	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
 	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
 	row2 = _mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2));		// 0, m22, m21, m20
@@ -334,13 +362,13 @@ inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
 
 inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 {
-	const __m128 t0 = _mm_loadu_ps(&m[0]);
-	const __m128 t1 = _mm_loadu_ps(&m[4]);
-	const __m128 mask3 = detail::MASK3;
-	const __m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3)); 	
+	__m128 t0 = _mm_loadu_ps(&m[0]);
+	__m128 t1 = _mm_loadu_ps(&m[4]);
+	__m128 mask3 = detail::MASK3;
+	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3)); 	
 	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
 	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
-	const __m128 t3 = _mm_loadu_ps(&m[8]); 									
+	__m128 t3 = _mm_loadu_ps(&m[8]); 									
 	row2 = _mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3); 	// 0, m22, m21, m20
 	row3 = _mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3); 	// 0, m32, m31, m30
 }
@@ -362,7 +390,7 @@ inline void pack3x3(__m128 row0, __m128 row1, __m128 row2, float* m)
 
 inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m)
 {
-	const __m128 t = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 2, 1));
+	__m128 t = _mm_shuffle_ps(row1, row2, _MM_SHUFFLE(1, 0, 2, 1));
 	row1 = _mm_shuffle_ps(row1, row0, _MM_SHUFFLE(2, 2, 0, 0));
 	row0 = _mm_shuffle_ps(row0, row1, _MM_SHUFFLE(0, 2, 1, 0));
 	row2 = _mm_shuffle_ps(row2, row3, _MM_SHUFFLE(0, 0, 2, 2));
@@ -374,7 +402,7 @@ inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m
 
 inline void transpose2x2(__m128& row0, __m128& row1)
 {
-	const __m128 t = _mm_unpacklo_ps(row0, row1);
+	__m128 t = _mm_unpacklo_ps(row0, row1);
 	const __m128 zero = _mm_setzero_ps();
 	row0 = _mm_movelh_ps(t, zero);
 	row1 = _mm_movehl_ps(zero, t);
@@ -420,7 +448,7 @@ template<int I>
 inline __m128 insert(float s, __m128 v)
 {
 	static_assert((I & ~3) == 0);
-	const __m128 t = _mm_set_ss(s);
+	__m128 t = _mm_set_ss(s);
 	if constexpr (I == 0)
 		return _mm_move_ss(v, t);
 	else
@@ -544,12 +572,21 @@ inline __m128 swizzle4(__m128 v)
 	return _mm_shuffle_ps(v, v, M);
 }
 
-template<int X, int Y, int Z, int W>
+template<int A, int B, int C, int D>
 inline __m128 swizzle(__m128 v)
 {
 	static_assert(((A & ~3) == 0) && ((B & ~3) == 0) && ((C & ~3) == 0) && ((D & ~3) == 0));
-	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(W, Z, Y, X));
+	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
 }
+
+//template<typename/*auto*/ A, typename/*auto*/ B /*= void*/, typename/*auto*/ C /*= void*/, typename/*auto*/ D /*= void*/>
+//inline __m128 swizzle(__m128 v) // #TODO Allow numeric arguments (used as constant values)
+//{
+//	//if constexpr (std::is_void_v<B>)
+//	//	return _mm_shuffle_ps(v, v, A::mask);
+//	//else
+//		return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D::index, C::index, B::index, A::index));
+//}
 
 //inline __m128 swizzle(__m128 v, int mask)
 //{
@@ -848,7 +885,7 @@ inline __m128 round(__m128 v)
 inline __m128 isFinite(__m128 v)
 {
 #if (SIMD_SSE >= 2)
-	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
+	__m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
 	const __m128i m = _mm_set1_epi32(0xFF000000);
 	return _mm_castsi128_ps(_mm_xor_si128(_mm_cmpeq_epi32(_mm_and_si128(t, m), m), _mm_set1_epi32(-1)));
 #else
@@ -859,127 +896,12 @@ inline __m128 isFinite(__m128 v)
 inline __m128 isInf(__m128 v)
 {
 #if (SIMD_SSE >= 2)
-	const __m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
+	__m128i t = _mm_sll_epi32(_mm_castps_si128(v), _mm_cvtsi32_si128(1)); // SSE 2
     return _mm_castsi128_ps(_mm_cmpeq_epi32(t, _mm_set1_epi32(0xFF000000)));
 #else
 	#error // #TODO
 #endif
 }
-
-} // namespace float4
-
-/*template<>
-inline float4::Type zero() { return float4::zero(); }
-
-template<>
-inline float4::Type set1(float s) { return float4::set1(s); }
-
-template<>
-inline float4::Type set2(float s) { return float2::set1(s); }
-
-template<>
-inline float4::Type set2(float x, float y) { return float4::set2(x, y); }
-
-template<>
-inline float4::Type set3(float s) { return float4::set3(s); }
-
-template<>
-inline float4::Type set3(float x, float y, float z) { return float4::set3(x, y, z); }
-
-template<>
-inline float4::Type set4(float s) { return float4::set4(s); }
-
-template<>
-inline float4::Type set4(bool s) { return float4::set4(s); }
-
-template<>
-inline float4::Type set4(float x, float y, float z, float w) { return float4::set4(x, y, z, w); }
-
-template<>
-inline float4::Type set4(bool x, bool y, bool z, bool w) { return float4::set4(x, y, z, w); }
-
-template<>
-inline float4::Type load2(const float* v) { return float4::load2(v); }
-
-template<>
-inline float4::Type load3(const float* v) { return float4::load3(v); }
-
-template<>
-inline float4::Type load4(const float* v) { return float4::load4(v); }
-
-using float4::store2;
-using float4::store3;
-using float4::store4;
-using float4::unpack2x2;
-using float4::unpack3x3;
-using float4::unpack4x3;
-using float4::pack2x2;
-using float4::pack3x3;
-using float4::pack4x3;
-using float4::transpose2x2;
-using float4::transpose3x3;
-using float4::transpose4x4;
-using float4::toFloat;
-using float4::extract;
-using float4::cutoff2;
-using float4::cutoff3;
-using float4::insert;
-using float4::insert1;
-using float4::insert2;
-using float4::insert3;
-using float4::combine2;
-using float4::and4;
-using float4::or4;
-using float4::andNot4;
-using float4::not4;
-using float4::select;
-using float4::broadcast;
-using float4::swizzle;
-using float4::all2;
-using float4::all3;
-using float4::all4;
-using float4::any2;
-using float4::any3;
-using float4::any4;
-using float4::asIndex;
-using float4::equal;
-using float4::lessThan;
-using float4::lessThanEqual;
-using float4::greaterThan;
-using float4::greaterThanEqual;
-using float4::min4;
-using float4::max4;
-using float4::neg1;
-using float4::neg2;
-using float4::neg3;
-using float4::neg4;
-using float4::abs4;
-using float4::add4;
-using float4::sub4;
-using float4::subAdd4;
-using float4::mul4;
-using float4::div2;
-using float4::div3;
-using float4::div4;
-using float4::mulAdd4;
-using float4::sqrt1;
-using float4::rcpSqrtApprox1;
-using float4::hMin2;
-using float4::hMin3;
-using float4::hMin4;
-using float4::hMax2;
-using float4::hMax3;
-using float4::hMax4;
-using float4::hAdd2;
-using float4::hAdd3;
-using float4::hAdd4;
-using float4::dot2;
-using float4::dot3;
-using float4::dot4;
-using float4::floor;
-using float4::round;
-using float4::isFinite;
-using float4::isInf;*/
 
 } // namespace core::simd::sse
 
