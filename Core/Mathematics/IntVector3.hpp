@@ -10,7 +10,7 @@
 #include <istream>
 #include <ostream>
 #include <algorithm>
-#include <Tuples.hpp>
+#include <Tuples/Tuple3.hpp>
 #include "IntVector2.hpp"
 #include "Vector3.hpp"
 
@@ -72,22 +72,22 @@ struct IntVector3
 	IntVector2 getXZ() const noexcept { return IntVector2(x, z); }
 	IntVector2 getZY() const noexcept { return IntVector2(z, y); }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()); }
-	bool allLessThan(ConstArg v) const noexcept { return (x < v.x) && (y < v.y) && (z < v.z); }
-	bool allLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) && (y <= v.y) && (z <= v.z); }
-	bool allGreaterThan(ConstArg v) const noexcept { return (x > v.x) && (y > v.y) && (z > v.z); }
-	bool allGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) && (y >= v.y) && (z >= v.z); }
-	bool anyLessThan(ConstArg v) const noexcept { return (x < v.x) || (y < v.y) || (z < v.z); }
-	bool anyLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) || (y <= v.y) || (z <= v.z); }
-	bool anyGreaterThan(ConstArg v) const noexcept { return (x > v.x) || (y > v.y) || (z > v.z); }
-	bool anyGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) || (y >= v.y) || (z >= v.z); }
+	bool allLessThan(const IntVector3& v) const noexcept { return (x < v.x) && (y < v.y) && (z < v.z); }
+	bool allLessThanEqual(const IntVector3& v) const noexcept { return (x <= v.x) && (y <= v.y) && (z <= v.z); }
+	bool allGreaterThan(const IntVector3& v) const noexcept { return (x > v.x) && (y > v.y) && (z > v.z); }
+	bool allGreaterThanEqual(const IntVector3& v) const noexcept { return (x >= v.x) && (y >= v.y) && (z >= v.z); }
+	bool anyLessThan(const IntVector3& v) const noexcept { return (x < v.x) || (y < v.y) || (z < v.z); }
+	bool anyLessThanEqual(const IntVector3& v) const noexcept { return (x <= v.x) || (y <= v.y) || (z <= v.z); }
+	bool anyGreaterThan(const IntVector3& v) const noexcept { return (x > v.x) || (y > v.y) || (z > v.z); }
+	bool anyGreaterThanEqual(const IntVector3& v) const noexcept { return (x >= v.x) || (y >= v.y) || (z >= v.z); }
 	T getMinComponent() const noexcept { return std::min(std::min(x, y), z); }
 	T getMaxComponent() const noexcept { return std::max(std::max(x, y), z); }
 	IntVector3& setZero() noexcept { x = T(); y = T(); z = T(); return *this; }
 	IntVector3& set(const T x, const T y, const T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
-	IntVector3& setMinimum(ConstArg v1, ConstArg v2) noexcept;
-	IntVector3& setMaximum(ConstArg v1, ConstArg v2) noexcept;
+	IntVector3& setMinimum(const IntVector3& v1, const IntVector3& v2) noexcept;
+	IntVector3& setMaximum(const IntVector3& v1, const IntVector3& v2) noexcept;
 	IntVector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
-	IntVector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
+	//IntVector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 
 	static const IntVector3&/*IntVector3::ConstResult*/ getZero() noexcept { return ZERO; }
 
@@ -97,7 +97,19 @@ struct IntVector3
 };
 
 template<typename T>
-inline IntVector3<T>& IntVector3<T>::setMinimum(ConstArg v1, ConstArg v2)
+inline IntVector3<T> minimum(const IntVector3<T>& v1, const IntVector3<T>& v2) noexcept
+{
+	return IntVector3<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z));
+}
+
+template<typename T>
+inline IntVector3<T> maximum(const IntVector3<T>& v1, const IntVector3<T>& v2) noexcept
+{
+	return IntVector3<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z));
+}
+
+template<typename T>
+inline IntVector3<T>& IntVector3<T>::setMinimum(const IntVector3<T>& v1, const IntVector3<T>& v2)
 {
 	x = std::min(v1.x, v2.x); 
 	y = std::min(v1.y, v2.y);
@@ -106,7 +118,7 @@ inline IntVector3<T>& IntVector3<T>::setMinimum(ConstArg v1, ConstArg v2)
 }
 
 template<typename T>
-inline IntVector3<T>& IntVector3<T>::setMaximum(ConstArg v1, ConstArg v2)
+inline IntVector3<T>& IntVector3<T>::setMaximum(const IntVector3<T>& v1, const IntVector3<T>& v2)
 {
 	x = std::max(v1.x, v2.x); 
 	y = std::max(v1.y, v2.y);

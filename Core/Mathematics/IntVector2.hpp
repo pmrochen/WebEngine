@@ -10,7 +10,7 @@
 #include <istream>
 #include <ostream>
 #include <algorithm>
-#include <Tuples.hpp>
+#include <Tuples/Tuple2.hpp>
 #include "Vector2.hpp"
 
 namespace core {
@@ -65,22 +65,22 @@ struct IntVector2
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
 
 	bool isZero() const noexcept { return (x == T()) && (y == T()); }
-	bool allLessThan(ConstArg v) const noexcept { return (x < v.x) && (y < v.y); }
-	bool allLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) && (y <= v.y); }
-	bool allGreaterThan(ConstArg v) const noexcept { return (x > v.x) && (y > v.y); }
-	bool allGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) && (y >= v.y); }
-	bool anyLessThan(ConstArg v) const noexcept { return (x < v.x) || (y < v.y); }
-	bool anyLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) || (y <= v.y); }
-	bool anyGreaterThan(ConstArg v) const noexcept { return (x > v.x) || (y > v.y); }
-	bool anyGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) || (y >= v.y); }
+	bool allLessThan(const IntVector2& v) const noexcept { return (x < v.x) && (y < v.y); }
+	bool allLessThanEqual(const IntVector2& v) const noexcept { return (x <= v.x) && (y <= v.y); }
+	bool allGreaterThan(const IntVector2& v) const noexcept { return (x > v.x) && (y > v.y); }
+	bool allGreaterThanEqual(const IntVector2& v) const noexcept { return (x >= v.x) && (y >= v.y); }
+	bool anyLessThan(const IntVector2& v) const noexcept { return (x < v.x) || (y < v.y); }
+	bool anyLessThanEqual(const IntVector2& v) const noexcept { return (x <= v.x) || (y <= v.y); }
+	bool anyGreaterThan(const IntVector2& v) const noexcept { return (x > v.x) || (y > v.y); }
+	bool anyGreaterThanEqual(const IntVector2& v) const noexcept { return (x >= v.x) || (y >= v.y); }
 	T getMinComponent() const noexcept { return std::min(x, y); }
 	T getMaxComponent() const noexcept { return std::max(x, y); }
 	IntVector2& setZero() noexcept { x = T(); y = T(); return *this; }
 	IntVector2& set(const T x, const T y) noexcept { this->x = x; this->y = y; return *this; }
-	IntVector2& setMinimum(ConstArg v1, ConstArg v2) noexcept;
-	IntVector2& setMaximum(ConstArg v1, ConstArg v2) noexcept;
+	IntVector2& setMinimum(const IntVector2& v1, const IntVector2& v2) noexcept;
+	IntVector2& setMaximum(const IntVector2& v1, const IntVector2& v2) noexcept;
 	IntVector2& negate() noexcept { x = -x; y = -y; return *this; }
-	IntVector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
+	//IntVector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 
 	static const IntVector2&/*IntVector2::ConstResult*/ getZero() noexcept { return ZERO; }
 
@@ -90,7 +90,19 @@ struct IntVector2
 };
 
 template<typename T>
-inline IntVector2<T>& IntVector2<T>::setMinimum(ConstArg v1, ConstArg v2)
+inline IntVector2<T> minimum(const IntVector2<T>& v1, const IntVector2<T>& v2) noexcept
+{
+	return IntVector2<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y));
+}
+
+template<typename T>
+inline IntVector2<T> maximum(const IntVector2<T>& v1, const IntVector2<T>& v2) noexcept
+{
+	return IntVector2<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y));
+}
+
+template<typename T>
+inline IntVector2<T>& IntVector2<T>::setMinimum(const IntVector2<T>& v1, const IntVector2<T>& v2)
 {
 	x = std::min(v1.x, v2.x); 
 	y = std::min(v1.y, v2.y); 
@@ -98,7 +110,7 @@ inline IntVector2<T>& IntVector2<T>::setMinimum(ConstArg v1, ConstArg v2)
 }
 
 template<typename T>
-inline IntVector2<T>& IntVector2<T>::setMaximum(ConstArg v1, ConstArg v2)
+inline IntVector2<T>& IntVector2<T>::setMaximum(const IntVector2<T>& v1, const IntVector2<T>& v2)
 {
 	x = std::max(v1.x, v2.x); 
 	y = std::max(v1.y, v2.y); 

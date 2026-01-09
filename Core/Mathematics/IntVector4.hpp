@@ -10,7 +10,7 @@
 #include <istream>
 #include <ostream>
 #include <algorithm>
-#include <Tuples.hpp>
+#include <Tuples/Tuple4.hpp>
 #include "IntVector2.hpp"
 #include "IntVector3.hpp"
 #include "Vector4.hpp"
@@ -76,22 +76,22 @@ struct IntVector4
 	IntVector3<T>::ConstResult getXYZ() const noexcept { return *reinterpret_cast<const IntVector3*>(this); }
 	void setXYZ(IntVector3<T>::ConstArg v) noexcept { x = v.x; y = v.y; z = v.z; }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()) && (w == T()); }
-	bool allLessThan(ConstArg v) const noexcept { return (x < v.x) && (y < v.y) && (z < v.z) && (w < v.w); }
-	bool allLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) && (y <= v.y) && (z <= v.z) && (w <= v.w); }
-	bool allGreaterThan(ConstArg v) const noexcept { return (x > v.x) && (y > v.y) && (z > v.z) && (w > v.w); }
-	bool allGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) && (y >= v.y) && (z >= v.z) && (w >= v.w); }
-	bool anyLessThan(ConstArg v) const noexcept { return (x < v.x) || (y < v.y) || (z < v.z) || (w < v.w); }
-	bool anyLessThanEqual(ConstArg v) const noexcept { return (x <= v.x) || (y <= v.y) || (z <= v.z) || (w <= v.w); }
-	bool anyGreaterThan(ConstArg v) const noexcept { return (x > v.x) || (y > v.y) || (z > v.z) || (w > v.w); }
-	bool anyGreaterThanEqual(ConstArg v) const noexcept { return (x >= v.x) || (y >= v.y) || (z >= v.z) || (w >= v.w); }
+	bool allLessThan(const IntVector4& v) const noexcept { return (x < v.x) && (y < v.y) && (z < v.z) && (w < v.w); }
+	bool allLessThanEqual(const IntVector4& v) const noexcept { return (x <= v.x) && (y <= v.y) && (z <= v.z) && (w <= v.w); }
+	bool allGreaterThan(const IntVector4& v) const noexcept { return (x > v.x) && (y > v.y) && (z > v.z) && (w > v.w); }
+	bool allGreaterThanEqual(const IntVector4& v) const noexcept { return (x >= v.x) && (y >= v.y) && (z >= v.z) && (w >= v.w); }
+	bool anyLessThan(const IntVector4& v) const noexcept { return (x < v.x) || (y < v.y) || (z < v.z) || (w < v.w); }
+	bool anyLessThanEqual(const IntVector4& v) const noexcept { return (x <= v.x) || (y <= v.y) || (z <= v.z) || (w <= v.w); }
+	bool anyGreaterThan(const IntVector4& v) const noexcept { return (x > v.x) || (y > v.y) || (z > v.z) || (w > v.w); }
+	bool anyGreaterThanEqual(const IntVector4& v) const noexcept { return (x >= v.x) || (y >= v.y) || (z >= v.z) || (w >= v.w); }
 	T getMinComponent() const noexcept { return std::min(std::min(std::min(x, y), z), w); }
 	T getMaxComponent() const noexcept { return std::max(std::max(std::max(x, y), z), w); }
 	IntVector4& setZero() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
 	IntVector4& set(const T x, const T y, const T z, const T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
-	IntVector4& setMinimum(ConstArg v1, ConstArg v2) noexcept;
-	IntVector4& setMaximum(ConstArg v1, ConstArg v2) noexcept;
+	IntVector4& setMinimum(const IntVector4& v1, const IntVector4& v2) noexcept;
+	IntVector4& setMaximum(const IntVector4& v1, const IntVector4& v2) noexcept;
 	IntVector4& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
-	IntVector4& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+	//IntVector4& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 
 	static const IntVector4&/*IntVector4::ConstResult*/ getZero() noexcept { return ZERO; }
 
@@ -101,7 +101,19 @@ struct IntVector4
 };
 
 template<typename T>
-inline IntVector4<T>& IntVector4<T>::setMinimum(ConstArg v1, ConstArg v2)
+inline IntVector4<T> minimum(const IntVector4<T>& v1, const IntVector4<T>& v2) noexcept
+{
+	return IntVector4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w));
+}
+
+template<typename T>
+inline IntVector4<T> maximum(const IntVector4<T>& v1, const IntVector4<T>& v2) noexcept
+{
+	return IntVector4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w));
+}
+
+template<typename T>
+inline IntVector4<T>& IntVector4<T>::setMinimum(const IntVector4<T>& v1, const IntVector4<T>& v2)
 {
 	x = std::min(v1.x, v2.x); 
 	y = std::min(v1.y, v2.y);
@@ -111,7 +123,7 @@ inline IntVector4<T>& IntVector4<T>::setMinimum(ConstArg v1, ConstArg v2)
 }
 
 template<typename T>
-inline IntVector4<T>& IntVector4<T>::setMaximum(ConstArg v1, ConstArg v2)
+inline IntVector4<T>& IntVector4<T>::setMaximum(const IntVector4<T>& v1, const IntVector4<T>& v2)
 {
 	x = std::max(v1.x, v2.x); 
 	y = std::max(v1.y, v2.y);
