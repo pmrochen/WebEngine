@@ -192,6 +192,7 @@
     <ClInclude Include="IntVector3.hpp" />
     <ClInclude Include="IntVector4.hpp" />
     <ClInclude Include="Mathematics.hpp" />
+    <ClInclude Include="Quaternion.hpp" />
     <ClInclude Include="Scalar.hpp" />
     <ClInclude Include="Vector2.hpp" />
     <ClInclude Include="Vector3.hpp" />
