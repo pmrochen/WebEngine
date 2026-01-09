@@ -12,8 +12,8 @@
 #include <ostream>
 #include <limits>
 #include <algorithm>
-#include <Simd.hpp>
-#include <Tuples.hpp>
+#include <Simd/Intrinsics.hpp>
+#include <Tuples/Tuple4.hpp>
 #include "Color3.hpp"
 
 namespace core {
@@ -33,14 +33,14 @@ struct Color4
 	static constexpr int NUM_COMPONENTS = 4;
 
 	constexpr Color4() noexcept : r(), g(), b(), a() {}
-	constexpr explicit Color4(const T scalar) noexcept : r(scalar), g(scalar), b(scalar), a(scalar) {}
-	constexpr Color4(const T r, const T g, const T b, const T a) noexcept : r(r), g(g), b(b), a(a) {}
+	constexpr explicit Color4(T scalar) noexcept : r(scalar), g(scalar), b(scalar), a(scalar) {}
+	constexpr Color4(T r, T g, T b, T a) noexcept : r(r), g(g), b(b), a(a) {}
 	constexpr Color4(Color3<T>::ConstArg c) noexcept : r(c.r), g(c.g), b(c.b), a(T(1)) {}
-	constexpr Color4(Color3<T>::ConstArg c, const T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
+	constexpr Color4(Color3<T>::ConstArg c, T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
 	//template<typename U> explicit Color4(const IntColor4<U>&/*IntColor4<U>::ConstArg*/ c) noexcept;
 	explicit Color4(const tuples::templates::Tuple4<T>& t) noexcept : r(t.x), g(t.y), b(t.z), a(t.w) {}
 	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
-	explicit Color4(const T* const c) noexcept { r = c[0]; g = c[1]; b = c[2]; a = c[3]; }
+	explicit Color4(const T* c) noexcept { r = c[0]; g = c[1]; b = c[2]; a = c[3]; }
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
@@ -54,17 +54,17 @@ struct Color4
 	Color4& operator+=(ConstArg c) noexcept { r += c.r; g += c.g; b += c.b; a += c.a; return *this; }
 	Color4& operator-=(ConstArg c) noexcept { r -= c.r; g -= c.g; b -= c.b; a -= c.a; return *this; }
 	Color4& operator*=(ConstArg c) noexcept { r *= c.r; g *= c.g; b *= c.b; a *= c.a; return *this; }
-	Color4& operator*=(const T f) noexcept { r *= f; g *= f; b *= f; a *= f; return *this; }
+	Color4& operator*=(T f) noexcept { r *= f; g *= f; b *= f; a *= f; return *this; }
 	Color4& operator/=(ConstArg c) noexcept { r /= c.r; g /= c.g; b /= c.b; a /= c.a; return *this; }
-	Color4& operator/=(const T f) noexcept { const T s = T(1)/f; r *= s; g *= s; b *= s; a *= s; return *this; }
+	Color4& operator/=(T f) noexcept { T s = T(1)/f; r *= s; g *= s; b *= s; a *= s; return *this; }
 	friend Color4 operator+(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b, c1.a + c2.a); }
 	friend Color4 operator-(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b, c1.a - c2.a); }
 	friend Color4 operator*(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b, c1.a*c2.a); }
-	friend Color4 operator*(const T f, ConstArg c) noexcept { return Color4(f*c.r, f*c.g, f*c.b, f*c.a); }
-	friend Color4 operator*(ConstArg c, const T f) noexcept { return Color4(c.r*f, c.g*f, c.b*f, c.a*f); }
+	friend Color4 operator*(T f, ConstArg c) noexcept { return Color4(f*c.r, f*c.g, f*c.b, f*c.a); }
+	friend Color4 operator*(ConstArg c, T f) noexcept { return Color4(c.r*f, c.g*f, c.b*f, c.a*f); }
 	friend Color4 operator/(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r/c2.r, c1.g/c2.g, c1.b/c2.b, c1.a/c2.a); }
-	friend Color4 operator/(const T f, ConstArg c) noexcept { return Color4(f/c.r, f/c.g, f/c.b, f/c.a); }
-	friend Color4 operator/(ConstArg c, const T f) noexcept { const T s = T(1)/f; return Color4(c.r*s, c.g*s, c.b*s, c.a*s); }
+	friend Color4 operator/(T f, ConstArg c) noexcept { return Color4(f/c.r, f/c.g, f/c.b, f/c.a); }
+	friend Color4 operator/(ConstArg c, T f) noexcept { T s = T(1)/f; return Color4(c.r*s, c.g*s, c.b*s, c.a*s); }
 	bool operator==(const Color4& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b) && (a == c.a); }
 	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
 	friend std::istream& operator>>(std::istream& s, Color4& c) { return s >> c.r >> std::skipws >> c.g >> std::skipws >> c.b >> std::skipws >> c.a; }
@@ -72,33 +72,33 @@ struct Color4
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; }
 
-	Color3<T>::ConstResult getRgb() const noexcept { return *reinterpret_cast<const Color3*>(this); }
-	void setRgb(Color3<T>::ConstArg c) noexcept { r = c.r; g = c.g; b = c.b; }
+	Color3<T>::ConstResult rgb/*getRgb*/() const noexcept { return reinterpret_cast<const Color3&>(*this); }
+	//void setRgb(Color3<T>::ConstArg c) noexcept { r = c.r; g = c.g; b = c.b; }
 	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()) && (a == T()); }
 	bool isApproxZero() const noexcept;
-	bool isApproxEqual(ConstArg c) const noexcept;
-	bool isApproxEqual(ConstArg c, const T tolerance) const noexcept;
-	bool allLessThan(ConstArg c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b) && (a < c.a); }
-	bool allLessThanEqual(ConstArg c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b) && (a <= c.a); }
-	bool allGreaterThan(ConstArg c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b) && (a > c.a); }
-	bool allGreaterThanEqual(ConstArg c) const noexcept { return (r >= c.r) && (g >= c.g) && (b >= c.b) && (a >= c.a); }
-	bool anyLessThan(ConstArg c) const noexcept { return (r < c.r) || (g < c.g) || (b < c.b) || (a < c.a); }
-	bool anyLessThanEqual(ConstArg c) const noexcept { return (r <= c.r) || (g <= c.g) || (b <= c.b) || (a <= c.a); }
-	bool anyGreaterThan(ConstArg c) const noexcept { return (r > c.r) || (g > c.g) || (b > c.b) || (a > c.a); }
-	bool anyGreaterThanEqual(ConstArg c) const noexcept { return (r >= c.r) || (g >= c.g) || (b >= c.b) || (a >= c.a); }
+	bool isApproxEqual(const Color4& c) const noexcept;
+	bool isApproxEqual(const Color4& c, T tolerance) const noexcept;
+	bool allLessThan(const Color4& c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b) && (a < c.a); }
+	bool allLessThanEqual(const Color4& c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b) && (a <= c.a); }
+	bool allGreaterThan(const Color4& c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b) && (a > c.a); }
+	bool allGreaterThanEqual(const Color4& c) const noexcept { return (r >= c.r) && (g >= c.g) && (b >= c.b) && (a >= c.a); }
+	bool anyLessThan(const Color4& c) const noexcept { return (r < c.r) || (g < c.g) || (b < c.b) || (a < c.a); }
+	bool anyLessThanEqual(const Color4& c) const noexcept { return (r <= c.r) || (g <= c.g) || (b <= c.b) || (a <= c.a); }
+	bool anyGreaterThan(const Color4& c) const noexcept { return (r > c.r) || (g > c.g) || (b > c.b) || (a > c.a); }
+	bool anyGreaterThanEqual(const Color4& c) const noexcept { return (r >= c.r) || (g >= c.g) || (b >= c.b) || (a >= c.a); }
 	bool isFinite() const { return std::isfinite(r) && std::isfinite(g) && std::isfinite(b) && std::isfinite(a); }
 	T getMinComponent() const noexcept { return std::min(std::min(std::min(r, g), b), a); }
 	T getMaxComponent() const noexcept { return std::max(std::max(std::max(r, g), b), a); }
 	Color4& setZero() noexcept { r = T(); g = T(); b = T(); a = T(); return *this; }
-	Color4& set(const T r, const T g, const T b, const T a) noexcept { this->r = r; this->g = g; this->b = b; this->a = a; return *this; }
-	Color4& setMinimum(ConstArg c1, ConstArg c2) noexcept;
-	Color4& setMaximum(ConstArg c1, ConstArg c2) noexcept;
+	Color4& set(T r, T g, T b, T a) noexcept { this->r = r; this->g = g; this->b = b; this->a = a; return *this; }
+	Color4& setMinimum(const Color4& c1, const Color4& c2) noexcept;
+	Color4& setMaximum(const Color4& c1, const Color4& c2) noexcept;
 
-	static const Color4& getZero() noexcept { return ZERO; }
-	static const Color4& getUnitR() noexcept { return UNIT_R; }
-	static const Color4& getUnitG() noexcept { return UNIT_G; }
-	static const Color4& getUnitB() noexcept { return UNIT_B; }
-	static const Color4& getUnitA() noexcept { return UNIT_A; }
+	//static const Color4& getZero() noexcept { return ZERO; }
+	//static const Color4& getUnitR() noexcept { return UNIT_R; }
+	//static const Color4& getUnitG() noexcept { return UNIT_G; }
+	//static const Color4& getUnitB() noexcept { return UNIT_B; }
+	//static const Color4& getUnitA() noexcept { return UNIT_A; }
 
 	static const Color4 ZERO;
 	static const Color4 UNIT_R;
@@ -114,6 +114,30 @@ struct Color4
 };
 
 template<typename T>
+inline Color4<T> saturate(const Color4<T>& c) noexcept
+{
+	return Color4<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)), std::clamp(c.a, T(0), T(1)));
+}
+
+template<typename T>
+inline T luminance(const Color4<T>& c) noexcept
+{
+	return c.r*T(0.2126) + c.g*T(0.7152) + c.b*T(0.0722);
+}
+
+template<typename T>
+inline Color4<T> minimum(const Color4<T>& c1, const Color4<T>& c2) noexcept
+{
+	return Color4<T>(std::min(c1.r, c2.r), std::min(c1.g, c2.g), std::min(c1.b, c2.b), std::min(c1.a, c2.a));
+}
+
+template<typename T>
+inline Color4<T> maximum(const Color4<T>& c1, const Color4<T>& c2) noexcept
+{
+	return Color4<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b), std::max(c1.a, c2.a));
+}
+
+template<typename T>
 inline bool Color4<T>::isApproxZero() const
 { 
 	return (std::fabs(r) < Constants<T>::TOLERANCE) && (std::fabs(g) < Constants<T>::TOLERANCE) && 
@@ -121,21 +145,21 @@ inline bool Color4<T>::isApproxZero() const
 }
 
 template<typename T>
-inline bool Color4<T>::isApproxEqual(ConstArg c) const
+inline bool Color4<T>::isApproxEqual(const Color4<T>& c) const
 { 
 	return (std::fabs(c.r - r) < Constants<T>::TOLERANCE) && (std::fabs(c.g - g) < Constants<T>::TOLERANCE) && 
 		(std::fabs(c.b - b) < Constants<T>::TOLERANCE) && (std::fabs(c.a - a) < Constants<T>::TOLERANCE); 
 }
 
 template<typename T>
-inline bool Color4<T>::isApproxEqual(ConstArg c, const T tolerance) const
+inline bool Color4<T>::isApproxEqual(const Color4<T>& c, T tolerance) const
 { 
 	return (std::fabs(c.r - r) < tolerance) && (std::fabs(c.g - g) < tolerance) && 
 		(std::fabs(c.b - b) < tolerance) && (std::fabs(c.a - a) < tolerance); 
 }
 
 template<typename T>
-inline Color4<T>& Color4<T>::setMinimum(ConstArg c1, ConstArg c2)
+inline Color4<T>& Color4<T>::setMinimum(const Color4<T>& c1, const Color4<T>& c2)
 { 
 	r = std::min(c1.r, c2.r); 
 	g = std::min(c1.g, c2.g);
@@ -145,7 +169,7 @@ inline Color4<T>& Color4<T>::setMinimum(ConstArg c1, ConstArg c2)
 }
 
 template<typename T>
-inline Color4<T>& Color4<T>::setMaximum(ConstArg c1, ConstArg c2)
+inline Color4<T>& Color4<T>::setMaximum(const Color4<T>& c1, const Color4<T>& c2)
 { 
 	r = std::max(c1.r, c2.r); 
 	g = std::max(c1.g, c2.g);
@@ -166,8 +190,6 @@ template<typename T> const Color4<T> Color4<T>::MINUS_INF{ -std::numeric_limits<
 
 #if SIMD_HAS_FLOAT4
 
-namespace float4 = simd::float4;
-
 template<>
 struct Color4<float>
 {
@@ -177,18 +199,18 @@ struct Color4<float>
 
 	static constexpr int NUM_COMPONENTS = 4;
 
-	/*constexpr*/ Color4() noexcept { rgba = float4::zero(); }
-	/*constexpr*/ explicit Color4(const float scalar) noexcept { rgba = float4::set4(scalar); }
-	/*constexpr*/ Color4(const float r, const float g, const float b, const float a) noexcept { rgba = float4::set4(r, g, b, a); }
-	/*constexpr*/ Color4(Color3<float>::ConstArg c) noexcept { rgba = float4::insert3(c, UNIT_A); }
-	/*constexpr*/ Color4(Color3<float>::ConstArg c, const float a) noexcept { rgba = float4::insert<3>(a, c); }
+	/*constexpr*/ Color4() noexcept { rgba = simd::zero<simd::float4>(); }
+	/*constexpr*/ explicit Color4(float scalar) noexcept { rgba = simd::set4(scalar); }
+	/*constexpr*/ Color4(float r, float g, float b, float a) noexcept { rgba = simd::set4(r, g, b, a); }
+	/*constexpr*/ Color4(Color3<float>::ConstArg c) noexcept { rgba = simd::insert3(c, UNIT_A); }
+	/*constexpr*/ Color4(Color3<float>::ConstArg c, float a) noexcept { rgba = simd::insert<3>(a, c); }
 	//template<typename U> explicit Color4(const IntColor4<U>&/*IntColor4<U>::ConstArg*/ c) noexcept;
-	explicit Color4(const tuples::templates::Tuple4<float>& t) noexcept { rgba = float4::set4(t.x, t.y, t.z, t.w); }
-	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept { rgba = float4::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
-	explicit Color4(const float* const c) noexcept { rgba = float4::load4(c); }
-	explicit Color4(const float4::Type c) noexcept : rgba(c) {}
+	explicit Color4(const tuples::templates::Tuple4<float>& t) noexcept { rgba = simd::set4(t.x, t.y, t.z, t.w); }
+	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept { rgba = simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
+	explicit Color4(const float* c) noexcept { rgba = simd::load4(c); }
+	explicit Color4(simd::float4 c) noexcept : rgba(c) {}
 
-	operator float4::Type() const noexcept { return rgba; }
+	operator simd::float4() const noexcept { return rgba; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	explicit operator float*() noexcept { return &r; }
@@ -197,59 +219,59 @@ struct Color4<float>
 	const float& operator[](int i) const noexcept { return (&r)[i]; }
 
 	Color4 operator+() const noexcept { return *this; }
-	Color4 operator-() const noexcept { return Color4(float4::neg4(rgba)); }
-	Color4& operator+=(ConstArg c) noexcept { rgba = float4::add4(rgba, c); return *this; }
-	Color4& operator-=(ConstArg c) noexcept { rgba = float4::sub4(rgba, c); return *this; }
-	Color4& operator*=(ConstArg c) noexcept { rgba = float4::mul4(rgba, c); return *this; }
-	Color4& operator*=(const float f) noexcept { rgba = float4::mul4(rgba, float4::set4(f)); return *this; }
-	Color4& operator/=(ConstArg c) noexcept { rgba = float4::div4(rgba, c); return *this; }
-	Color4& operator/=(const float f) noexcept { rgba = float4::div4(rgba, float4::set4(f)); return *this; }
-	friend Color4 operator+(ConstArg c1, ConstArg c2) noexcept { return Color4(float4::add4(c1, c2)); }
-	friend Color4 operator-(ConstArg c1, ConstArg c2) noexcept { return Color4(float4::sub4(c1, c2)); }
-	friend Color4 operator*(ConstArg c1, ConstArg c2) noexcept { return Color4(float4::mul4(c1, c2)); }
-	friend Color4 operator*(const float f, ConstArg c) noexcept { return Color4(float4::mul4(float4::set4(f), c)); }
-	friend Color4 operator*(ConstArg c, const float f) noexcept { return Color4(float4::mul4(c, float4::set4(f))); }
-	friend Color4 operator/(ConstArg c1, ConstArg c2) noexcept { return Color4(float4::div4(c1, c2)); }
-	friend Color4 operator/(const float f, ConstArg c) noexcept { return Color4(float4::div4(float4::set4(f), c)); }
-	friend Color4 operator/(ConstArg c, const float f) noexcept { return Color4(float4::div4(c, float4::set4(f))); }
-	bool operator==(const Color4& c) const noexcept { return float4::all4(float4::equal(rgba, c)); }
+	Color4 operator-() const noexcept { return Color4(simd::neg4(rgba)); }
+	Color4& operator+=(ConstArg c) noexcept { rgba = simd::add4(rgba, c); return *this; }
+	Color4& operator-=(ConstArg c) noexcept { rgba = simd::sub4(rgba, c); return *this; }
+	Color4& operator*=(ConstArg c) noexcept { rgba = simd::mul4(rgba, c); return *this; }
+	Color4& operator*=(float f) noexcept { rgba = simd::mul4(rgba, simd::set4(f)); return *this; }
+	Color4& operator/=(ConstArg c) noexcept { rgba = simd::div4(rgba, c); return *this; }
+	Color4& operator/=(float f) noexcept { rgba = simd::div4(rgba, simd::set4(f)); return *this; }
+	friend Color4 operator+(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::add4(c1, c2)); }
+	friend Color4 operator-(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::sub4(c1, c2)); }
+	friend Color4 operator*(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::mul4(c1, c2)); }
+	friend Color4 operator*(float f, ConstArg c) noexcept { return Color4(simd::mul4(simd::set4(f), c)); }
+	friend Color4 operator*(ConstArg c, float f) noexcept { return Color4(simd::mul4(c, simd::set4(f))); }
+	friend Color4 operator/(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::div4(c1, c2)); }
+	friend Color4 operator/(float f, ConstArg c) noexcept { return Color4(simd::div4(simd::set4(f), c)); }
+	friend Color4 operator/(ConstArg c, float f) noexcept { return Color4(simd::div4(c, simd::set4(f))); }
+	bool operator==(const Color4& c) const noexcept { return simd::all4(simd::equal(rgba, c)); }
 	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
 	friend std::istream& operator>>(std::istream& s, Color4& c);
 	friend std::ostream& operator<<(std::ostream& s, const Color4& c) { return s << c.r << ' ' << c.g << ' ' << c.b << ' ' << c.a; }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; } // #FIXME use float4::set(r, g, b, a)
+	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; } // #FIXME use simd::set(r, g, b, a)
 
 #if IMAGING_SIMD_EXPAND_LAST
-	Color3<float> getRgb() const noexcept { return Color3<float>(float4::swizzle<float4::XYZZ>(rgba)); }
+	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::swizzle4<simd::XYZZ>(rgba)); }
 #else
-	Color3<float> getRgb() const noexcept { return Color3<float>(float4::cutoff3(rgba)); }
+	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::cutoff3(rgba)); }
 #endif
-	void setRgb(Color3<float>::ConstArg c) noexcept { rgba = float4::insert3(c, rgba); }
-	bool isZero() const noexcept { return float4::all4(float4::equal(rgba, float4::zero())); }
-	bool isApproxZero() const noexcept { float4::all4(float4::lessThan(float4::abs4(rgba), TOLERANCE)); }
-	bool isApproxEqual(ConstArg c) const noexcept { float4::all4(float4::lessThan(float4::abs4(float4::sub4(rgba, c)), TOLERANCE)); }
-	bool isApproxEqual(ConstArg c, const float tolerance) const noexcept { float4::all4(float4::lessThan(float4::abs4(float4::sub4(rgba, c)), float4::set4(tolerance))); }
-	bool allLessThan(ConstArg c) const noexcept { return float4::all4(float4::lessThan(rgba, c)); }
-	bool allLessThanEqual(ConstArg c) const noexcept { return float4::all4(float4::lessThanEqual(rgba, c)); }
-	bool allGreaterThan(ConstArg c) const noexcept { return float4::all4(float4::greaterThan(rgba, c)); }
-	bool allGreaterThanEqual(ConstArg c) const noexcept { return float4::all4(float4::greaterThanEqual(rgba, c)); }
-	bool anyLessThan(ConstArg c) const noexcept { return float4::any4(float4::lessThan(rgba, c)); }
-	bool anyLessThanEqual(ConstArg c) const noexcept { return float4::any4(float4::lessThanEqual(rgba, c)); }
-	bool anyGreaterThan(ConstArg c) const noexcept { return float4::any4(float4::greaterThan(rgba, c)); }
-	bool anyGreaterThanEqual(ConstArg c) const noexcept { return float4::any4(float4::greaterThanEqual(rgba, c)); }
-	bool isFinite() const { return float4::all4(float4::isFinite(rgba)); }
-	float getMinComponent() const noexcept { return float4::toFloat(float4::hMin4(rgba)); }
-	float getMaxComponent() const noexcept { return float4::toFloat(float4::hMax4(rgba)); }
-	Color4& setZero() noexcept { rgba = float4::zero(); return *this; }
-	Color4& set(const float r, const float g, const float b, const float a) noexcept { rgba = float4::set4(r, g, b, a); return *this; }
-	Color4& setMinimum(ConstArg c1, ConstArg c2) noexcept { rgba = float4::min4(c1, c2); return *this; }
-	Color4& setMaximum(ConstArg c1, ConstArg c2) noexcept { rgba = float4::max4(c1, c2); return *this; }
+	//void setRgb(Color3<float>::ConstArg c) noexcept { rgba = simd::insert3(c, rgba); }
+	bool isZero() const noexcept { return simd::all4(simd::equal(rgba, simd::zero<simd::float4>())); }
+	bool isApproxZero() const noexcept { simd::all4(simd::lessThan(simd::abs4(rgba), TOLERANCE)); }
+	bool isApproxEqual(const Color4& c) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), TOLERANCE)); }
+	bool isApproxEqual(const Color4& c, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), simd::set4(tolerance))); }
+	bool allLessThan(const Color4& c) const noexcept { return simd::all4(simd::lessThan(rgba, c)); }
+	bool allLessThanEqual(const Color4& c) const noexcept { return simd::all4(simd::lessThanEqual(rgba, c)); }
+	bool allGreaterThan(const Color4& c) const noexcept { return simd::all4(simd::greaterThan(rgba, c)); }
+	bool allGreaterThanEqual(const Color4& c) const noexcept { return simd::all4(simd::greaterThanEqual(rgba, c)); }
+	bool anyLessThan(const Color4& c) const noexcept { return simd::any4(simd::lessThan(rgba, c)); }
+	bool anyLessThanEqual(const Color4& c) const noexcept { return simd::any4(simd::lessThanEqual(rgba, c)); }
+	bool anyGreaterThan(const Color4& c) const noexcept { return simd::any4(simd::greaterThan(rgba, c)); }
+	bool anyGreaterThanEqual(const Color4& c) const noexcept { return simd::any4(simd::greaterThanEqual(rgba, c)); }
+	bool isFinite() const { return simd::all4(simd::isFinite(rgba)); }
+	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin4(rgba)); }
+	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax4(rgba)); }
+	Color4& setZero() noexcept { rgba = simd::zero<simd::float4>(); return *this; }
+	Color4& set(float r, float g, float b, float a) noexcept { rgba = simd::set4(r, g, b, a); return *this; }
+	Color4& setMinimum(const Color4& c1, const Color4& c2) noexcept { rgba = simd::min4(c1, c2); return *this; }
+	Color4& setMaximum(const Color4& c1, const Color4& c2) noexcept { rgba = simd::max4(c1, c2); return *this; }
 
-	static const Color4& getZero() noexcept { return ZERO; }
-	static const Color4& getUnitR() noexcept { return UNIT_R; }
-	static const Color4& getUnitG() noexcept { return UNIT_G; }
-	static const Color4& getUnitB() noexcept { return UNIT_B; }
-	static const Color4& getUnitA() noexcept { return UNIT_A; }
+	//static const Color4& getZero() noexcept { return ZERO; }
+	//static const Color4& getUnitR() noexcept { return UNIT_R; }
+	//static const Color4& getUnitG() noexcept { return UNIT_G; }
+	//static const Color4& getUnitB() noexcept { return UNIT_B; }
+	//static const Color4& getUnitA() noexcept { return UNIT_A; }
 
 	static const Color4 ZERO;
 	static const Color4 UNIT_R;
@@ -263,10 +285,37 @@ struct Color4<float>
 
 	union
 	{
-		float4::Type rgba;
+		simd::float4 rgba;
 		struct { float r, g, b, a; };
 	};
 };
+
+template<>
+inline Color4<float> saturate(const Color4<float>& c) noexcept
+{
+	static const simd::float4 one = simd::set4(1.f);
+	const simd::float4 zero = simd::zero<simd::float4>();
+	return Color4<float>(simd::min4(simd::max4(c, zero), one));
+}
+
+template<>
+inline float luminance(const Color4<float>& c) noexcept
+{
+	static const simd::float4 factors = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
+	return simd::toFloat(simd::dot3(c, factors));
+}
+
+template<>
+inline Color4<float> minimum(const Color4<float>& c1, const Color4<float>& c2) noexcept
+{
+	return Color4<float>(simd::min4(c1, c2));
+}
+
+template<>
+inline Color4<float> maximum(const Color4<float>& c1, const Color4<float>& c2) noexcept
+{
+	return Color4<float>(simd::max4(c1, c2));
+}
 
 inline std::istream& Color4<float>::operator>>(std::istream& s, Color4<float>& c) 
 { 
@@ -314,7 +363,7 @@ namespace templates {
 //template<typename U> 
 //inline Color4<float>::Color4(const IntColor4<U>& c)
 //{ 
-//	rgba = simd::float4::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a); 
+//	rgba = simd::simd::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a); 
 //}
 
 #endif /* SIMD_HAS_FLOAT4 */
