@@ -87,12 +87,29 @@ struct Color4
 	bool anyGreaterThan(const Color4& c) const noexcept { return (r > c.r) || (g > c.g) || (b > c.b) || (a > c.a); }
 	bool anyGreaterThanEqual(const Color4& c) const noexcept { return (r >= c.r) || (g >= c.g) || (b >= c.b) || (a >= c.a); }
 	bool isFinite() const { return std::isfinite(r) && std::isfinite(g) && std::isfinite(b) && std::isfinite(a); }
-	T getMinComponent() const noexcept { return std::min(std::min(std::min(r, g), b), a); }
+	T getLuminance() const noexcept { return r*T(0.2126) + g*T(0.7152) + b*T(0.0722); }
+ 	T getMinComponent() const noexcept { return std::min(std::min(std::min(r, g), b), a); }
 	T getMaxComponent() const noexcept { return std::max(std::max(std::max(r, g), b), a); }
 	Color4& setZero() noexcept { r = T(); g = T(); b = T(); a = T(); return *this; }
 	Color4& set(T r, T g, T b, T a) noexcept { this->r = r; this->g = g; this->b = b; this->a = a; return *this; }
 	Color4& setMinimum(const Color4& c1, const Color4& c2) noexcept;
 	Color4& setMaximum(const Color4& c1, const Color4& c2) noexcept;
+	Color4& saturate() noexcept;
+	Color4& makeLinear();
+	Color4& makeSrgb();
+	Color4 toLinear() const;
+	Color4 toSrgb() const;
+	template<typename U> U toPackedRgba() const noexcept;
+	template<typename U> U toPackedBgra() const noexcept;
+	template<typename U> static Color4 fromPackedRgba(U c) noexcept;
+	template<typename U> static Color4 fromPackedBgra(U c) noexcept;
+#if IMAGING_NATIVE_ORDER_RGBA
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedRgba<U>(); }
+	template<typename U> static Color4 fromPacked/*Native*/(U c) noexcept { return fromPackedRgba(c); }
+#else
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgra<U>(); }
+	template<typename U> static Color4 fromPacked/*Native*/(U c) noexcept { return fromPackedBgra(c); }
+#endif
 
 	//static const Color4& getZero() noexcept { return ZERO; }
 	//static const Color4& getUnitR() noexcept { return UNIT_R; }
@@ -115,12 +132,6 @@ struct Color4
 };
 
 template<typename T>
-inline Color4<T> saturate(const Color4<T>& c) noexcept
-{
-	return Color4<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)), std::clamp(c.a, T(0), T(1)));
-}
-
-template<typename T>
 inline T luminance(const Color4<T>& c) noexcept
 {
 	return c.r*T(0.2126) + c.g*T(0.7152) + c.b*T(0.0722);
@@ -136,6 +147,19 @@ template<typename T>
 inline Color4<T> maximum(const Color4<T>& c1, const Color4<T>& c2) noexcept
 {
 	return Color4<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b), std::max(c1.a, c2.a));
+}
+
+template<typename T>
+inline Color4<T> saturate(const Color4<T>& c) noexcept
+{
+	return Color4<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)), std::clamp(c.a, T(0), T(1)));
+}
+
+template<typename T>
+inline Color4<T> lerp(const Color4<T>& c1, const Color4<T>& c2, T t) noexcept
+{
+	return Color4<T>(c1.r + t*(c2.r - c1.r), c1.g + t*(c2.g - c1.g), c1.b + t*(c2.b - c1.b),
+		c1.a + t*(c2.a - c1.a));
 }
 
 template<typename T>
@@ -176,6 +200,16 @@ inline Color4<T>& Color4<T>::setMaximum(const Color4<T>& c1, const Color4<T>& c2
 	g = std::max(c1.g, c2.g);
 	b = std::max(c1.b, c2.b); 
 	a = std::max(c1.a, c2.a); 
+	return *this;
+}
+
+template<typename T>
+inline Color4<T>& Color4<T>::saturate()
+{ 
+	r = std::clamp(r, T(0), T(1)); 
+	g = std::clamp(g, T(0), T(1));
+	b = std::clamp(b, T(0), T(1));
+	a = std::clamp(a, T(0), T(1));
 	return *this;
 }
 
@@ -262,12 +296,29 @@ struct Color4<float>
 	bool anyGreaterThan(const Color4& c) const noexcept { return simd::any4(simd::greaterThan(rgba, c)); }
 	bool anyGreaterThanEqual(const Color4& c) const noexcept { return simd::any4(simd::greaterThanEqual(rgba, c)); }
 	bool isFinite() const { return simd::all4(simd::isFinite(rgba)); }
-	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin4(rgba)); }
+	float getLuminance() const noexcept { return simd::toFloat(simd::dot3(rgba, LUMINANCE)); }
+ 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin4(rgba)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax4(rgba)); }
 	Color4& setZero() noexcept { rgba = simd::zero<simd::float4>(); return *this; }
 	Color4& set(float r, float g, float b, float a) noexcept { rgba = simd::set4(r, g, b, a); return *this; }
 	Color4& setMinimum(const Color4& c1, const Color4& c2) noexcept { rgba = simd::min4(c1, c2); return *this; }
 	Color4& setMaximum(const Color4& c1, const Color4& c2) noexcept { rgba = simd::max4(c1, c2); return *this; }
+	Color4& saturate() noexcept { rgba = simd::min4(simd::max4(rgba, simd::zero<simd::float4>()), ONE); return *this; }
+	Color4& makeLinear();
+	Color4& makeSrgb();
+	Color4 toLinear() const;
+	Color4 toSrgb() const;
+	template<typename U> U toPackedRgba() const noexcept;
+	template<typename U> U toPackedBgra() const noexcept;
+	template<typename U> static Color4 fromPackedRgba(U c) noexcept;
+	template<typename U> static Color4 fromPackedBgra(U c) noexcept;
+#if IMAGING_NATIVE_ORDER_RGBA
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedRgba<U>(); }
+	template<typename U> static Color4 fromPacked/*Native*/(U c) noexcept { return fromPackedRgba(c); }
+#else
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgra<U>(); }
+	template<typename U> static Color4 fromPacked/*Native*/(U c) noexcept { return fromPackedBgra(c); }
+#endif
 
 	//static const Color4& getZero() noexcept { return ZERO; }
 	//static const Color4& getUnitR() noexcept { return UNIT_R; }
@@ -294,14 +345,6 @@ struct Color4<float>
 };
 
 template<>
-inline Color4<float> saturate(const Color4<float>& c) noexcept
-{
-	//static const simd::float4 one = simd::set4(1.f);
-	const simd::float4 zero = simd::zero<simd::float4>();
-	return Color4<float>(simd::min4(simd::max4(c, zero), ONE/*one*/));
-}
-
-template<>
 inline float luminance(const Color4<float>& c) noexcept
 {
 	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
@@ -318,6 +361,19 @@ template<>
 inline Color4<float> maximum(const Color4<float>& c1, const Color4<float>& c2) noexcept
 {
 	return Color4<float>(simd::max4(c1, c2));
+}
+
+template<>
+inline Color4<float> saturate(const Color4<float>& c) noexcept
+{
+	//static const simd::float4 one = simd::set4(1.f);
+	return Color4<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), ONE/*one*/));
+}
+
+template<>
+inline Color4<float> lerp(const Color4<float>& c1, const Color4<float>& c2, float t) noexcept
+{
+	return Color4<float>(simd::mulAdd4(simd::set4(t), simd::sub4(c2, c1), c1));
 }
 
 inline std::istream& Color4<float>::operator>>(std::istream& s, Color4<float>& c) 
