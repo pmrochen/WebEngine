@@ -4,8 +4,8 @@
  */
 
 #pragma once
-#ifndef CORE_TUPLES_TUPLE3_HPP
-#define CORE_TUPLES_TUPLE3_HPP
+
+#include <tuple>
 
 namespace core {
 namespace tuples {
@@ -19,8 +19,12 @@ struct Tuple3
 	constexpr Tuple3() = default; //: x(), y(), z() {}
 	constexpr explicit Tuple3(const T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
 	constexpr Tuple3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
+	explicit Tuple3(const std::tuple<T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)) {}
+	template<typename U> explicit Tuple3(const std::tuple<U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))) {}
 	explicit Tuple3(const T* const v) noexcept : x(v[0]), y(v[1]), z(v[2]) {}
 
+	explicit operator std::tuple<T, T, T>() noexcept { return std::tuple<T, T, T>(x, y, z); }
+	template<typename U> explicit operator std::tuple<U, U, U>() noexcept { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 
@@ -50,4 +54,8 @@ using Double3 = templates::Tuple3<double>;
 } // namespace tuples
 } // namespace core
 
-#endif /* CORE_TUPLES_TUPLE3_HPP */
+namespace std
+{
+template<typename T>
+struct tuple_size<core::tuples::templates::Tuple3<T>> : std::integral_constant<std::size_t, 3> {};
+} // namespace std

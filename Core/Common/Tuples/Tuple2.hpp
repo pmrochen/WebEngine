@@ -4,8 +4,9 @@
  */
 
 #pragma once
-#ifndef CORE_TUPLES_TUPLE2_HPP
-#define CORE_TUPLES_TUPLE2_HPP
+
+#include <utility>
+#include <tuple>
 
 namespace core {
 namespace tuples {
@@ -19,8 +20,16 @@ struct Tuple2
 	constexpr Tuple2() = default; //: x(), y() {}
 	constexpr explicit Tuple2(const T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr Tuple2(const T x, const T y) noexcept : x(x), y(y) {}
+	explicit Tuple2(const std::pair<T, T>& t) noexcept : x(t.first), y(t.second) {}
+	template<typename U> explicit Tuple2(const std::pair<U, U>& t) noexcept : x(T(t.first)), y(T(t.second)) {}
+	explicit Tuple2(const std::tuple<T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)) {}
+	template<typename U> explicit Tuple2(const std::tuple<U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))) {}
 	explicit Tuple2(const T* const v) noexcept : x(v[0]), y(v[1]) {}
 
+	explicit operator std::pair<T, T>() noexcept { return std::pair<T, T>(x, y); }
+	template<typename U> explicit operator std::pair<U, U>() noexcept { return std::pair<U, U>(U(x), U(y)); }
+	explicit operator std::tuple<T, T>() noexcept { return std::tuple<T, T>(x, y); }
+	template<typename U> explicit operator std::tuple<U, U>() noexcept { return std::tuple<U, U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 
@@ -67,4 +76,8 @@ inline void serialize(A& ar, core::tuples::templates::Tuple2<half_float::half>& 
 }
 #endif // HALF_HALF_HPP
 
-#endif /* CORE_TUPLES_TUPLE2_HPP */
+namespace std
+{
+template<typename T>
+struct tuple_size<core::tuples::templates::Tuple2<T>> : std::integral_constant<std::size_t, 2> {};
+} // namespace std

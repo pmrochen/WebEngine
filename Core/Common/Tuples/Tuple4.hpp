@@ -4,8 +4,8 @@
  */
 
 #pragma once
-#ifndef CORE_TUPLES_TUPLE4_HPP
-#define CORE_TUPLES_TUPLE4_HPP
+
+#include <tuple>
 
 namespace core {
 namespace tuples {
@@ -19,8 +19,12 @@ struct Tuple4
 	constexpr Tuple4() = default; //: x(), y(), z(), w() {}
 	constexpr explicit Tuple4(const T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
 	constexpr Tuple4(const T x, const T y, const T z, const T w) noexcept : x(x), y(y), z(z), w(w) {}
+	explicit Tuple4(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
+	template<typename U> explicit Tuple4(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
 	explicit Tuple4(const T* const v) noexcept : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
 
+	explicit operator std::tuple<T, T, T, T>() noexcept { return std::tuple<T, T, T, T>(x, y, z, w); }
+	template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 
@@ -68,4 +72,8 @@ inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& 
 }
 #endif // HALF_HALF_HPP
 
-#endif /* CORE_TUPLES_TUPLE4_HPP */
+namespace std
+{
+template<typename T>
+struct tuple_size<core::tuples::templates::Tuple4<T>> : std::integral_constant<std::size_t, 4> {};
+} // namespace std
