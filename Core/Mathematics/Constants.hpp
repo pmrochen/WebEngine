@@ -4,8 +4,6 @@
  */
 
 #pragma once
-#ifndef CORE_MATHEMATICS_CONSTANTS_HPP
-#define CORE_MATHEMATICS_CONSTANTS_HPP
 
 #include <limits>
 
@@ -32,6 +30,7 @@ template<typename T>
 struct Constants
 {
 	static constexpr T TOLERANCE/*ZERO_TOLERANCE*/ = T();
+	static constexpr T EPSILON = T();
 	static constexpr T INF = T();
 	static constexpr T MINUS_INF = T();
 	static constexpr T E = T();
@@ -65,6 +64,7 @@ template<>
 struct Constants<float>
 {
 	static constexpr float TOLERANCE/*ZERO_TOLERANCE*/ = 1e-6f;
+	static constexpr float EPSILON = std::numeric_limits<float>::epsilon();
 	static constexpr float INF = std::numeric_limits<float>::infinity();
 	static constexpr float MINUS_INF = -std::numeric_limits<float>::infinity();
 	static constexpr float E = 2.71828182845904553488f;
@@ -98,6 +98,7 @@ template<>
 struct Constants<double>
 {
 	static constexpr double TOLERANCE/*ZERO_TOLERANCE*/ = 1e-15;
+	static constexpr double EPSILON = std::numeric_limits<double>::epsilon();
 	static constexpr double INF = std::numeric_limits<double>::infinity();
 	static constexpr double MINUS_INF = -std::numeric_limits<double>::infinity();
 	static constexpr double E = 2.71828182845904553488;
@@ -129,5 +130,3 @@ struct Constants<double>
 
 } // namespace mathematics
 } // namespace core
-
-#endif /* CORE_MATHEMATICS_CONSTANTS_HPP */
