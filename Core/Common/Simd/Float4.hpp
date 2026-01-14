@@ -4,8 +4,6 @@
  */
 
 #pragma once
-#ifndef CORE_SIMD_FLOAT4_HPP
-#define CORE_SIMD_FLOAT4_HPP
 
 #include "Intrinsics.hpp"
 
@@ -68,29 +66,31 @@ struct Float4
 	Float4 yyyy() const noexcept { return Float4(broadcast<Y>(value)); }
  	Float4 zzzz() const noexcept { return Float4(broadcast<Z>(value)); }
 	Float4 wwww() const noexcept { return Float4(broadcast<W>(value)); }
-	Float4 xyyy() const noexcept { return Float4(swizzle4<XYYY>(value)); }
-	Float4 xzzz() const noexcept { return Float4(swizzle4<XZZZ>(value)); }
-	Float4 xwww() const noexcept { return Float4(swizzle4<XWWW>(value)); }
-	Float4 xyzz() const noexcept { return Float4(swizzle4<XYZZ>(value)); }
-	Float4 xyww() const noexcept { return Float4(swizzle4<XYWW>(value)); }
-	Float4 xzww() const noexcept { return Float4(swizzle4<XZWW>(value)); }
-	Float4 yxxx() const noexcept { return Float4(swizzle4<YXXX>(value)); }
-	Float4 yzzz() const noexcept { return Float4(swizzle4<YZZZ>(value)); }
-	Float4 yzxx() const noexcept { return Float4(swizzle4<YZXX>(value)); }
-	Float4 yzww() const noexcept { return Float4(swizzle4<YZWW>(value)); }
-	Float4 ywww() const noexcept { return Float4(swizzle4<YWWW>(value)); }
-	Float4 yxzw() const noexcept { return Float4(swizzle4<YXZW>(value)); }
-	Float4 yxwz() const noexcept { return Float4(swizzle4<YXWZ>(value)); }
-	Float4 zxxx() const noexcept { return Float4(swizzle4<ZXXX>(value)); }
-	Float4 zxyy() const noexcept { return Float4(swizzle4<ZXYY>(value)); }
-	Float4 zyyy() const noexcept { return Float4(swizzle4<ZYYY>(value)); }
-	Float4 zyww() const noexcept { return Float4(swizzle4<ZYWW>(value)); }
-	Float4 zwww() const noexcept { return Float4(swizzle4<ZWWW>(value)); }
-	Float4 zwxy() const noexcept { return Float4(swizzle4<ZWXY>(value)); }
-	Float4 wxxx() const noexcept { return Float4(swizzle4<WXXX>(value)); }
-	Float4 wyyy() const noexcept { return Float4(swizzle4<WYYY>(value)); }
-	Float4 wzzz() const noexcept { return Float4(swizzle4<WZZZ>(value)); }
-	Float4 wzyx() const noexcept { return Float4(swizzle4<WZYX>(value)); }
+	Float4 xyyy() const noexcept { return Float4(swizzle<X, Y, Y, Y>(value)); }
+	Float4 xzzz() const noexcept { return Float4(swizzle<X, Z, Z, Z>(value)); }
+	Float4 xwww() const noexcept { return Float4(swizzle<X, W, W, W>(value)); }
+	Float4 xyzz() const noexcept { return Float4(swizzle<X, Y, Z, Z>(value)); }
+	Float4 xyww() const noexcept { return Float4(swizzle<X, Y, W, W>(value)); }
+	Float4 xzww() const noexcept { return Float4(swizzle<X, Z, W, W>(value)); }
+	Float4 yxxx() const noexcept { return Float4(swizzle<Y, X, X, X>(value)); }
+	Float4 yzzz() const noexcept { return Float4(swizzle<Y, Z, Z, Z>(value)); }
+	Float4 yzxx() const noexcept { return Float4(swizzle<Y, Z, X, X>(value)); }
+	Float4 yzxw() const noexcept { return Float4(swizzle<Y, Z, X, W>(value)); }
+	Float4 yzww() const noexcept { return Float4(swizzle<Y, Z, W, W>(value)); }
+	Float4 ywww() const noexcept { return Float4(swizzle<Y, W, W, W>(value)); }
+	Float4 yxzw() const noexcept { return Float4(swizzle<Y, X, Z, W>(value)); }
+	Float4 yxwz() const noexcept { return Float4(swizzle<Y, X, W, Z>(value)); }
+	Float4 zxxx() const noexcept { return Float4(swizzle<Z, X, X, X>(value)); }
+	Float4 zxyy() const noexcept { return Float4(swizzle<Z, X, Y, Y>(value)); }
+	Float4 zxyw() const noexcept { return Float4(swizzle<Z, X, Y, W>(value)); }
+	Float4 zyyy() const noexcept { return Float4(swizzle<Z, Y, Y, Y>(value)); }
+	Float4 zyww() const noexcept { return Float4(swizzle<Z, Y, W, W>(value)); }
+	Float4 zwww() const noexcept { return Float4(swizzle<Z, W, W, W>(value)); }
+	Float4 zwxy() const noexcept { return Float4(swizzle<Z, W, X, Y>(value)); }
+	Float4 wxxx() const noexcept { return Float4(swizzle<W, X, X, X>(value)); }
+	Float4 wyyy() const noexcept { return Float4(swizzle<W, Y, Y, Y>(value)); }
+	Float4 wzzz() const noexcept { return Float4(swizzle<W, Z, Z, Z>(value)); }
+	Float4 wzyx() const noexcept { return Float4(swizzle<W, Z, Y, X>(value)); }
 
 	float4 value;
 };
@@ -113,4 +113,3 @@ inline Float4 operator/(const Float4 v, float s) noexcept { return Float4(div4(v
 } // namespace core::simd
 
 #endif /* SIMD_HAS_FLOAT4 */
-#endif /* CORE_SIMD_FLOAT4_HPP */

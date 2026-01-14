@@ -4,8 +4,6 @@
  */
 
 #pragma once
-#ifndef CORE_SIMD_SSE_INTRINSICS_HPP
-#define CORE_SIMD_SSE_INTRINSICS_HPP
 
 #if defined(__SSE4_1__) || defined(__AVX__)
 #define SIMD_SSE 4
@@ -84,14 +82,14 @@ namespace detail {
 
 _MM_ALIGN16 struct UInt32M128
 {
-	inline operator __m128() const { return v; }
-	//inline operator __m128i() const { return _mm_castps_si128(v); }
-	//inline operator __m128d() const { return _mm_castps_pd(v); }
+	inline operator __m128() const { return xmm; }
+	//inline operator __m128i() const { return _mm_castps_si128(xmm); }
+	//inline operator __m128d() const { return _mm_castps_pd(xmm); }
 
 	union 
     { 
         std::uint32_t u[4]; 
-        __m128 v; 
+        __m128 xmm; 
     };
 };
 
@@ -101,15 +99,19 @@ const UInt32M128 ONE4 = { { { 0x3F800000, 0x3F800000, 0x3F800000, 0x3F800000 } }
 const UInt32M128 HALF4 = { { { 0x3F000000, 0x3F000000, 0x3F000000, 0x3F000000 } } };
 const UInt32M128 THREE4 = { { { 0x40400000, 0x40400000, 0x40400000, 0x40400000 } } };
 const UInt32M128 ZERO3_ONE1 = { { { 0x00000000, 0x00000000, 0x00000000, 0x3F800000 } } };
-const UInt32M128 MASK1 = { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } };
-const UInt32M128 MASK2 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } } };
-const UInt32M128 MASK3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
-const UInt32M128 MASK4 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF } } };
 const UInt32M128 SUB_ADD_SIGN4 = { { { 0x80000000, 0x00000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN1 = { { { 0x80000000, 0x00000000, 0x00000000, 0x00000000 } } };
 const UInt32M128 SIGN2 = { { { 0x80000000, 0x80000000, 0x00000000, 0x00000000 } } };
 const UInt32M128 SIGN3 = { { { 0x80000000, 0x80000000, 0x80000000, 0x00000000 } } };
 const UInt32M128 SIGN4 = { { { 0x80000000, 0x80000000, 0x80000000, 0x80000000 } } };
+const UInt32M128 MASK1 = { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } };
+const UInt32M128 MASK2 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000 } } };
+const UInt32M128 MASK3 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000 } } };
+const UInt32M128 MASK4 = { { { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF } } };
+const UInt32M128 COMPONENT_SIGNS[] = { { { { 0x80000000, 0x00000000, 0x00000000, 0x00000000 } } },
+	{ { { 0x00000000, 0x80000000, 0x00000000, 0x00000000 } } },
+	{ { { 0x00000000, 0x00000000, 0x80000000, 0x00000000 } } },
+	{ { { 0x00000000, 0x00000000, 0x00000000, 0x80000000 } } } };
 const UInt32M128 COMPONENT_MASKS[] = { { { { 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000 } } },
 	{ { { 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000 } } },
 	{ { { 0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000 } } },
@@ -119,67 +121,112 @@ const UInt32M128 COMPONENT_MASKS[] = { { { { 0xFFFFFFFF, 0x00000000, 0x00000000,
 
 using float4/*Float4*/ = __m128;
 
-//struct X { static constexpr int index = 0; };
-//struct Y { static constexpr int index = 1; };
-//struct Z { static constexpr int index = 2; };
-//struct W { static constexpr int index = 3; };
-//
-//template<typename/*auto*/ A, typename/*auto*/ B, typename/*auto*/ C, typename/*auto*/ D>
-//struct Swizzle { static constexpr int mask = _MM_SHUFFLE(D::index, C::index, B::index, A::index); };
-//
-//struct XYYY : public Swizzle<X, Y, Y, Y> {};
-//struct XY00 : public Swizzle<X, Y, 0, 0> {};
-//struct XZZZ : public Swizzle<X, Z, Z, Z> {};
-//struct XWWW : public Swizzle<X, W, W, W> {};
-
 constexpr int X = 0;
 constexpr int Y = 1;
 constexpr int Z = 2;
 constexpr int W = 3;
 
-//constexpr int XZ = _MM_SHUFFLE(0, 0, 2, 0);
-//constexpr int ZY = _MM_SHUFFLE(0, 0, 1, 2);
+//struct X { static constexpr int INDEX = 0; };
+//struct Y { static constexpr int INDEX = 1; };
+//struct Z { static constexpr int INDEX = 2; };
+//struct W { static constexpr int INDEX = 3; };
 
-constexpr int XYYY = _MM_SHUFFLE(1, 1, 1, 0);
-constexpr int XZZZ = _MM_SHUFFLE(2, 2, 2, 0);
-constexpr int XWWW = _MM_SHUFFLE(3, 3, 3, 0);
-constexpr int XYZZ = _MM_SHUFFLE(2, 2, 1, 0);
-constexpr int XYWW = _MM_SHUFFLE(3, 3, 1, 0);
-constexpr int XZWW = _MM_SHUFFLE(3, 3, 2, 0);
-
-constexpr int YXXX = _MM_SHUFFLE(0, 0, 0, 1);
-constexpr int YZZZ = _MM_SHUFFLE(2, 2, 2, 1);
-constexpr int YZXX = _MM_SHUFFLE(0, 0, 2, 1);
-constexpr int YZWW = _MM_SHUFFLE(3, 3, 2, 1);
-constexpr int YWWW = _MM_SHUFFLE(3, 3, 3, 1);
-constexpr int YXZW = _MM_SHUFFLE(3, 2, 0, 1);
-constexpr int YXWZ = _MM_SHUFFLE(2, 3, 0, 1);
-
-constexpr int ZXXX = _MM_SHUFFLE(0, 0, 0, 2);
-constexpr int ZXYY = _MM_SHUFFLE(1, 1, 0, 2);
-constexpr int ZYYY = _MM_SHUFFLE(1, 1, 1, 2);
-constexpr int ZYWW = _MM_SHUFFLE(3, 3, 1, 2);
-constexpr int ZWWW = _MM_SHUFFLE(3, 3, 3, 2);
-constexpr int ZWXY = _MM_SHUFFLE(1, 0, 3, 2);
-
-constexpr int WXXX = _MM_SHUFFLE(0, 0, 0, 3);
-constexpr int WYYY = _MM_SHUFFLE(1, 1, 1, 3);
-constexpr int WZZZ = _MM_SHUFFLE(2, 2, 2, 3);
-constexpr int WZYX = _MM_SHUFFLE(0, 1, 2, 3);
-
-/*template<int I0, int I1, int I2, int I3>
-static inline __m128i constant4i() 
+template<bool A, bool B, bool C, bool D>
+struct Mask 
 {
-    static const union 
-	{
-        int i[4];
-        __m128i xmm;
-    } u = { { I0, I1, I2, I3 } };
-    return u.xmm;
-}*/
+	static constexpr bool X = A;
+	static constexpr bool Y = B;
+	static constexpr bool Z = C;
+	static constexpr bool W = D;
+
+	static constexpr int X_MASK = -(int)A;
+	static constexpr int Y_MASK = -(int)B;
+	static constexpr int Z_MASK = -(int)C;
+	static constexpr int W_MASK = -(int)D;
+
+	static constexpr int X_SIGN = (int)A << 31;
+	static constexpr int Y_SIGN = (int)B << 31;
+	static constexpr int Z_SIGN = (int)C << 31;
+	static constexpr int W_SIGN = (int)D << 31;
+};
+
+struct XY : public Mask<true, true, false, false> {};
+struct XZ : public Mask<true, false, true, false> {};
+struct YZ : public Mask<false, true, true, false> {};
+struct XYZ : public Mask<true, true, true, false> {};
+struct XW : public Mask<true, false, false, true> {};
+struct YW : public Mask<false, true, false, true> {};
+struct XYW : public Mask<true, true, false, true> {};
+struct ZW : public Mask<false, false, true, true> {};
+struct XZW : public Mask<true, false, true, true> {};
+struct YZW : public Mask<false, true, true, true> {};
+//struct XYZW : public Mask<true, true, true, true> {};
+
+//constexpr int XYYY = _MM_SHUFFLE(1, 1, 1, 0);
+//constexpr int XZZZ = _MM_SHUFFLE(2, 2, 2, 0);
+//constexpr int XWWW = _MM_SHUFFLE(3, 3, 3, 0);
+//constexpr int XYZZ = _MM_SHUFFLE(2, 2, 1, 0);
+//constexpr int XYWW = _MM_SHUFFLE(3, 3, 1, 0);
+//constexpr int XZWW = _MM_SHUFFLE(3, 3, 2, 0);
+//constexpr int YXXX = _MM_SHUFFLE(0, 0, 0, 1);
+//constexpr int YZZZ = _MM_SHUFFLE(2, 2, 2, 1);
+//constexpr int YZXX = _MM_SHUFFLE(0, 0, 2, 1);
+//constexpr int YZWW = _MM_SHUFFLE(3, 3, 2, 1);
+//constexpr int YWWW = _MM_SHUFFLE(3, 3, 3, 1);
+//constexpr int YXZW = _MM_SHUFFLE(3, 2, 0, 1);
+//constexpr int YXWZ = _MM_SHUFFLE(2, 3, 0, 1);
+//constexpr int ZXXX = _MM_SHUFFLE(0, 0, 0, 2);
+//constexpr int ZXYY = _MM_SHUFFLE(1, 1, 0, 2);
+//constexpr int ZYYY = _MM_SHUFFLE(1, 1, 1, 2);
+//constexpr int ZYWW = _MM_SHUFFLE(3, 3, 1, 2);
+//constexpr int ZWWW = _MM_SHUFFLE(3, 3, 3, 2);
+//constexpr int ZWXY = _MM_SHUFFLE(1, 0, 3, 2);
+//constexpr int WXXX = _MM_SHUFFLE(0, 0, 0, 3);
+//constexpr int WYYY = _MM_SHUFFLE(1, 1, 1, 3);
+//constexpr int WZZZ = _MM_SHUFFLE(2, 2, 2, 3);
+//constexpr int WZYX = _MM_SHUFFLE(0, 1, 2, 3);
+
+template<int/*auto*/ A, int/*auto*/ B, int/*auto*/ C, int/*auto*/ D>
+struct Swizzle 
+{ 
+	static constexpr int X = A;
+	static constexpr int Y = B;
+	static constexpr int Z = C;
+	static constexpr int W = D;
+
+	static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D, C, B, A);
+	//static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D::INDEX, C::INDEX, B::INDEX, A::INDEX); 
+};
+
+struct XYYY : public Swizzle<X, Y, Y, Y> {};
+//struct XY00 : public Swizzle<X, Y, 0, 0> {};
+struct XZZZ : public Swizzle<X, Z, Z, Z> {};
+struct XWWW : public Swizzle<X, W, W, W> {};
+struct XYZZ : public Swizzle<X, Y, Z, Z> {};
+struct XYWW : public Swizzle<X, Y, W, W> {};
+struct XZWW : public Swizzle<X, Z, W, W> {};
+struct YXXX : public Swizzle<Y, X, X, X> {};
+struct YZZZ : public Swizzle<Y, Z, Z, Z> {};
+struct YZXX : public Swizzle<Y, Z, X, X> {};
+struct YZXW : public Swizzle<Y, Z, X, W> {};
+struct YZWW : public Swizzle<Y, Z, W, W> {};
+struct YWWW : public Swizzle<Y, W, W, W> {};
+struct YXZW : public Swizzle<Y, X, Z, W> {};
+struct YXWZ : public Swizzle<Y, X, W, Z> {};
+struct ZXXX : public Swizzle<Z, X, X, X> {};
+struct ZXYY : public Swizzle<Z, X, Y, Y> {};
+struct ZXYW : public Swizzle<Z, X, Y, W> {};
+struct ZYYY : public Swizzle<Z, Y, Y, Y> {};
+struct ZYWW : public Swizzle<Z, Y, W, W> {};
+struct ZWWW : public Swizzle<Z, W, W, W> {};
+struct ZWXY : public Swizzle<Z, W, X, Y> {};
+struct WXXX : public Swizzle<W, X, X, X> {};
+struct WYYY : public Swizzle<W, Y, Y, Y> {};
+struct WZZZ : public Swizzle<W, Z, Z, Z> {};
+struct WZYX : public Swizzle<W, Z, Y, X> {};
 
 template<typename T>
-inline T zero() { return {}; }
+inline T zero() { return T(); }
 
 template<>
 inline __m128 zero()
@@ -187,35 +234,73 @@ inline __m128 zero()
 	return _mm_setzero_ps();
 }
 
-template<typename T, typename U>
-inline T make(U s) { return {}; }
-
-template<>
-inline __m128 make(float s)
+template<int X, int Y, int Z, int W>
+inline __m128/*i*/ constant()
 {
-	return _mm_set_ps1(s);
+	static const _MM_ALIGN16 union
+	{
+		int i[4];
+		__m128/*i*/ xmm;
+	} u = { { X, Y, Z, W } };
+	return u.xmm;
 }
 
-template<>
-inline __m128 make(bool s)
-{
-	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
-}
+//template<typename T, typename U>
+//inline T make(U s) { return T(); }
+//
+//template<>
+//inline __m128 make(float s)
+//{
+//	return _mm_set_ps1(s);
+//}
+//
+//template<>
+//inline __m128 make(bool s)
+//{
+//	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
+//}
 
-template<typename T, typename U>
-inline T make(U x, U y, U z, U w) { return {}; }
+//template<typename T, bool S>
+//inline T make() { return T(); }
+//
+//template<bool S>
+//inline __m128 make()
+//{
+//	return _mm_castsi128_ps(_mm_set1_epi32(-(int)S));
+//}
 
-template<>
-inline __m128 make(float x, float y, float z, float w)
-{
-	return _mm_setr_ps(x, y, z, w);
-}
+//template<typename T, typename U>
+//inline T make(U x, U y, U z, U w) { return T(); }
+//
+//template<>
+//inline __m128 make(float x, float y, float z, float w)
+//{
+//	return _mm_setr_ps(x, y, z, w);
+//}
+//
+//template<>
+//inline __m128 make(bool x, bool y, bool z, bool w)
+//{
+//	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
+//}
 
-template<>
-inline __m128 make(bool x, bool y, bool z, bool w)
-{
-	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
-}
+//template<typename T, int X, int Y, int Z, int W>
+//inline T make() { return T(); }
+//
+//template<typename T, bool X, bool Y, bool Z, bool W>
+//inline T make() { return T(); }
+//
+//template<int X, int Y, int Z, int W>
+//inline __m128 make()
+//{
+//	return _mm_setr_ps(float(X), float(Y), float(X), float(W));
+//}
+//
+//template<bool X, bool Y, bool Z, bool W>
+//inline __m128 make()
+//{
+//	return _mm_castsi128_ps(_mm_setr_epi32(-(int)X, -(int)Y, -(int)Z, -(int)W));
+//}
 
 inline __m128 set1(float s)
 {
@@ -249,10 +334,20 @@ inline __m128 set4(float s)
 	return _mm_set_ps1(s);
 }
 
+//inline __m128 set4(bool s)
+//{
+//	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
+//}
+
 inline __m128 set4(float x, float y, float z, float w)
 { 
 	return _mm_setr_ps(x, y, z, w); 
 }
+
+//inline __m128 set4(bool x, bool y, bool z, bool w)
+//{
+//	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
+//}
 
 inline __m128 load2(const float* v)
 {
@@ -512,13 +607,18 @@ inline __m128 andNot4(__m128 v1, __m128 v2)
 
 inline __m128 not4(__m128 v)
 {
-	return _mm_xor_ps(v, _mm_castsi128_ps(_mm_set1_epi32(-1)));
+	return _mm_xor_ps(v, constant<-1, -1, -1, -1>()/*_mm_castsi128_ps(_mm_set1_epi32(-1))*/);
 }
 
 //template<bool X, bool Y, bool Z, bool W>
 //inline __m128 not(__m128 v)
 //{
 //	return _mm_xor_ps(v, _mm_castsi128_ps(_mm_setr_epi32(-(int)X, -(int)Y, -(int)Z, -(int)W)));
+//}
+
+//inline __m128 not(__m128 v, __m128 mask)
+//{
+//	return _mm_xor_ps(v, mask);
 //}
 
 inline __m128 select(__m128 b, __m128 v1, __m128 v2) // b ? v1 : v2
@@ -565,17 +665,27 @@ inline __m128 broadcast(__m128 v)
 //	return _mm_and_ps(_mm_shuffle_ps(v, v, M), detail::MASK3);
 //}
 
-template<int M>
-inline __m128 swizzle4(__m128 v)
+//template<int M>
+//inline __m128 swizzle4(__m128 v)
+//{
+//	static_assert((M & ~0xFF) == 0);
+//	return _mm_shuffle_ps(v, v, M);
+//}
+
+template<typename S>
+inline __m128 swizzle(__m128 v)
 {
-	static_assert((M & ~0xFF) == 0);
-	return _mm_shuffle_ps(v, v, M);
+	return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
 }
 
 template<int A, int B, int C, int D>
 inline __m128 swizzle(__m128 v)
 {
 	static_assert(((A & ~3) == 0) && ((B & ~3) == 0) && ((C & ~3) == 0) && ((D & ~3) == 0));
+	//if constexpr ((A < 0) || (B < 0) || (C < 0) || (D < 0))
+	//	_mm_xor_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE(((D < 0) ? -D : D) - 1, ((C < 0) ? -C : C) - 1, ((B < 0) ? -B : B) - 1, ((A < 0) ? -A : A) - 1)),
+	//		constant<(int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
+	//else
 	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
 }
 
@@ -688,11 +798,28 @@ inline __m128 neg4(__m128 v)
 	return _mm_xor_ps(v, detail::SIGN4/*_mm_castsi128_ps(_mm_set1_epi32(0x80000000))*/);
 }
 
-template<bool X, bool Y, bool Z, bool W>
+inline __m128 neg(__m128 v, __m128 mask)
+{
+	return _mm_xor_ps(v, _mm_and_ps(detail::SIGN4/*_mm_castsi128_ps(_mm_set1_epi32(0x80000000))*/, mask));
+}
+
+//template<bool X, bool Y, bool Z, bool W>
+//inline __m128 neg(__m128 v)
+//{
+//	return _mm_xor_ps(v, constant<(int)X << 31, (int)Y << 31, (int)Z << 31, (int)W << 31>()/*_mm_castsi128_ps(_mm_setr_epi32((int)X << 31, (int)Y << 31, (int)Z << 31, (int)W << 31))*/);
+//}
+
+template<int I>
 inline __m128 neg(__m128 v)
 {
-	return _mm_xor_ps(v, _mm_castsi128_ps(_mm_setr_epi32((int)X << 31, (int)Y << 31, 
-        (int)Z << 31, (int)W << 31)));
+	static_assert((I & ~3) == 0);
+	return _mm_xor_ps(v, detail::COMPONENT_SIGNS[I]);
+}
+
+template<typename M>
+inline __m128 neg(__m128 v)
+{
+	return _mm_xor_ps(v, constant<M::X_SIGN, M::Y_SIGN, M::Z_SIGN, M::W_SIGN>()/*_mm_castsi128_ps(_mm_setr_epi32(M::X_SIGN, M::Y_SIGN, M::Z_SIGN, M::W_SIGN))*/);
 }
 
 inline __m128 abs4(__m128 v)
@@ -906,4 +1033,3 @@ inline __m128 isInf(__m128 v)
 } // namespace core::simd::sse
 
 #endif /* SIMD_SSE */
-#endif /* CORE_SIMD_SSE_INTRINSICS_HPP */
