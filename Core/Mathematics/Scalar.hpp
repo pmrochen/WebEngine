@@ -4,37 +4,75 @@
  */
 
 #pragma once
-#ifndef CORE_MATHEMATICS_SCALAR_HPP
-#define CORE_MATHEMATICS_SCALAR_HPP
 
 #include <cmath>
 #include <utility>
 #include <type_traits>
 #include "Constants.hpp"
 
+#ifndef MATHEMATICS_API
+#if defined(MATHEMATICS_DLL) || defined(CORE_DLL)
+#if defined(MATHEMATICS_EXPORTS) || defined(CORE_EXPORTS)
+#define MATHEMATICS_API __declspec(dllexport)
+#else
+#define MATHEMATICS_API __declspec(dllimport)
+#endif
+#else
+#define MATHEMATICS_API
+#endif
+#endif
+
 namespace core {
 namespace mathematics {
 
+//extern MATHEMATICS_API std::pair<int, int> /*makeRational*/rational(float x, int maxDenominator);
+//extern MATHEMATICS_API std::pair<int, int> /*makeRational*/rational(double x, int maxDenominator);
+//extern MATHEMATICS_API float rcpSqrtApprox(float x);
+//extern MATHEMATICS_API float sinApprox(float x);
+//extern MATHEMATICS_API float cosApprox(float x);
+//extern MATHEMATICS_API float atan2Approx(float y, float x);
+
 template<typename T>
-inline T sign(T x) { return ((x > T(0)) ? T(1) : ((x < T(0)) ? T(-1) : T(0))); } // signum
+inline T sign(T x) 
+{ 
+	return ((x > T(0)) ? T(1) : ((x < T(0)) ? T(-1) : T(0))); 
+}
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline T frac(T x) { return (x - std::floor(x)); } // fractional part
+inline T frac(T x)
+{ 
+	return (x - std::floor(x)); 
+}
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline bool approxEquals(T a, T b) { return (std::fabs(b - a) < Constants<T>::TOLERANCE); } // equality approximation
+inline bool approxEquals(T a, T b) 
+{ 
+	return (std::fabs(b - a) < Constants<T>::TOLERANCE); 
+}
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline bool approxEquals(T a, T b, T tolerance) { return (std::fabs(b - a) < tolerance); }
+inline bool approxEquals(T a, T b, T tolerance) 
+{ 
+	return (std::fabs(b - a) < tolerance); 
+}
 
 //template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-//inline bool isNan(T x) { return !(x == x); }
+//inline bool isNan(T x) 
+//{ 
+//	return !(x == x); 
+//}
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline T log(T x, T b) { return std::log(x)/std::log(b); } // logarithm for a base b
+inline T log(T x, T b) // logarithm for a base b
+{ 
+	return std::log(x)/std::log(b);
+}
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline T log2(T x) { return std::log(x)/Constants<T>::LN2; } // base-2 logarithm
+inline T log2(T x) // base-2 logarithm
+{ 
+	return std::log(x)/Constants<T>::LN2; 
+}
 
 //inline std::pair<float, float> sinCos(float x) { return std::pair<float, float>(std::sin(x), std::cos(x)); }
 //inline std::pair<double, double> sinCos(double x) { return std::pair<double, double>(std::sin(x), std::cos(x)); }
@@ -48,18 +86,60 @@ inline T log2(T x) { return std::log(x)/Constants<T>::LN2; } // base-2 logarithm
 //inline void sinCos(T x, T& sine, T& cosine) { sine = std::sin(x); cosine = std::cos(x); }
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline T radians(T x) { return x*Constants<T>::DEG_TO_RAD; } // degree/radian conversion
+inline T radians(T x) 
+{ 
+	return x*Constants<T>::DEG_TO_RAD; 
+}
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline T degrees(T x) { return x*Constants<T>::RAD_TO_DEG; }
+inline T degrees(T x) 
+{ 
+	return x*Constants<T>::RAD_TO_DEG; 
+}
 
 template<typename T>
-inline T step(T a, T t) { return (t >= a) ? T(1) : T(0); }
+inline T step(T a, T t) 
+{ 
+	return (t >= a) ? T(1) : T(0); 
+}
 
 template<typename T>
-inline T pulse(T a, T b, T t) { return (step(a, t) - step(b, t)); }
+inline T pulse(T a, T b, T t) 
+{ 
+	return step(a, t) - step(b, t); 
+}
+
+template<typename T>
+inline T boxStep(T a, T b, T t)
+{
+	if (t <= a)
+		return T(0);
+	if (t >= b)
+		return T(1);
+	return (t - a)/(b - a);
+}
+
+template<typename T>
+inline T smoothStep(T a, T b, T t)
+{
+	if (t <= a)
+		return T(0);
+	if (t >= b)
+		return T(1);
+	t = (t - a)/(b - a);
+	return t*t*(T(3) - T(2)*t);
+}
+
+template<typename T>
+inline T smootherStep(T a, T b, T t)
+{
+	if (t <= a)
+		return T(0);
+	if (t >= b)
+		return T(1);
+	t = (t - a)/(b - a);
+	return t*t*t*(t*(t*T(6) - T(15)) + T(10));
+}
 
 } // namespace mathematics
 } // namespace core
-
-#endif /* CORE_MATHEMATICS_SCALAR_HPP */
