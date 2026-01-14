@@ -4,20 +4,24 @@
  */
 
 #pragma once
-#ifndef CORE_MATHEMATICS_VECTOR3_HPP
-#define CORE_MATHEMATICS_VECTOR3_HPP
 
 #include <cmath>
 #include <istream>
 #include <ostream>
 #include <limits>
+#include <type_traits>
 #include <algorithm>
+#include <tuple>
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple3.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
 #include "Scalar.hpp"
 #include "Vector2.hpp"
+
+#ifndef MATHEMATICS_FAST_NORMALIZE
+#define MATHEMATICS_FAST_NORMALIZE 1
+#endif
 
 namespace core {
 namespace mathematics {
@@ -52,11 +56,15 @@ struct Vector3
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
+	explicit Vector3(const std::tuple<T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)) {}
+	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))) {}
 	explicit Vector3(const T* v) noexcept { x = v[0]; y = v[1]; z = v[2]; }
 	explicit Vector3(Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)), z((axis == Axis::Z) ? T(1) : T(0)) {}
 
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
+	explicit operator std::tuple<T, T, T>() noexcept { return std::tuple<T, T, T>(x, y, z); }
+	template<typename U> explicit operator std::tuple<U, U, U>() noexcept { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -83,7 +91,7 @@ struct Vector3
 	//friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, Vector3& v) { return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z; }
+	friend std::istream& operator>>(std::istream& s, Vector3& v);
 	friend std::ostream& operator<<(std::ostream& s, const Vector3& v) { return s << v.x << ' ' << v.y << ' ' << v.z; }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
@@ -112,12 +120,12 @@ struct Vector3
 	T getLengthSquared() const noexcept { return getMagnitudeSquared(); }
 	void setLength(T length) { setMagnitude(length); }
 	Axis getMajorAxis() const noexcept;
-	T getMinComponent() const noexcept { return std::min(std::min(x, y), z); }
-	T getMaxComponent() const noexcept { return std::max(std::max(x, y), z); }
+	T getMinComponent() const { return std::min(std::min(x, y), z); }
+	T getMaxComponent() const { return std::max(std::max(x, y), z); }
 	Vector3& setZero() noexcept { x = T(); y = T(); z = T(); return *this; }
 	Vector3& set(T x, T y, T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
-	Vector3& setMinimum(const Vector3& v1, const Vector3& v2) noexcept;
-	Vector3& setMaximum(const Vector3& v1, const Vector3& v2) noexcept;
+	Vector3& setMinimum(const Vector3& v1, const Vector3& v2);
+	Vector3& setMaximum(const Vector3& v1, const Vector3& v2);
 	Vector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Vector3& normalize();
 	Vector3& rotate(Axis axis, T angle);
@@ -126,10 +134,10 @@ struct Vector3
 	Vector3& transform(const Matrix3<T>& m); // #TODO
 	Vector3& transform(const AffineTransform<T>& m); // #TODO
 
-	static const Vector3& getZero() noexcept { return ZERO; }
-	static const Vector3& getUnitX() noexcept { return UNIT_X; }
-	static const Vector3& getUnitY() noexcept { return UNIT_Y; }
-	static const Vector3& getUnitZ() noexcept { return UNIT_Z; }
+	//static const Vector3& getZero() noexcept { return ZERO; }
+	//static const Vector3& getUnitX() noexcept { return UNIT_X; }
+	//static const Vector3& getUnitY() noexcept { return UNIT_Y; }
+	//static const Vector3& getUnitZ() noexcept { return UNIT_Z; }
 
 	static const Vector3 ZERO;
 	static const Vector3 UNIT_X;
@@ -222,13 +230,13 @@ inline T angle(const Vector3<T>& v1, const Vector3<T>& v2)
 }
 
 template<typename T>
-inline Vector3<T> minimum(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+inline Vector3<T> minimum(const Vector3<T>& v1, const Vector3<T>& v2)
 {
 	return Vector3<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z));
 }
 
 template<typename T>
-inline Vector3<T> maximum(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+inline Vector3<T> maximum(const Vector3<T>& v1, const Vector3<T>& v2)
 {
 	return Vector3<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z));
 }
@@ -268,6 +276,12 @@ inline Vector3<T> perpendicular(const Vector3<T>& v) noexcept
 
 //template<typename T>
 //inline Vector3<T> transform(const Vector3<T>& v, const AffineTransform<T>& m) noexcept; // -> AffineTransform
+
+template<typename T>
+inline std::istream& operator>>(std::istream& s, Vector3<T>& v) 
+{ 
+	return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z; 
+}
 
 template<typename T>
 inline bool Vector3<T>::isApproxZero() const
@@ -330,15 +344,20 @@ inline Vector3<T>& Vector3<T>::setMaximum(const Vector3<T>& v1, const Vector3<T>
 template<typename T>
 inline Vector3<T>& Vector3<T>::normalize()
 {
-#if MATHEMATICS_FAST_NORMALIZE
-	T m = rcpSqrtApprox(getMagnitudeSquared()); 
-	if (m <= std::numeric_limits<T>::max()) 
-		*this *= m;
-#else
-	T m = getMagnitude(); 
-	if (m > T(0)) 
-		*this /= m;
-#endif
+//#if MATHEMATICS_FAST_NORMALIZE
+//	if costexpr(std::is_same_v<T, float>)
+//	{
+//		T m = rcpSqrtApprox(getMagnitudeSquared());
+//		if (m <= std::numeric_limits<T>::max()) 
+//			*this *= m;
+//	}
+//	else
+//#endif
+	{
+		T m = getMagnitude();
+		if (m > T(0))
+			*this /= m;
+	}
 	return *this;
 }
 
@@ -407,6 +426,8 @@ struct Vector3<float>
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = simd::set4(t.x, t.y, t.z, t.z); }
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { float z = (float)t.z; xyz = simd::set4((float)t.x, (float)t.y, z, z); }
+	explicit Vector3(const std::tuple<float, float, float>& t) noexcept { float z = std::get<2>(t); xyz = simd::set4(std::get<0>(t), std::get<1>(t), z, z); }
+	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept { float z = (float)std::get<2>(t); xyz = simd::set4((float)std::get<0>(t), (float)std::get<1>(t), z, z); }
 	explicit Vector3(const float* v) noexcept { set(v[0], v[1], v[2]); }
 #else
 	/*constexpr*/ explicit Vector3(float scalar) noexcept { xyz = simd::set3(scalar); }
@@ -416,6 +437,8 @@ struct Vector3<float>
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = simd::set3(t.x, t.y, t.z); }
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { xyz = simd::set3((float)t.x, (float)t.y, (float)t.z); }
+	explicit Vector3(const std::tuple<float, float, float>& t) noexcept { xyz = simd::set3(std::get<0>(t), std::get<1>(t), std::get<2>(t)); }
+	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept { xyz = simd::set3((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t)); }
 	explicit Vector3(const float* v) noexcept { xyz = simd::load3(v); }
 #endif
 	explicit Vector3(Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
@@ -424,6 +447,8 @@ struct Vector3<float>
 	operator simd::float4() const noexcept { return xyz; }
 	explicit operator tuples::templates::Tuple3<float>() noexcept { return tuples::templates::Tuple3<float>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
+	explicit operator std::tuple<float, float, float>() noexcept { return std::tuple<float, float, float>(x, y, z); }
+	template<typename U> explicit operator std::tuple<U, U, U>() noexcept { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
 	explicit operator float*() noexcept { return &x; }
 	explicit operator const float*() const noexcept { return &x; }
 	float& operator[](int i) noexcept { return (&x)[i]; }
@@ -469,13 +494,13 @@ struct Vector3<float>
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use simd::set(x, y, z, z)
 
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::swizzle4<simd::XYYY>(xyz)); }
-	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::swizzle4<simd::XZZZ>(xyz)); }
-	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::swizzle4<simd::ZYYY>(xyz)); }
+	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XYYY>(xyz)); }
+	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XZZZ>(xyz)); }
+	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::ZYYY>(xyz)); }
 #else
 	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::cutoff2(xyz)); }
-	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::swizzle4/*2*/<simd::XZWW>(xyz)); }
-	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::swizzle4/*2*/<simd::ZYWW>(xyz)); }
+	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XZWW>(xyz)); }
+	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::ZYWW>(xyz)); }
 #endif
 	//void setXY(Vector2<float>::ConstArg v) noexcept { xyz = simd::insert2(v, xyz); }
 	bool isZero() const noexcept { return simd::all3(simd::equal(xyz, simd::zero<simd::float4>())); }
@@ -520,10 +545,10 @@ struct Vector3<float>
 	Vector3& transform(const Matrix3<float>& m); // #TODO
 	Vector3& transform(const AffineTransform<float>& m); // #TODO
 
-	static const Vector3& getZero() noexcept { return ZERO; }
-	static const Vector3& getUnitX() noexcept { return UNIT_X; }
-	static const Vector3& getUnitY() noexcept { return UNIT_Y; }
-	static const Vector3& getUnitZ() noexcept { return UNIT_Z; }
+	//static const Vector3& getZero() noexcept { return ZERO; }
+	//static const Vector3& getUnitX() noexcept { return UNIT_X; }
+	//static const Vector3& getUnitY() noexcept { return UNIT_Y; }
+	//static const Vector3& getUnitZ() noexcept { return UNIT_Z; }
 
 	static const Vector3 ZERO;
 	static const Vector3 UNIT_X;
@@ -550,8 +575,8 @@ inline float dot(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
 template<>
 inline Vector3<float> cross(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
 {
-	return Vector3<float>(simd::sub4(simd::mul4(simd::swizzle4<simd::YZXW>(v1), simd::swizzle4<simd::ZXYW>(v2)),
-		simd::mul4(simd::swizzle4<simd::ZXYW>(v1), simd::swizzle4<simd::YZXW>(v2))));
+	return Vector3<float>(simd::sub4(simd::mul4(simd::swizzle<simd::YZXW>(v1), simd::swizzle<simd::ZXYW>(v2)),
+		simd::mul4(simd::swizzle<simd::ZXYW>(v1), simd::swizzle<simd::YZXW>(v2))));
 }
 
 template<>
@@ -581,18 +606,19 @@ inline float lengthSquared(const Vector3<float>& v) noexcept
 }
 
 template<>
-inline Vector3<float> minimum(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
+inline Vector3<float> minimum(const Vector3<float>& v1, const Vector3<float>& v2)
 {
 	return Vector3<float>(simd::min4(v1, v2));
 }
 
 template<>
-inline Vector3<float> maximum(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
+inline Vector3<float> maximum(const Vector3<float>& v1, const Vector3<float>& v2)
 {
 	return Vector3<float>(simd::max4(v1, v2));
 }
 
-inline std::istream& Vector3<float>::operator>>(std::istream& s, Vector3<float>& v) 
+template<>
+inline std::istream& operator>>(std::istream& s, Vector3<float>& v)
 { 
 	float x, y, z; 
 	s >> x >> std::skipws >> y >> std::skipws >> z; 
@@ -610,7 +636,7 @@ inline void Vector3<float>::setMagnitude(float magnitude)
 inline Vector3<float>& Vector3<float>::normalize()
 {
 #if MATHEMATICS_FAST_NORMALIZE
-	float m = rcpSqrtApprox(getMagnitudeSquared()); 
+	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::dot3(xyz, xyz)));
 	if (m <= std::numeric_limits<float>::max()) 
 		*this *= m;
 #else
@@ -679,12 +705,6 @@ using Vector3Arg = templates::Vector3<float>::ConstArg;
 using Vector3Result = templates::Vector3<float>::ConstResult;
 #endif
 
-//template<typename T>
-//inline T length(templates::Vector3<T>::ConstArg v) { return v.getMagnitude(); }
-//
-//template<typename T>
-//inline T lengthSquared(templates::Vector3<T>::ConstArg v) { return v.getMagnitudeSquared(); }
-
 } // namespace mathematics
 } // namespace core
 
@@ -731,11 +751,11 @@ inline Vector3<float>::Vector3(const IntVector3<U>& v)
 
 Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 {
-	auto qyzx = simd::swizzle4<simd::YZXX>(q);
-	auto qzxy = simd::swizzle4<simd::ZXYY>(q);
-	auto t1 = simd::sub4(simd::mul4(qyzx, simd::swizzle4<simd::ZXYY>(xyz)), simd::mul4(qzxy, simd::swizzle4<simd::YZXX>(xyz)));
-	auto t2 = simd::mulAdd4(simd::broadcast<simd::W>(q), t1, simd::sub4(simd::mul4(qyzx, simd::swizzle4<simd::ZXYY>(t1)),
-		simd::mul4(qzxy, simd::swizzle4<simd::YZXX>(t1))));
+	auto qyzx = simd::swizzle<simd::YZXX>(q);
+	auto qzxy = simd::swizzle<simd::ZXYY>(q);
+	auto t1 = simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(xyz)), simd::mul4(qzxy, simd::swizzle<simd::YZXX>(xyz)));
+	auto t2 = simd::mulAdd4(simd::broadcast<simd::W>(q), t1, simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(t1)),
+		simd::mul4(qzxy, simd::swizzle<simd::YZXX>(t1))));
 	static const simd::float4 two = simd::set3(2.0f);
 	xyz = simd::mulAdd4(two, t2, xyz);
 	return *this;
@@ -747,4 +767,8 @@ Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 } // namespace mathematics
 } // namespace core
 
-#endif /* CORE_MATHEMATICS_VECTOR3_HPP */
+namespace std
+{
+	template<typename T>
+	struct tuple_size<core::mathematics::templates::Vector3<T>> : std::integral_constant<std::size_t, 3> {};
+} // namespace std

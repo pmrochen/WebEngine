@@ -4,20 +4,25 @@
  */
 
 #pragma once
-#ifndef CORE_MATHEMATICS_QUATERNION_HPP
-#define CORE_MATHEMATICS_QUATERNION_HPP
 
 #include <cmath>
 #include <istream>
 #include <ostream>
 #include <limits>
+#include <type_traits>
+#include <tuple>
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple4.hpp>
 #include "Constants.hpp"
+#include "Scalar.hpp"
 #include "Vector3.hpp"
 #include "Matrix3.hpp"
 #include "YawPitchRoll.hpp"
 #include "Euler.hpp"
+
+#ifndef MATHEMATICS_FAST_NORMALIZE
+#define MATHEMATICS_FAST_NORMALIZE 1
+#endif
 
 namespace core {
 namespace mathematics {
@@ -45,10 +50,14 @@ struct Quaternion
 	explicit Quaternion(const Euler<T>& e);
 	explicit Quaternion(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
+	explicit Quaternion(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
+	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
 	explicit Quaternion(const T* q) noexcept { x = q[0]; y = q[1]; z = q[2]; w = q[3]; }
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
+	explicit operator std::tuple<T, T, T, T>() noexcept { return std::tuple<T, T, T, T>(x, y, z, w); }
+	template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -75,7 +84,7 @@ struct Quaternion
 	friend Quaternion operator/(ConstArg q, T f) noexcept { T s = T(1)/f; return Quaternion(q.x*s, q.y*s, q.z*s, q.w*s); }
 	bool operator==(const Quaternion& q) const noexcept { return (x == q.x) && (y == q.y) && (z == q.z) && (w == q.w); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
-	friend std::istream& operator>>(std::istream& s, Quaternion& q) { return s >> q.x >> std::skipws >> q.y >> std::skipws >> q.z >> std::skipws >> q.w; }
+	friend std::istream& operator>>(std::istream& s, Quaternion& q);
 	friend std::ostream& operator<<(std::ostream& s, const Quaternion& q) { return s << q.x << ' ' << q.y << ' ' << q.z << ' ' << q.w; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
@@ -111,9 +120,9 @@ struct Quaternion
 	Quaternion& conjugate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Quaternion& invert() noexcept { *this = Quaternion(-x, -y, -z, w)/getNorm(); return *this; }
  
-	static const Quaternion& getZero() noexcept { return ZERO; }
-	static const Quaternion& getIdentity() noexcept { return IDENTITY; }
-	static Quaternion fromAxisAngle(const Vector3<T>& axis, T angle) noexcept;
+	//static const Quaternion& getZero() noexcept { return ZERO; }
+	//static const Quaternion& getIdentity() noexcept { return IDENTITY; }
+	static Quaternion fromAxisAngle(const Vector3<T>& axis, T angle);
 
 	static const Quaternion ZERO;
 	static const Quaternion IDENTITY;
@@ -216,6 +225,12 @@ inline Quaternion<T> inverse(const Quaternion<T>& q) noexcept
 }
 
 template<typename T>
+inline std::istream& operator>>(std::istream& s, Quaternion<T>& q) 
+{ 
+	return s >> q.x >> std::skipws >> q.y >> std::skipws >> q.z >> std::skipws >> q.w; 
+}
+
+template<typename T>
 inline bool Quaternion<T>::isApproxZero() const
 { 
 	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE) && 
@@ -246,16 +261,35 @@ inline bool Quaternion<T>::isApproxEqual(const Quaternion<T>& q, T tolerance) co
 template<typename T>
 inline Quaternion<T>& Quaternion<T>::normalize()
 {
-#if MATHEMATICS_FAST_NORMALIZE
-	T m = rcpSqrtApprox(getMagnitudeSquared()); 
-	if (m <= std::numeric_limits<T>::max()) 
-		*this *= m;
-#else
-	T m = getMagnitude(); 
-	if (m > T(0)) 
-		*this /= m;
-#endif
+//#if MATHEMATICS_FAST_NORMALIZE
+//	if costexpr(std::is_same_v<T, float>)
+//	{
+//		T m = rcpSqrtApprox(getMagnitudeSquared());
+//		if (m <= std::numeric_limits<T>::max())
+//			*this *= m;
+//	}
+//	else
+//#endif
+	{
+		T m = getMagnitude();
+		if (m > T(0))
+			*this /= m;
+	}
 	return *this;
+}
+
+template<typename T>
+inline Quaternion<T> Quaternion<T>::fromAxisAngle(const Vector3<T>& axis, T angle)
+{
+	T m = axis.getMagnitude();
+	if ((m > T(0)) && (angle != T(0)))
+	{
+		T half = angle*T(0.5);
+		T sinHalfN = std::sin(half)/m;
+		return Quaternion<T>(axis.x*sinHalfN, axis.y*sinHalfN, axis.z*sinHalfN, std::cos(half));
+	}
+
+	return IDENTITY;
 }
 
 template<typename T> const Quaternion<T> Quaternion<T>::ZERO{};
@@ -283,12 +317,16 @@ struct Quaternion<float>
 	explicit Quaternion(const Euler<float>& e);
 	explicit Quaternion(const tuples::templates::Tuple4<float>& t) noexcept { xyzw = simd::set4(t.x, t.y, t.z, t.w); }
 	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept { xyzw = simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
+	explicit Quaternion(const std::tuple<float, float, float, float>& t) noexcept { xyzw = simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t)); }
+	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept { xyzw = simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t)); }
 	explicit Quaternion(const float* q) noexcept { xyzw = simd::load4(q); }
 	explicit Quaternion(simd::float4 q) noexcept : xyzw(q) {}
 
 	operator simd::float4() const noexcept { return xyzw; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
+	explicit operator std::tuple<float, float, float, float>() noexcept { return std::tuple<float, float, float, float>(x, y, z, w); }
+	template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator float*() noexcept { return &x; }
 	explicit operator const float*() const noexcept { return &x; }
 	float& operator[](int i) noexcept { return (&x)[i]; }
@@ -328,7 +366,7 @@ struct Quaternion<float>
 	bool isApproxEqual(const Quaternion& q, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), simd::set4(tolerance))); }
 	bool isFinite() const { return simd::all4(simd::isFinite(xyzw)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::swizzle4<simd::XYZZ>(xyzw)); }
+	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::swizzle<simd::XYZZ>(xyzw)); }
 #else
 	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::cutoff3(xyzw)); }
 #endif
@@ -355,9 +393,9 @@ struct Quaternion<float>
 	Quaternion& conjugate() noexcept { xyzw = simd::neg3(xyzw); return *this; }
 	Quaternion& invert() noexcept { *this = Quaternion(simd::neg3(xyzw))/getNorm(); return *this; }
 
-	static const Quaternion& getZero() noexcept { return ZERO; }
-	static const Quaternion& getIdentity() noexcept { return IDENTITY; }
-	static Quaternion fromAxisAngle(const Vector3<float>& axis, float angle) noexcept;
+	//static const Quaternion& getZero() noexcept { return ZERO; }
+	//static const Quaternion& getIdentity() noexcept { return IDENTITY; }
+	static Quaternion fromAxisAngle(const Vector3<float>& axis, float angle);
 
 	static const Quaternion ZERO;
 	static const Quaternion IDENTITY;
@@ -376,7 +414,8 @@ inline float dot(const Quaternion<float>& v1, const Quaternion<float>& v2) noexc
 	return simd::toFloat(simd::dot4(v1, v2));
 }
 
-inline std::istream& Quaternion<float>::operator>>(std::istream& s, Quaternion<float>& q)
+template<>
+inline std::istream& operator>>(std::istream& s, Quaternion<float>& q)
 { 
 	float x, y, z, w; 
 	s >> x >> std::skipws >> y >> std::skipws >> z >> std::skipws >> w; 
@@ -387,7 +426,7 @@ inline std::istream& Quaternion<float>::operator>>(std::istream& s, Quaternion<f
 inline Quaternion<float>& Quaternion<float>::normalize()
 {
 #if MATHEMATICS_FAST_NORMALIZE
-	float m = rcpSqrtApprox(getMagnitudeSquared()); 
+	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::dot4(xyzw, xyzw)));
 	if (m <= std::numeric_limits<float>::max()) 
 		*this *= m;
 #else
@@ -396,6 +435,19 @@ inline Quaternion<float>& Quaternion<float>::normalize()
 		*this /= m;
 #endif
 	return *this;
+}
+
+inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& axis, float angle)
+{
+	float m = axis.getMagnitude();
+	if ((m > 0.f) && (angle != 0.f))
+	{
+		float half = angle*0.5f;
+		float sinHalfN = std::sin(half)/m;
+		return Quaternion<float>(axis*sinHalfN, std::cos(half));
+	}
+
+	return IDENTITY;
 }
 
 const Quaternion<float> Quaternion<float>::ZERO{};
@@ -419,4 +471,8 @@ using QuaternionResult = templates::Quaternion<float>::ConstResult;
 } // namespace mathematics
 } // namespace core
 
-#endif /* CORE_MATHEMATICS_QUATERNION_HPP */
+namespace std
+{
+	template<typename T>
+	struct tuple_size<core::mathematics::templates::Quaternion<T>> : std::integral_constant<std::size_t, 4> {};
+} // namespace std

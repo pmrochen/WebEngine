@@ -4,12 +4,12 @@
  */
 
 #pragma once
-#ifndef CORE_MATHEMATICS_INT_VECTOR2_HPP
-#define CORE_MATHEMATICS_INT_VECTOR2_HPP
 
 #include <istream>
 #include <ostream>
 #include <algorithm>
+#include <utility>
+#include <tuple>
 #include <Tuples/Tuple2.hpp>
 #include "Vector2.hpp"
 
@@ -32,10 +32,18 @@ struct IntVector2
 	template<typename U> explicit IntVector2(Vector2<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)) {}
 	explicit IntVector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
 	template<typename U> explicit IntVector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
+	explicit IntVector2(const std::pair<T, T>& t) noexcept : x(t.first), y(t.second) {}
+	template<typename U> explicit IntVector2(const std::pair<U, U>& t) noexcept : x(T(t.first)), y(T(t.second)) {}
+	explicit IntVector2(const std::tuple<T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)) {}
+	template<typename U> explicit IntVector2(const std::tuple<U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))) {}
 	explicit IntVector2(const T* const v) noexcept { x = v[0]; y = v[1]; }
 
 	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	explicit operator std::pair<T, T>() noexcept { return std::pair<T, T>(x, y); }
+	template<typename U> explicit operator std::pair<U, U>() noexcept { return std::pair<U, U>(U(x), U(y)); }
+	explicit operator std::tuple<T, T>() noexcept { return std::tuple<T, T>(x, y); }
+	template<typename U> explicit operator std::tuple<U, U>() noexcept { return std::tuple<U, U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -59,7 +67,7 @@ struct IntVector2
 	friend IntVector2 operator/(ConstArg v, const T f) noexcept { return IntVector2(v.x/f, v.y/f); }
 	bool operator==(const IntVector2& v) const noexcept { return (x == v.x) && (y == v.y); }
 	bool operator!=(const IntVector2& v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, IntVector2& v) { return s >> v.x >> std::skipws >> v.y; }
+	friend std::istream& operator>>(std::istream& s, IntVector2& v);
 	friend std::ostream& operator<<(std::ostream& s, const IntVector2& v) { return s << v.x << ' ' << v.y; }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
@@ -73,16 +81,16 @@ struct IntVector2
 	bool anyLessThanEqual(const IntVector2& v) const noexcept { return (x <= v.x) || (y <= v.y); }
 	bool anyGreaterThan(const IntVector2& v) const noexcept { return (x > v.x) || (y > v.y); }
 	bool anyGreaterThanEqual(const IntVector2& v) const noexcept { return (x >= v.x) || (y >= v.y); }
-	T getMinComponent() const noexcept { return std::min(x, y); }
-	T getMaxComponent() const noexcept { return std::max(x, y); }
+	T getMinComponent() const { return std::min(x, y); }
+	T getMaxComponent() const { return std::max(x, y); }
 	IntVector2& setZero() noexcept { x = T(); y = T(); return *this; }
 	IntVector2& set(const T x, const T y) noexcept { this->x = x; this->y = y; return *this; }
-	IntVector2& setMinimum(const IntVector2& v1, const IntVector2& v2) noexcept;
-	IntVector2& setMaximum(const IntVector2& v1, const IntVector2& v2) noexcept;
+	IntVector2& setMinimum(const IntVector2& v1, const IntVector2& v2);
+	IntVector2& setMaximum(const IntVector2& v1, const IntVector2& v2);
 	IntVector2& negate() noexcept { x = -x; y = -y; return *this; }
 	//IntVector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 
-	static const IntVector2&/*IntVector2::ConstResult*/ getZero() noexcept { return ZERO; }
+	//static const IntVector2&/*IntVector2::ConstResult*/ getZero() noexcept { return ZERO; }
 
 	static const IntVector2 ZERO;
 
@@ -90,15 +98,21 @@ struct IntVector2
 };
 
 template<typename T>
-inline IntVector2<T> minimum(const IntVector2<T>& v1, const IntVector2<T>& v2) noexcept
+inline IntVector2<T> minimum(const IntVector2<T>& v1, const IntVector2<T>& v2)
 {
 	return IntVector2<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y));
 }
 
 template<typename T>
-inline IntVector2<T> maximum(const IntVector2<T>& v1, const IntVector2<T>& v2) noexcept
+inline IntVector2<T> maximum(const IntVector2<T>& v1, const IntVector2<T>& v2)
 {
 	return IntVector2<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y));
+}
+
+template<typename T>
+inline std::istream& operator>>(std::istream& s, IntVector2<T>& v) 
+{ 
+	return s >> v.x >> std::skipws >> v.y; 
 }
 
 template<typename T>
@@ -128,4 +142,8 @@ using IntVector2Result = templates::IntVector2<int>::ConstResult;
 } // namespace mathematics
 } // namespace core
 
-#endif /* CORE_MATHEMATICS_INT_VECTOR2_HPP */
+namespace std
+{
+	template<typename T>
+	struct tuple_size<core::mathematics::templates::IntVector2<T>> : std::integral_constant<std::size_t, 2> {};
+} // namespace std
