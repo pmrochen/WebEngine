@@ -4,8 +4,6 @@
  */
 
 #pragma once
-#ifndef CORE_STRINGS_HPP
-#define CORE_STRINGS_HPP
 
 #ifndef NAME_WIDE
 #define NAME_WIDE 1
@@ -54,5 +52,3 @@ using Text = std::string;
 
 } // namespace strings
 } // namespace core
-
-#endif /* CORE_STRINGS_HPP */
