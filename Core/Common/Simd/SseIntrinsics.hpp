@@ -678,15 +678,29 @@ inline __m128 swizzle(__m128 v)
 	return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
 }
 
+//template<int A, int B, int C, int D>
+//inline __m128 swizzle(__m128 v)
+//{
+//	static_assert(((A & ~3) == 0) && ((B & ~3) == 0) && ((C & ~3) == 0) && ((D & ~3) == 0));
+//	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
+//}
+
 template<int A, int B, int C, int D>
 inline __m128 swizzle(__m128 v)
 {
-	static_assert(((A & ~3) == 0) && ((B & ~3) == 0) && ((C & ~3) == 0) && ((D & ~3) == 0));
-	//if constexpr ((A < 0) || (B < 0) || (C < 0) || (D < 0))
-	//	_mm_xor_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE(((D < 0) ? -D : D) - 1, ((C < 0) ? -C : C) - 1, ((B < 0) ? -B : B) - 1, ((A < 0) ? -A : A) - 1)),
-	//		constant<(int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
-	//else
-	return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
+	static_assert((A >= -4) && (A < 4) && (B >= -4) && (B < 4) && (C >= -4) && (C < 4) && (D >= -4) && (D < 4));
+	if constexpr ((A < 0) || (B < 0) || (C < 0) || (D < 0))
+	{
+		if constexpr ((((A < 0) ? ~A : A) != 0) || (((B < 0) ? ~B : B) != 1) || (((C < 0) ? ~C : C) != 2) || (((D < 0) ? ~D : D) != 3))
+		{
+			_mm_xor_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE((D < 0) ? ~D : D, (C < 0) ? ~C : C, (B < 0) ? ~B : B, (A < 0) ? ~A : A)),
+				constant<(int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
+		}
+		else
+			_mm_xor_ps(v, constant<(int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
+	}
+	else
+		return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
 }
 
 //template<typename/*auto*/ A, typename/*auto*/ B /*= void*/, typename/*auto*/ C /*= void*/, typename/*auto*/ D /*= void*/>
