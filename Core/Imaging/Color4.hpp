@@ -6,9 +6,11 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
+#include <type_traits>
 #include <algorithm>
 #include <tuple>
 #include <Simd/Intrinsics.hpp>
@@ -472,6 +474,64 @@ namespace core::imaging::templates {
 
 namespace std
 {
+
 template<typename T>
 struct tuple_size<core::imaging::templates::Color4<T>> : std::integral_constant<std::size_t, 4> {};
+
+template<std::size_t I, typename T>
+inline T& get(core::imaging::templates::Color4<T>& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	else if constexpr (I == 3)
+		return c.a;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const core::imaging::templates::Color4<T>& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	else if constexpr (I == 3)
+		return c.a;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(core::imaging::templates::Color4<T>&& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	else if constexpr (I == 3)
+		return c.a;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const core::imaging::templates::Color4<T>&& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	else if constexpr (I == 3)
+		return c.a;
+	static_assert(false);
+}
+
 } // namespace std
