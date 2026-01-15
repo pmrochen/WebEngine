@@ -130,10 +130,10 @@ struct Vector3
 	Vector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Vector3& normalize();
 	Vector3& rotate(Axis axis, T angle);
-	Vector3& rotate(const Quaternion<T>& q);
+	Vector3& rotate(const Quaternion<T>& q) noexcept;
 	//Vector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
-	Vector3& transform(const Matrix3<T>& m); // #TODO
-	Vector3& transform(const AffineTransform<T>& m); // #TODO
+	Vector3& transform(const Matrix3<T>& m) noexcept; // #TODO
+	Vector3& transform(const AffineTransform<T>& m) noexcept; // #TODO
 
 	//static const Vector3& getZero() noexcept { return ZERO; }
 	//static const Vector3& getUnitX() noexcept { return UNIT_X; }
@@ -541,10 +541,10 @@ struct Vector3<float>
 #endif
 	Vector3& normalize() noexcept;
 	Vector3& rotate(Axis axis, float angle);
-	Vector3& rotate(const Quaternion<float>& q);
+	Vector3& rotate(const Quaternion<float>& q) noexcept;
 	//Vector3& scale(ConstArg v) noexcept { xyz = simd::mul4(xyz, v); return *this; }
-	Vector3& transform(const Matrix3<float>& m); // #TODO
-	Vector3& transform(const AffineTransform<float>& m); // #TODO
+	Vector3& transform(const Matrix3<float>& m) noexcept; // #TODO
+	Vector3& transform(const AffineTransform<float>& m) noexcept; // #TODO
 
 	//static const Vector3& getZero() noexcept { return ZERO; }
 	//static const Vector3& getUnitX() noexcept { return UNIT_X; }
@@ -715,13 +715,25 @@ using Vector3Result = templates::Vector3<float>::ConstResult;
 namespace core::mathematics::templates {
 
 template<typename T>
+inline Vector3<T> rotate(const Vector3<T>& v, const Quaternion<T>& q) noexcept
+{
+	T x1 = q.y*v.z - q.z*v.y;
+	T y1 = q.z*v.x - q.x*v.z;
+	T z1 = q.x*v.y - q.y*v.x;
+	T x2 = q.w*x1 + q.y*z1 - q.z*y1;
+	T y2 = q.w*y1 + q.z*x1 - q.x*z1;
+	T z2 = q.w*z1 + q.x*y1 - q.y*x1;
+	return Vector3<T>(v.x + T(2)*x2, v.y + T(2)*y2, v.z + T(2)*z2);
+}
+
+template<typename T>
 template<typename U> 
 inline Vector3<T>::Vector3(const IntVector3<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v.z))
 {
 }
 
 template<typename T>
-Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
+inline Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
 {
 	T x1 = q.y*z - q.z*y;
     T y1 = q.z*x - q.x*z;
@@ -737,6 +749,18 @@ Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
 
 #if SIMD_HAS_FLOAT4
 
+template<>
+inline Vector3<float> rotate(const Vector3<float>& v, const Quaternion<float>& q) noexcept
+{
+	auto qyzx = simd::swizzle<simd::YZXX>(q);
+	auto qzxy = simd::swizzle<simd::ZXYY>(q);
+	auto t1 = simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(v)), simd::mul4(qzxy, simd::swizzle<simd::YZXX>(v)));
+	auto t2 = simd::mulAdd4(simd::broadcast<simd::W>(q), t1, simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(t1)),
+		simd::mul4(qzxy, simd::swizzle<simd::YZXX>(t1))));
+	static const simd::float4 two = simd::set3(2.0f);
+	return Vector3<float>(simd::mulAdd4(two, t2, v));
+}
+
 template<typename U> 
 inline Vector3<float>::Vector3(const IntVector3<U>& v)
 {
@@ -748,7 +772,7 @@ inline Vector3<float>::Vector3(const IntVector3<U>& v)
 #endif
 }
 
-Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
+inline Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 {
 	auto qyzx = simd::swizzle<simd::YZXX>(q);
 	auto qzxy = simd::swizzle<simd::ZXYY>(q);

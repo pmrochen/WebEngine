@@ -570,8 +570,7 @@ inline Vector2<float>& Vector2<float>::rotate(float angle)
 	{
 		auto sinAngle = simd::set2(std::sin(angle));
 		auto cosAngle = simd::set2(std::cos(angle));
-		xy = simd::subAdd4(simd::mul4(xy, cosAngle), 
-			simd::mul4(simd::swizzle<simd::YXXX>(xy), sinAngle));
+		xy = simd::subAdd4(simd::mul4(xy, cosAngle), simd::mul4(simd::swizzle<simd::YXXX>(xy), sinAngle));
 	}
 
 	return *this;

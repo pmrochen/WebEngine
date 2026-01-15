@@ -113,13 +113,13 @@ struct Quaternion
 	Quaternion& set(T x, T y, T z, T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
 	Quaternion& setConjugate(ConstArg q) noexcept { x = -q.x; y = -q.y; z = -q.z; w = q.w; return *this; }
 	Quaternion& setInverse(ConstArg q) noexcept { *this = Quaternion(-q.x, -q.y, -q.z, q.w)/q.getNorm(); return *this; }
-	Quaternion& rotate(ConstArg q) noexcept { *this = q*(*this)*Quaternion(-q.x, -q.y, -q.z, q.w); return *this; }
-	Quaternion& preConcatenate(ConstArg q) noexcept;
-	Quaternion& concatenate(ConstArg q) noexcept;
-	Quaternion& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
-	Quaternion& normalize();
 	Quaternion& conjugate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Quaternion& invert() noexcept { *this = Quaternion(-x, -y, -z, w)/getNorm(); return *this; }
+	Quaternion& rotate(ConstArg q) noexcept { *this = q*(*this)*Quaternion(-q.x, -q.y, -q.z, q.w); return *this; }
+	Quaternion& preConcatenate(ConstArg q) noexcept { *this = (*this)*q; return *this; }
+	Quaternion& concatenate(ConstArg q) noexcept { *this = q*(*this); return *this; }
+	Quaternion& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
+	Quaternion& normalize();
  
 	//static const Quaternion& getZero() noexcept { return ZERO; }
 	//static const Quaternion& getIdentity() noexcept { return IDENTITY; }
@@ -173,56 +173,89 @@ inline Quaternion<T> arc(const Vector3<T>& v1, const Vector3<T>& v2)
 template<typename T>
 inline Quaternion<T> lerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t) noexcept
 {
-	// #TODO
+	T cosTheta = q1.x*q2.x + q1.y*q2.y + q1.z*q2.z + q1.w*q2.w;
+	T t0 = T(1) - t;
+	T t1 = t;
+	if (/*shortestArc &&*/ (cosTheta < T(0))) // If q2 is on the oposite hemisphere use -q2 instead of q2
+		t1 = -t1;
+
+	return /*normalize*/(Quaternion<T>(t0*q1.x + t1*q2.x, t0*q1.y + t1*q2.y, t0*q1.z + t1*q2.z, t0*q1.w + t1*q2.w));
 }
 
 template<typename T>
-inline Quaternion<T> slerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t) noexcept
+inline Quaternion<T> slerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t)
 {
-	// #TODO
+	T cosTheta = q1.x*q2.x + q1.y*q2.y + q1.z*q2.z + q1.w*q2.w;
+	T signOfT1 = T(1);
+	if (/*shortestArc &&*/ (cosTheta < T(0))) // If q2 is on the oposite hemisphere use -q2 instead of q2
+	{
+		cosTheta = -cosTheta;
+		signOfT1 = T(-1);
+	}
+
+	T t0, t1;
+	if ((T(1) - cosTheta) < Constants<T>::TOLERANCE) // If q1 is nearly the same as q2 we just linearly interpolate
+	{
+		t0 = T(1) - t;
+		t1 = t;
+	}
+	else
+	{
+		cosTheta = std::clamp(cosTheta, T(-1), T(1));
+		T theta = std::acos(cosTheta);
+		//if (std::fabs(theta) < Constants<T>::TOLERANCE) // If theta == 0 then return q1
+		//	return q1;
+//#if MATHEMATICS_FAST_NORMALIZE
+//		T iSinTheta = rcpSqrtApprox(T(1) - cosTheta*cosTheta); // instead of 1/sin(theta)
+//#else
+		T iSinTheta = T(1)/std::sqrt(T(1) - cosTheta*cosTheta); // instead of 1/sin(theta)
+//#endif
+		//if (std::fabs(sinTheta) < Constants<T>::TOLERANCE) // If theta*2 == 180 degrees then result is undefined
+		//	return q1*T(0.5) + q2*T(0.5);
+		T tTheta = t*theta;
+		t0 = std::sin(theta - tTheta)*iSinTheta;
+		t1 = std::sin(tTheta)*iSinTheta;
+	}
+
+	t1 *= signOfT1;
+	return /*normalize*/(Quaternion<T>(t0*q1.x + t1*q2.x, t0*q1.y + t1*q2.y, t0*q1.z + t1*q2.z, t0*q1.w + t1*q2.w));
 }
 
 template<typename T>
-inline Vector3<T> rotate(const Vector3<T>& v, const Quaternion<T>& q) noexcept
+inline Quaternion<T> conjugate(const Quaternion<T>& q) noexcept
 {
-	// #TODO
+	return Quaternion<T>(-q.x, -q.y, -q.z, q.w);
+}
+
+template<typename T>
+inline Quaternion<T> inverse(const Quaternion<T>& q) noexcept
+{
+	return Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm();
 }
 
 template<typename T>
 inline Quaternion<T> rotate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
-	// #TODO
+	return q2*q1*Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w);
 }
 
 template<typename T>
 inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
-	// #TODO
+	return q2*q1;
 }
 
 template<typename T>
 inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3) noexcept
 {
-	// #TODO
+	return concatenate(concatenate(q1, q2), q3);
 }
 
 template<typename T>
 inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3, 
 	const Quaternion<T>& q4) noexcept
 {
-	// #TODO
-}
-
-template<typename T>
-inline Quaternion<T> conjugate(const Quaternion<T>& q) noexcept
-{
-	// #TODO
-}
-
-template<typename T>
-inline Quaternion<T> inverse(const Quaternion<T>& q) noexcept
-{
-	// #TODO
+	return concatenate(concatenate(concatenate(q1, q2), q3), q4);
 }
 
 template<typename T>
@@ -257,6 +290,54 @@ inline bool Quaternion<T>::isApproxEqual(const Quaternion<T>& q, T tolerance) co
 {
 	return (std::fabs(q.x - x) < tolerance) && (std::fabs(q.y - y) < tolerance) && 
 		(std::fabs(q.z - z) < tolerance) && (std::fabs(q.w - w) < tolerance); 
+}
+
+template<typename T>
+inline Vector3<T> Quaternion<T>::getAxis() const
+{
+	T cosine = T(1) - w*w;
+	if (cosine <= T(0))
+		return Vector3<T>();
+
+//#if MATHEMATICS_FAST_NORMALIZE
+//	if costexpr(std::is_same_v<T, float>)
+//	{
+//		float m = rcpSqrtApprox(cosine);
+//		if (m <= std::numeric_limits<T>::max())
+//		{
+//			//if (w < T(0)) m = -m;	// <0, PI>
+//			return Vector3<T>(x*m, y*m, z*m);
+//		}
+//		else
+//			return Vector3<T>();
+//	}
+//	else
+//#else
+	{
+		T m = std::sqrt(cosine);
+		if (m > T(0))
+		{
+			//if (w < T(0)) m = -m;	// <0, PI>
+			return Vector3<T>(x/m, y/m, z/m);
+		}
+		else
+			return Vector3<T>();
+	}
+//#endif
+}
+
+template<typename T>
+inline T Quaternion<T>::getAngle() const
+{
+	//T invAbs = getInverseAbsoluteValue();
+	//if (invAbs <= std::numeric_limits<T>::max())
+	//	return T(2)*std::acos(std::clamp(w*invAbs, T(-1), T(1)));				// <-PI, PI>
+	//	//return T(2)*std::acos(std::clamp(std::fabs(w*invAbs), T(-1), T(1)));	// <0, PI>
+	//else
+	//	return T(0);
+
+	return T(2)*std::acos(std::clamp(w, T(-1), T(1)));				// <-PI, PI>
+	//return T(2)*std::acos(std::clamp(std::fabs(w), T(-1), T(1)));	// <0, PI>
 }
 
 template<typename T>
@@ -375,7 +456,7 @@ struct Quaternion<float>
 	float /*getReal*/getScalar() const noexcept { return simd::extract<simd::W>(xyzw); }
 	void setScalar(float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, xyzw); }
 	Vector3<float> getAxis() const;	// quaternion must be normalized (rotation quaternion)
-	float getAngle() const;		// quaternion must be normalized (rotation quaternion)
+	float getAngle() const;			// quaternion must be normalized (rotation quaternion)
 	float getAbsoluteValue() const noexcept { return simd::toFloat(simd::sqrt1(simd::dot4(xyzw, xyzw))); }
 	float getNorm() const noexcept { return simd::toFloat(simd::dot4(xyzw, xyzw)); }
 	float getMagnitude() const { return getAbsoluteValue(); }
@@ -386,13 +467,13 @@ struct Quaternion<float>
 	Quaternion& set(float x, float y, float z, float w) noexcept { xyzw = simd::set4(x, y, z, w); return *this; }
 	Quaternion& setConjugate(ConstArg q) noexcept { xyzw = simd::neg3(q); return *this; }
 	Quaternion& setInverse(ConstArg q) noexcept { *this = Quaternion(simd::neg3(q))/q.getNorm(); return *this; }
-	Quaternion& rotate(ConstArg q) noexcept;
-	Quaternion& preConcatenate(ConstArg q) noexcept;
-	Quaternion& concatenate(ConstArg q) noexcept;
-	Quaternion& negate() noexcept { xyzw = simd::neg4(xyzw); return *this; }
-	Quaternion& normalize() noexcept;
 	Quaternion& conjugate() noexcept { xyzw = simd::neg3(xyzw); return *this; }
 	Quaternion& invert() noexcept { *this = Quaternion(simd::neg3(xyzw))/getNorm(); return *this; }
+	Quaternion& rotate(ConstArg q) noexcept { *this = q*(*this)*Quaternion(simd::neg3(q.xyzw)); return *this; }
+	Quaternion& preConcatenate(ConstArg q) noexcept { *this = (*this)*q; return *this; }
+	Quaternion& concatenate(ConstArg q) noexcept { *this = q*(*this); return *this; }
+	Quaternion& negate() noexcept { xyzw = simd::neg4(xyzw); return *this; }
+	Quaternion& normalize() noexcept;
 
 	//static const Quaternion& getZero() noexcept { return ZERO; }
 	//static const Quaternion& getIdentity() noexcept { return IDENTITY; }
@@ -410,9 +491,97 @@ struct Quaternion<float>
 };
 
 template<>
-inline float dot(const Quaternion<float>& v1, const Quaternion<float>& v2) noexcept
+inline float dot(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
 {
-	return simd::toFloat(simd::dot4(v1, v2));
+	return simd::toFloat(simd::dot4(q1, q2));
+}
+
+template<>
+inline Quaternion<float> lerp(const Quaternion<float>& q1, const Quaternion<float>& q2, float t) noexcept
+{
+	float cosTheta = simd::toFloat(simd::dot4(q1, q2));
+	float t0 = 1.f - t;
+	float t1 = t;
+	if (/*shortestArc &&*/ (cosTheta < 0.f)) // If q2 is on the oposite hemisphere use -q2 instead of q2
+		t1 = -t1;
+
+	return /*normalize*/(t0*q1 + t1*q2);
+}
+
+template<>
+inline Quaternion<float> slerp(const Quaternion<float>& q1, const Quaternion<float>& q2, float t)
+{
+	float cosTheta = simd::toFloat(simd::dot4(q1, q2));
+	float signOfT1 = 1.f;
+	if (/*shortestArc &&*/ (cosTheta < 0.f)) // If q2 is on the oposite hemisphere use -q2 instead of q2
+	{
+		cosTheta = -cosTheta;
+		signOfT1 = -1.f;
+	}
+
+	float t0, t1;
+	if ((1.f - cosTheta) < Constants<float>::TOLERANCE) // If q1 is nearly the same as q2 we just linearly interpolate
+	{
+		t0 = 1.f - t;
+		t1 = t;
+	}
+	else
+	{
+		cosTheta = std::clamp(cosTheta, -1.f, 1.f);
+		float theta = std::acos(cosTheta);
+		//if (std::fabs(theta) < Constants<float>::TOLERANCE) // If theta == 0 then return q1
+		//	return q1;
+//#if MATHEMATICS_FAST_NORMALIZE
+//		float iSinTheta = rcpSqrtApprox(1.f - cosTheta*cosTheta); // instead of 1/sin(theta)
+//#else
+		float iSinTheta = 1.f/std::sqrt(1.f - cosTheta*cosTheta); // instead of 1/sin(theta)
+//#endif
+		//if (std::fabs(sinTheta) < Constants<float>::TOLERANCE) // If theta*2 == 180 degrees then result is undefined
+		//	return q1*0.5f + q2*0.5f;
+		float tTheta = t*theta;
+		t0 = std::sin(theta - tTheta)*iSinTheta;
+		t1 = std::sin(tTheta)*iSinTheta;
+	}
+
+	t1 *= signOfT1;
+	return /*normalize*/(t0*q1 + t1*q2);
+}
+
+template<>
+inline Quaternion<float> conjugate(const Quaternion<float>& q) noexcept
+{
+	return Quaternion<float>(simd::neg3(q.xyzw));
+}
+
+template<>
+inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
+{
+	return Quaternion<float>(simd::neg3(q.xyzw))/q.getNorm();
+}
+
+template<>
+inline Quaternion<float> rotate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	return q2*q1*Quaternion<float>(simd::neg3(q2.xyzw));
+}
+
+template<>
+inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	return q2*q1;
+}
+
+template<>
+inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2, const Quaternion<float>& q3) noexcept
+{
+	return concatenate(concatenate(q1, q2), q3);
+}
+
+template<>
+inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2, const Quaternion<float>& q3,
+	const Quaternion<float>& q4) noexcept
+{
+	return concatenate(concatenate(concatenate(q1, q2), q3), q4);
 }
 
 template<>
@@ -422,6 +591,46 @@ inline std::istream& operator>>(std::istream& s, Quaternion<float>& q)
 	s >> x >> std::skipws >> y >> std::skipws >> z >> std::skipws >> w; 
 	q.set(x, y, z, w); 
 	return s; 
+}
+
+inline Vector3<float> Quaternion<float>::getAxis() const
+{
+	float cosine = 1.f - w*w;
+	if (cosine <= 0.f)
+		return Vector3<float>();
+
+#if MATHEMATICS_FAST_NORMALIZE
+	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::set1(cosine)));
+	if (m <= std::numeric_limits<float>::max())
+	{
+		//if (w < 0.f) m = -m;	// <0, PI>
+		return getVector()*m;
+	}
+	else
+		return Vector3<float>();
+#else
+	float m = std::sqrt(cosine);
+	if (m > 0.f)
+	{
+		//if (w < 0.f) m = -m;	// <0, PI>
+		return getVector()/m;
+	}
+	else
+		return Vector3<float>();
+#endif
+}
+
+inline float Quaternion<float>::getAngle() const
+{
+	//float invAbs = getInverseAbsoluteValue();
+	//if (invAbs <= std::numeric_limits<float>::max())
+	//	return 2.f*std::acos(std::clamp(w*invAbs, -1.f, 1.f));				// <-PI, PI>
+	//	//return 2.f*std::acos(std::clamp(std::fabs(w*invAbs), -1.f, 1.f));	// <0, PI>
+	//else
+	//	return 0.f;
+
+	return 2.f*std::acos(std::clamp(w, -1.f, 1.f));					// <-PI, PI>
+	//return 2.f*std::acos(std::clamp(std::fabs(w), -1.f, 1.f));	// <0, PI>
 }
 
 inline Quaternion<float>& Quaternion<float>::normalize()
