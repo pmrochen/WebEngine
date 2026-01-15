@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <cstddef>
+#include <type_traits>
 #include <tuple>
 
 namespace core {
@@ -74,6 +76,64 @@ inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& 
 
 namespace std
 {
+
 template<typename T>
 struct tuple_size<core::tuples::templates::Tuple4<T>> : std::integral_constant<std::size_t, 4> {};
+
+template<std::size_t I, typename T>
+inline T& get(core::tuples::templates::Tuple4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const core::tuples::templates::Tuple4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(core::tuples::templates::Tuple4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const core::tuples::templates::Tuple4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
 } // namespace std

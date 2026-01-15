@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
@@ -606,9 +607,7 @@ using Vector2Result = templates::Vector2<float>::ConstResult;
 
 #include "IntVector2.hpp"
 
-namespace core {
-namespace mathematics {
-namespace templates {
+namespace core::mathematics::templates {
 
 template<typename T>
 template<typename U> 
@@ -631,12 +630,52 @@ inline Vector2<float>::Vector2(const IntVector2<U>& v)
 
 #endif /* SIMD_HAS_FLOAT4 */
 
-} // namespace templates
-} // namespace mathematics
-} // namespace core
+} // namespace core::mathematics::templates
 
 namespace std
 {
-	template<typename T>
-	struct tuple_size<core::mathematics::templates::Vector2<T>> : std::integral_constant<std::size_t, 2> {};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::Vector2<T>> : std::integral_constant<std::size_t, 2> {};
+
+template<std::size_t I, typename T>
+inline T& get(core::mathematics::templates::Vector2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const core::mathematics::templates::Vector2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(core::mathematics::templates::Vector2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const core::mathematics::templates::Vector2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
 } // namespace std

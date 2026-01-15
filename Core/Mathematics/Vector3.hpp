@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
@@ -711,9 +712,7 @@ using Vector3Result = templates::Vector3<float>::ConstResult;
 #include "IntVector3.hpp"
 #include "Quaternion.hpp"
 
-namespace core {
-namespace mathematics {
-namespace templates {
+namespace core::mathematics::templates {
 
 template<typename T>
 template<typename U> 
@@ -763,12 +762,60 @@ Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 
 #endif /* SIMD_HAS_FLOAT4 */
 
-} // namespace templates
-} // namespace mathematics
-} // namespace core
+} // namespace core::mathematics::templates
 
 namespace std
 {
-	template<typename T>
-	struct tuple_size<core::mathematics::templates::Vector3<T>> : std::integral_constant<std::size_t, 3> {};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::Vector3<T>> : std::integral_constant<std::size_t, 3> {};
+
+template<std::size_t I, typename T>
+inline T& get(core::mathematics::templates::Vector3<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const core::mathematics::templates::Vector3<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(core::mathematics::templates::Vector3<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const core::mathematics::templates::Vector3<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
 } // namespace std

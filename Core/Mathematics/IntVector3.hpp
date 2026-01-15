@@ -5,8 +5,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <istream>
 #include <ostream>
+#include <type_traits>
 #include <algorithm>
 #include <tuple>
 #include <Tuples/Tuple3.hpp>
@@ -148,6 +150,56 @@ using IntVector3Result = templates::IntVector3<int>::ConstResult;
 
 namespace std
 {
-	template<typename T>
-	struct tuple_size<core::mathematics::templates::IntVector3<T>> : std::integral_constant<std::size_t, 3> {};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::IntVector3<T>> : std::integral_constant<std::size_t, 3> {};
+
+template<std::size_t I, typename T>
+inline T& get(core::mathematics::templates::IntVector3<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const core::mathematics::templates::IntVector3<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(core::mathematics::templates::IntVector3<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const core::mathematics::templates::IntVector3<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
 } // namespace std
