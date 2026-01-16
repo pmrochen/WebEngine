@@ -100,9 +100,11 @@ struct Color3
 	Color3& makeLinear();
 	Color3& makeSrgb();
 	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
-	template<typename U> static Color3 fromHsv(U c); // #TODO
+	static Color3 fromHsv(T h, T s, T v) { return hsvToRgb<Color3>(h, s, v); }
+	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
 	template<typename U> U toXyz() const { return rgbToXyz<U>(r, g, b); }
-	template<typename U> static Color3 fromXyz(U c); // #TODO
+	static Color3 fromXyz(T x, T y, T z) { return xyzToRgb<Color3>(x, y, z); }
+	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
 	template<typename U> U toPackedRgb() const noexcept; // #TODO
 	template<typename U> static Color3 fromPackedRgb(U c) noexcept; // #TODO
 	template<typename U> U toPackedBgr() const noexcept; // #TODO
@@ -370,9 +372,11 @@ struct Color3<float>
 	Color3& makeLinear() { set(makeLinear(r), makeLinear(g), makeLinear(b)); }
 	Color3& makeSrgb() { set(makeSrgb(r), makeSrgb(g), makeSrgb(b)); }
 	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
-	template<typename U> static Color3 fromHsv(U c); // #TODO
+	static Color3 fromHsv(float h, float s, float v) { return hsvToRgb<Color3>(h, s, v); }
+	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
 	template<typename U> U toXyz() const { return rgbToXyz<U>(rgb); }
-	template<typename U> static Color3 fromXyz(U c); // #TODO
+	static Color3 fromXyz(float x, float y, float z) { return xyzToRgb<Color3>(x, y, z); }
+	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>((simd::float4)c/*std::get<simd::float4>(c)*/); }
 	template<typename U> U toPackedRgb() const noexcept; // #TODO
 	template<typename U> static Color3 fromPackedRgb(U c) noexcept; // #TODO
 	template<typename U> U toPackedBgr() const noexcept; // #TODO
@@ -411,14 +415,14 @@ template<>
 inline float luminance(float r, float g, float b) noexcept
 {
 	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(simd::set3(r, g, b), LUMINANCE/*coeff*/));
+	return simd::toFloat(simd::dot3(simd::set3(r, g, b), Color3<float>::LUMINANCE/*coeff*/));
 }
 
 template<>
 inline float luminance(const Color3<float>& c) noexcept
 {
 	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(c, LUMINANCE/*coeff*/));
+	return simd::toFloat(simd::dot3(c, Color3<float>::LUMINANCE/*coeff*/));
 }
 
 template<>
@@ -437,7 +441,7 @@ template<>
 inline Color3<float> saturate(const Color3<float>& c)
 {
 	//static const simd::float4 one = simd::set4(1.f);
-	return Color3<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), ONE/*one*/));
+	return Color3<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color3<float>::ONE/*one*/));
 }
 
 template<>
@@ -552,5 +556,31 @@ inline const T&& get(const core::imaging::templates::Color3<T>&& c) noexcept
 		return c.b;
 	static_assert(false);
 }
+
+#if SIMD_HAS_FLOAT4
+
+//template<typename T, typename U>
+//inline T& get(core::imaging::templates::Color3<U>& c) noexcept
+//{
+//}
+//
+//template<typename T, typename U>
+//inline const T& get(const core::imaging::templates::Color3<U>& c) noexcept
+//{
+//}
+//
+//template<>
+//inline core::simd::float4& get(core::imaging::templates::Color3<float>& c) noexcept
+//{
+//	return c.rgb;
+//}
+//
+//template<>
+//inline const core::simd::float4& get(const core::imaging::templates::Color3<float>& c) noexcept
+//{
+//	return c.rgb;
+//}
+
+#endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace std

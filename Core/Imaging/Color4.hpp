@@ -391,7 +391,7 @@ template<>
 inline float luminance(const Color4<float>& c) noexcept
 {
 	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(c, LUMINANCE/*coeff*/));
+	return simd::toFloat(simd::dot3(c, Color4<float>::LUMINANCE/*coeff*/));
 }
 
 template<>
@@ -410,7 +410,7 @@ template<>
 inline Color4<float> saturate(const Color4<float>& c)
 {
 	//static const simd::float4 one = simd::set4(1.f);
-	return Color4<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), ONE/*one*/));
+	return Color4<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color4<float>::ONE/*one*/));
 }
 
 template<>
@@ -533,5 +533,31 @@ inline const T&& get(const core::imaging::templates::Color4<T>&& c) noexcept
 		return c.a;
 	static_assert(false);
 }
+
+#if SIMD_HAS_FLOAT4
+
+//template<typename T, typename U>
+//inline T& get(core::imaging::templates::Color4<U>& c) noexcept
+//{
+//}
+//
+//template<typename T, typename U>
+//inline const T& get(const core::imaging::templates::Color4<U>& c) noexcept
+//{
+//}
+//
+//template<>
+//inline core::simd::float4& get(core::imaging::templates::Color4<float>& c) noexcept
+//{
+//	return c.rgba;
+//}
+//
+//template<>
+//inline const core::simd::float4& get(const core::imaging::templates::Color4<float>& c) noexcept
+//{
+//	return c.rgba;
+//}
+
+#endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace std
