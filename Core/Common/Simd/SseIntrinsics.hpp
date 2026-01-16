@@ -44,6 +44,10 @@
 #define _XM_NO_XMVECTOR_OVERLOADS_
 #endif
 
+#ifndef BT_NO_SIMD_OPERATOR_OVERLOADS
+#define BT_NO_SIMD_OPERATOR_OVERLOADS
+#endif
+
 inline __m128 operator+(const __m128 v) { return v; }
 inline __m128 operator-(const __m128 v) { return _mm_xor_ps(v, _mm_castsi128_ps(_mm_set1_epi32(0x80000000))); }
 inline __m128& operator+=(__m128& v1, const __m128 v2) { v1 = _mm_add_ps(v1, v2); return v1; }
