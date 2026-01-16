@@ -234,28 +234,39 @@ inline Quaternion<T> inverse(const Quaternion<T>& q) noexcept
 }
 
 template<typename T>
-inline Quaternion<T> rotate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+inline Quaternion<T>& Quaternion<T>::operator*=(Quaternion<T>::ConstArg q)
 {
-	return q2*q1*Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w);
+	set(w*q.x + x*q.w + y*q.z - z*q.y, w*q.y - x*q.z + y*q.w + z*q.x,
+		w*q.z + x*q.y - y*q.x + z*q.w, w*q.w - x*q.x - y*q.y - z*q.z);
+	return *this;
 }
 
 template<typename T>
-inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+inline Quaternion<T>& Quaternion<T>::operator*=(Vector3<T>::ConstArg v)
 {
-	return q2*q1;
+	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
+	return *this;
 }
 
 template<typename T>
-inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3) noexcept
+inline Quaternion<T> operator*(Quaternion<T>::ConstArg q1, Quaternion<T>::ConstArg q2) noexcept
 {
-	return concatenate(concatenate(q1, q2), q3);
+	return Quaternion<T>(q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y, q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
+		q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w, q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z);
 }
 
 template<typename T>
-inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3, 
-	const Quaternion<T>& q4) noexcept
+inline Quaternion<T> operator*(Vector3<T>::ConstArg v, Quaternion<T>::ConstArg q) noexcept
 {
-	return concatenate(concatenate(concatenate(q1, q2), q3), q4);
+	return Quaternion<T>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
+}
+
+template<typename T>
+inline Quaternion<T> operator*(Quaternion<T>::ConstArg q, Vector3<T>::ConstArg v) noexcept
+{
+	return Quaternion<T>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<typename T>
@@ -372,6 +383,31 @@ inline Quaternion<T> Quaternion<T>::fromAxisAngle(const Vector3<T>& axis, T angl
 	}
 
 	return IDENTITY;
+}
+
+template<typename T>
+inline Quaternion<T> rotate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+{
+	return q2*q1*Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w);
+}
+
+template<typename T>
+inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+{
+	return q2*q1;
+}
+
+template<typename T>
+inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3) noexcept
+{
+	return concatenate(concatenate(q1, q2), q3);
+}
+
+template<typename T>
+inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3,
+	const Quaternion<T>& q4) noexcept
+{
+	return concatenate(concatenate(concatenate(q1, q2), q3), q4);
 }
 
 template<typename T> const Quaternion<T> Quaternion<T>::ZERO{};
@@ -559,29 +595,70 @@ inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
 	return Quaternion<float>(simd::neg3(q.xyzw))/q.getNorm();
 }
 
-template<>
-inline Quaternion<float> rotate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+inline Quaternion<float>& Quaternion<float>::operator*=(Quaternion<float>::ConstArg q)
 {
-	return q2*q1*Quaternion<float>(simd::neg3(q2.xyzw));
+	auto t0 = simd::broadcast<3>(xyzw);
+	auto t1 = simd::swizzle<1, 0, 3, 2>(q.xyzw);
+	auto t3 = simd::broadcast<0>(xyzw);
+	auto t4 = simd::swizzle<2, 3, 0, 1>(q.xyzw);
+	auto t5 = simd::broadcast<1>(xyzw);
+	auto t6 = simd::swizzle<1, 3, 0, 2>(q.xyzw);
+	auto m0 = simd::mul4(t0, t1);
+	auto m1 = simd::mul4(t3, t4);
+	auto m2 = simd::mul4(t5, t6);
+	auto t7 = simd::broadcast<2>(xyzw);
+	auto t8 = simd::swizzle<1, 0, 2, 3>(q.xyzw);
+	auto m3 = simd::mul4(t7, t8);
+	auto e = simd::subAdd4(m0, m1);
+	e = simd::swizzle<2, 0, 3, 1>(e);
+	e = simd::subAdd4(e, m2);
+	e = simd::swizzle<3, 1, 0, 2>(e);
+	e = simd::subAdd4(e, m3);
+	xyzw = simd::swizzle<0, 1, 3, 2>(e);
+	return *this;
+}
+
+inline Quaternion<float>& Quaternion<float>::operator*=(Vector3<float>::ConstArg v) // #TODO SIMD
+{
+	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
+	return *this;
 }
 
 template<>
-inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+inline Quaternion<float> operator*(Quaternion<float>::ConstArg q1, Quaternion<float>::ConstArg q2) noexcept
 {
-	return q2*q1;
+	auto t0 = simd::broadcast<3>(q1.xyzw);
+	auto t1 = simd::swizzle<1, 0, 3, 2>(q2.xyzw);
+	auto t3 = simd::broadcast<0>(q1.xyzw);
+	auto t4 = simd::swizzle<2, 3, 0, 1>(q2.xyzw);
+	auto t5 = simd::broadcast<1>(q1.xyzw);
+	auto t6 = simd::swizzle<1, 3, 0, 2>(q2.xyzw);
+	auto m0 = simd::mul4(t0, t1);
+	auto m1 = simd::mul4(t3, t4);
+	auto m2 = simd::mul4(t5, t6);
+	auto t7 = simd::broadcast<2>(q1.xyzw);
+	auto t8 = simd::swizzle<1, 0, 2, 3>(q2.xyzw);
+	auto m3 = simd::mul4(t7, t8);
+	auto e = simd::subAdd4(m0, m1);
+	e = simd::swizzle<2, 0, 3, 1>(e);
+	e = simd::subAdd4(e, m2);
+	e = simd::swizzle<3, 1, 0, 2>(e);
+	e = simd::subAdd4(e, m3);
+	return Quaternion<float>(simd::swizzle<0, 1, 3, 2>(e));
 }
 
 template<>
-inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2, const Quaternion<float>& q3) noexcept
+inline Quaternion<float> operator*(Vector3<float>::ConstArg v, Quaternion<float>::ConstArg q) noexcept // #TODO SIMD
 {
-	return concatenate(concatenate(q1, q2), q3);
+	return Quaternion<float>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<>
-inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2, const Quaternion<float>& q3,
-	const Quaternion<float>& q4) noexcept
+inline Quaternion<float> operator*(Quaternion<float>::ConstArg q, Vector3<float>::ConstArg v) noexcept // #TODO SIMD
 {
-	return concatenate(concatenate(concatenate(q1, q2), q3), q4);
+	return Quaternion<float>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<>
@@ -658,6 +735,31 @@ inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& 
 	}
 
 	return IDENTITY;
+}
+
+template<>
+inline Quaternion<float> rotate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	return q2*q1*Quaternion<float>(simd::neg3(q2.xyzw));
+}
+
+template<>
+inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	return q2*q1;
+}
+
+template<>
+inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2, const Quaternion<float>& q3) noexcept
+{
+	return concatenate(concatenate(q1, q2), q3);
+}
+
+template<>
+inline Quaternion<float> concatenate(const Quaternion<float>& q1, const Quaternion<float>& q2, const Quaternion<float>& q3,
+	const Quaternion<float>& q4) noexcept
+{
+	return concatenate(concatenate(concatenate(q1, q2), q3), q4);
 }
 
 const Quaternion<float> Quaternion<float>::ZERO{};
