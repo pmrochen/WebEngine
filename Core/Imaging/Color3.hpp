@@ -16,7 +16,7 @@
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple3.hpp>
 #include "ColorSpaces.hpp"
-#include "PackedColor.hpp"
+#include "PixelTypes.hpp"
 
 namespace core {
 namespace imaging {
@@ -105,16 +105,16 @@ struct Color3
 	template<typename U> U toXyz() const { return rgbToXyz<U>(r, g, b); }
 	static Color3 fromXyz(T x, T y, T z) { return xyzToRgb<Color3>(x, y, z); }
 	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
-	template<typename U> U toPackedRgb() const noexcept; // #TODO
+	template<typename U> U toPackedRgb() const noexcept;
 	template<typename U> static Color3 fromPackedRgb(U c) noexcept; // #TODO
-	template<typename U> U toPackedBgr() const noexcept; // #TODO
+	template<typename U> U toPackedBgr() const noexcept;
 	template<typename U> static Color3 fromPackedBgr(U c) noexcept; // #TODO
 #if IMAGING_NATIVE_ORDER_RGBA
-	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedRgb<U>(); }
-	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedRgb(c); }
+	template<typename U> U toPackedNative() const noexcept { return toPackedRgb<U>(); }
+	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedRgb(c); }
 #else
-	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgr<U>(); }
-	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedBgr(c); }
+	template<typename U> U toPackedNative() const noexcept { return toPackedBgr<U>(); }
+	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedBgr(c); }
 #endif
 
 	//static const Color3& getZero() noexcept { return ZERO; }
@@ -127,6 +127,7 @@ struct Color3
 	static const Color3 UNIT_G;
 	static const Color3 UNIT_B; 
 	static const Color3 ONE;
+	static const Color3 HALF;
 	static const Color3 TOLERANCE;
 	static const Color3 INF;
 	static const Color3 MINUS_INF;
@@ -255,11 +256,30 @@ inline Color3<T>& Color3<T>::makeSrgb()
 	return *this;
 }
 
+template<typename T>
+template<typename U> 
+inline U Color3<T>::toPackedRgb() const
+{
+	return makePackedRgb<U>(saturate<int, detail::Rgb<U>::R_MAX>(c.r),
+		saturate<int, detail::Rgb<U>::G_MAX>(c.g),
+		saturate<int, detail::Rgb<U>::B_MAX>(c.b));
+}
+
+template<typename T>
+template<typename U> 
+inline U Color3<T>::toPackedBgr() const
+{
+	return makePackedBgr<U>(saturate<int, detail::Bgr<U>::R_MAX>(c.r),
+		saturate<int, detail::Bgr<U>::G_MAX>(c.g),
+		saturate<int, detail::Bgr<U>::B_MAX>(c.b));
+}
+
 template<typename T> const Color3<T> Color3<T>::ZERO{};
 template<typename T> const Color3<T> Color3<T>::UNIT_R{ T(1), T(0), T(0) };
 template<typename T> const Color3<T> Color3<T>::UNIT_G{ T(0), T(1), T(0) };
 template<typename T> const Color3<T> Color3<T>::UNIT_B{ T(0), T(0), T(1) };
 template<typename T> const Color3<T> Color3<T>::ONE{ T(1), T(1), T(1) };
+template<typename T> const Color3<T> Color3<T>::HALF{ T(0.5), T(0.5), T(0.5) };
 template<typename T> const Color3<T> Color3<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
 template<typename T> const Color3<T> Color3<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
 template<typename T> const Color3<T> Color3<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
@@ -377,16 +397,16 @@ struct Color3<float>
 	template<typename U> U toXyz() const { return rgbToXyz<U>(rgb); }
 	static Color3 fromXyz(float x, float y, float z) { return xyzToRgb<Color3>(x, y, z); }
 	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>((simd::float4)c/*std::get<simd::float4>(c)*/); }
-	template<typename U> U toPackedRgb() const noexcept; // #TODO
+	template<typename U> U toPackedRgb() const noexcept;
 	template<typename U> static Color3 fromPackedRgb(U c) noexcept; // #TODO
-	template<typename U> U toPackedBgr() const noexcept; // #TODO
+	template<typename U> U toPackedBgr() const noexcept;
 	template<typename U> static Color3 fromPackedBgr(U c) noexcept; // #TODO
 #if IMAGING_NATIVE_ORDER_RGBA
-	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedRgb<U>(); }
-	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedRgb(c); }
+	template<typename U> U toPackedNative() const noexcept { return toPackedRgb<U>(); }
+	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedRgb(c); }
 #else
-	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgr<U>(); }
-	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedBgr(c); }
+	template<typename U> U toPackedNative() const noexcept { return toPackedBgr<U>(); }
+	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedBgr(c); }
 #endif
 
 	//static const Color3& getZero() noexcept { return ZERO; }
@@ -399,6 +419,7 @@ struct Color3<float>
 	static const Color3 UNIT_G;
 	static const Color3 UNIT_B;
 	static const Color3 ONE;
+	static const Color3 HALF;
 	static const Color3 TOLERANCE;
 	static const Color3 INF;
 	static const Color3 MINUS_INF;
@@ -459,11 +480,28 @@ inline std::istream& operator>>(std::istream& s, Color3<float>& c)
 	return s; 
 }
 
+template<typename U> 
+inline U Color3<float>::toPackedRgb() const
+{
+	Color3<float> c(simd::mulAdd4(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color4<float>::ONE),
+		simd::constant4<simd::float4, detail::Rgb<U>::R_MAX>(), Color3<float>::HALF));
+	return makePackedRgb<U>(c.r, c.g, c.b);
+}
+
+template<typename U> 
+inline U Color3<float>::toPackedBgr() const
+{
+	Color3<float> c(simd::mulAdd4(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color4<float>::ONE),
+		simd::constant4<simd::float4, detail::Bgr<U>::R_MAX>(), Color3<float>::HALF));
+	return makePackedBgr<U>(c.r, c.g, c.b);
+}
+
 const Color3<float> Color3<float>::ZERO{};
 const Color3<float> Color3<float>::UNIT_R{ 1.f, 0.f, 0.f };
 const Color3<float> Color3<float>::UNIT_G{ 0.f, 1.f, 0.f };
 const Color3<float> Color3<float>::UNIT_B{ 0.f, 0.f, 1.f };
 const Color3<float> Color3<float>::ONE{ 1.f, 1.f, 1.f };
+const Color3<float> Color3<float>::HALF{ 0.5f, 0.5f, 0.5f };
 const Color3<float> Color3<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
 const Color3<float> Color3<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 const Color3<float> Color3<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };

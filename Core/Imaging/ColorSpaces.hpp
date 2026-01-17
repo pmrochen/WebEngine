@@ -5,10 +5,10 @@
 
 #pragma once
 
+#include <cmath>
 #include <type_traits>
 #include <limits>
 #include <algorithm>
-#include <cmath>
 #include <Simd/Intrinsics.hpp>
 
 namespace core::imaging {
@@ -84,6 +84,34 @@ inline T saturate(U x)
     {
         if constexpr (std::is_integral_v<T>)                        // #TODO branchless
             return T(std::clamp(int(U(0.5) + x*U(std::numeric_limits<T>::max())), 0, int(std::numeric_limits<T>::max())));
+        else if constexpr (std::is_floating_point_v<T>)
+            return T(std::clamp(x, U(0), U(1)));
+    }
+
+    static_assert(false);
+    //return T();
+}
+
+template<typename T, int MAX, typename U>
+inline T saturate(U x) 
+{
+    if constexpr (std::is_integral_v<U>)
+    {
+        if constexpr (std::is_same_v<T, U> && ((int)std::numeric_limits<T>::max() == MAX))
+            return x;
+        else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<U>)
+            return T(std::min(x, U(MAX))); // #TODO branchless
+        else if constexpr (std::is_integral_v<T>)
+            return T(std::clamp(x, U(0), U(MAX))); // #TODO branchless
+        else if constexpr (std::is_floating_point_v<T> && std::is_unsigned_v<U>)
+            return T(x)/T(MAX);
+        else if constexpr (std::is_floating_point_v<T>)
+            return T(detail::branchlessIntMax<0>(x)/T(MAX);
+    }
+    else if constexpr (std::is_floating_point_v<U>)
+    {
+        if constexpr (std::is_integral_v<T>)                        // #TODO branchless
+            return T(std::clamp(int(U(0.5) + x*U(MAX)), 0, int(MAX)));
         else if constexpr (std::is_floating_point_v<T>)
             return T(std::clamp(x, U(0), U(1)));
     }
