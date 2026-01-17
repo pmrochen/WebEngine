@@ -230,7 +230,7 @@ struct WZZZ : public Swizzle<W, Z, Z, Z> {};
 struct WZYX : public Swizzle<W, Z, Y, X> {};
 
 template<typename T>
-inline T zero() { return T(); }
+inline T zero() { static_assert(false); }
 
 template<>
 inline __m128 zero()
@@ -238,13 +238,94 @@ inline __m128 zero()
 	return _mm_setzero_ps();
 }
 
+template<typename T, int S>
+inline T constant1() { static_assert(false); }
+
+template<int S>
+inline __m128 constant1()
+{
+	static const _MM_ALIGN16 union
+	{
+		float f[4];
+		__m128 xmm;
+	} u = { { (float)S, 0.f, 0.f, 0.f } };
+	return u.xmm;
+}
+
+template<typename T, int S>
+inline T constant4() { static_assert(false); }
+
+template<int S>
+inline __m128 constant4()
+{
+	static const _MM_ALIGN16 union
+	{
+		float f[4];
+		__m128 xmm;
+	} u = { { (float)S, (float)S, (float)S, (float)S } };
+	return u.xmm;
+}
+
+template<typename T, int X, int Y, int Z, int W>
+inline T constant4() { static_assert(false); }
+
 template<int X, int Y, int Z, int W>
-inline __m128/*i*/ constant()
+inline __m128 constant4()
+{
+	static const _MM_ALIGN16 union
+	{
+		float f[4];
+		__m128 xmm;
+	} u = { { (float)X, (float)Y, (float)Z, (float)W } };
+	return u.xmm;
+}
+
+template<typename T, int S>
+inline T constant4i() { static_assert(false); }
+
+template<int S>
+inline __m128 constant4i()
 {
 	static const _MM_ALIGN16 union
 	{
 		int i[4];
-		__m128/*i*/ xmm;
+		__m128 xmm;
+	} u = { { S, S, S, S } };
+	return u.xmm;
+}
+
+template<int S>
+inline __m128i constant4i()
+{
+	static const _MM_ALIGN16 union
+	{
+		int i[4];
+		__m128i xmm;
+	} u = { { S, S, S, S } };
+	return u.xmm;
+}
+
+template <typename T, int X, int Y, int Z, int W>
+inline T constant4i() { static_assert(false); }
+
+template<int X, int Y, int Z, int W>
+inline __m128 constant4i()
+{
+	static const _MM_ALIGN16 union
+	{
+		int i[4];
+		__m128 xmm;
+	} u = { { X, Y, Z, W } };
+	return u.xmm;
+}
+
+template<int X, int Y, int Z, int W>
+inline __m128i constant4i()
+{
+	static const _MM_ALIGN16 union
+	{
+		int i[4];
+		__m128i xmm;
 	} u = { { X, Y, Z, W } };
 	return u.xmm;
 }
@@ -611,7 +692,7 @@ inline __m128 andNot4(__m128 v1, __m128 v2)
 
 inline __m128 not4(__m128 v)
 {
-	return _mm_xor_ps(v, constant<-1, -1, -1, -1>()/*_mm_castsi128_ps(_mm_set1_epi32(-1))*/);
+	return _mm_xor_ps(v, constant4i<__m128, -1, -1, -1, -1>()/*_mm_castsi128_ps(_mm_set1_epi32(-1))*/);
 }
 
 //template<bool X, bool Y, bool Z, bool W>
@@ -698,10 +779,10 @@ inline __m128 swizzle(__m128 v)
 		if constexpr ((((A < 0) ? ~A : A) != 0) || (((B < 0) ? ~B : B) != 1) || (((C < 0) ? ~C : C) != 2) || (((D < 0) ? ~D : D) != 3))
 		{
 			_mm_xor_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE((D < 0) ? ~D : D, (C < 0) ? ~C : C, (B < 0) ? ~B : B, (A < 0) ? ~A : A)),
-				constant<(int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
+				constant4i<__m128, (int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
 		}
 		else
-			_mm_xor_ps(v, constant<(int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
+			_mm_xor_ps(v, constant4i<__m128, (int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
 	}
 	else
 		return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
@@ -824,7 +905,7 @@ inline __m128 neg(__m128 v, __m128 mask)
 //template<bool X, bool Y, bool Z, bool W>
 //inline __m128 neg(__m128 v)
 //{
-//	return _mm_xor_ps(v, constant<(int)X << 31, (int)Y << 31, (int)Z << 31, (int)W << 31>()/*_mm_castsi128_ps(_mm_setr_epi32((int)X << 31, (int)Y << 31, (int)Z << 31, (int)W << 31))*/);
+//	return _mm_xor_ps(v, constant4i<__m128, (int)X << 31, (int)Y << 31, (int)Z << 31, (int)W << 31>()/*_mm_castsi128_ps(_mm_setr_epi32((int)X << 31, (int)Y << 31, (int)Z << 31, (int)W << 31))*/);
 //}
 
 template<int I>
@@ -837,7 +918,7 @@ inline __m128 neg(__m128 v)
 template<typename M>
 inline __m128 neg(__m128 v)
 {
-	return _mm_xor_ps(v, constant<M::X_SIGN, M::Y_SIGN, M::Z_SIGN, M::W_SIGN>()/*_mm_castsi128_ps(_mm_setr_epi32(M::X_SIGN, M::Y_SIGN, M::Z_SIGN, M::W_SIGN))*/);
+	return _mm_xor_ps(v, constant4i<__m128, M::X_SIGN, M::Y_SIGN, M::Z_SIGN, M::W_SIGN>()/*_mm_castsi128_ps(_mm_setr_epi32(M::X_SIGN, M::Y_SIGN, M::Z_SIGN, M::W_SIGN))*/);
 }
 
 inline __m128 abs4(__m128 v)
