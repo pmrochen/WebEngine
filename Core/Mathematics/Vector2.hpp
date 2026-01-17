@@ -20,10 +20,6 @@
 #include "Axis.hpp"
 #include "Scalar.hpp"
 
-#ifndef MATHEMATICS_FAST_NORMALIZE
-#define MATHEMATICS_FAST_NORMALIZE 1
-#endif
-
 namespace core {
 namespace mathematics {
 namespace templates {

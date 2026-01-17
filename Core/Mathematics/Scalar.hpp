@@ -22,6 +22,10 @@
 #endif
 #endif
 
+#ifndef MATHEMATICS_FAST_NORMALIZE
+#define MATHEMATICS_FAST_NORMALIZE 1
+#endif
+
 namespace core {
 namespace mathematics {
 

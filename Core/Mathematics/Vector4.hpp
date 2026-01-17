@@ -21,10 +21,6 @@
 #include "Vector2.hpp"
 #include "Vector3.hpp"
 
-#ifndef MATHEMATICS_FAST_NORMALIZE
-#define MATHEMATICS_FAST_NORMALIZE 1
-#endif
-
 namespace core {
 namespace mathematics {
 namespace templates {
