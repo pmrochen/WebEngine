@@ -81,9 +81,9 @@ struct HalfSpace
 
 	// Distances
 	T getDistanceTo(Vector3<T>::ConstArg point) const { return std::max(dot(getNormal(), point) + d, 0.f); } // plane must be normalized
-	template<bool NORMALIZED> T getDistanceTo(Vector3<T>::ConstArg point) const;
+	template<bool Normalized> T getDistanceTo(Vector3<T>::ConstArg point) const;
 	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
-	template<bool NORMALIZED> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
+	template<bool Normalized> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
 
 	// Intersection
 	bool contains(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) <= -d); }
@@ -160,9 +160,9 @@ struct HalfSpace<float>
 
 	// Distances
 	float getDistanceTo(Vector3<float>::ConstArg point) const { return std::max(dot(getNormal(), point) + d, 0.f); } // plane must be normalized
-	template<bool NORMALIZED> float getDistanceTo<(Vector3<float>::ConstArg point) const;
+	template<bool Normalized> float getDistanceTo<(Vector3<float>::ConstArg point) const;
 	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
-	template<bool NORMALIZED> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
+	template<bool Normalized> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
 
 	// Intersection
 	bool contains(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) <= -d); }
@@ -283,20 +283,20 @@ inline HalfSpace<T>& HalfSpace<T>::normalize()
 }
 
 template<typename T>
-template<bool NORMALIZED> 
+template<bool Normalized> 
 inline T HalfSpace<T>::getDistanceTo<(Vector3<T>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return std::max(dot(getNormal(), point) + d, T(0));
 	else
 		return std::max((dot(getNormal(), point) + d)/getNormal().getMagnitude(), T(0));
 }
 
 template<typename T>
-template<bool NORMALIZED> 
+template<bool Normalized> 
 inline T HalfSpace<T>::getSignedDistanceTo(Vector3<T>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return dot(getNormal(), point) + d;
 	else
 		return (dot(getNormal(), point) + d)/getNormal().getMagnitude(), T(0);
@@ -387,19 +387,19 @@ inline HalfSpace<float>& HalfSpace<float>::normalize()
 	return *this;
 }
 
-template<bool NORMALIZED>
+template<bool Normalized>
 inline T HalfSpace<float>::getDistanceTo<(Vector3<float>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return std::max(dot(getNormal(), point) + d, T(0));
 	else
 		return std::max((dot(getNormal(), point) + d)/getNormal().getMagnitude(), T(0));
 }
 
-template<bool NORMALIZED>
+template<bool Normalized>
 inline T HalfSpace<float>::getSignedDistanceTo(Vector3<float>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return dot(getNormal(), point) + d;
 	else
 		return (dot(getNormal(), point) + d)/getNormal().getMagnitude(), T(0);

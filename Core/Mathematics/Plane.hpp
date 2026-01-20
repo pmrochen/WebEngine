@@ -12,6 +12,7 @@
 #include <limits>
 #include <type_traits>
 #include <tuple>
+#include <optional>
 #include <algorithm>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
@@ -83,9 +84,9 @@ struct Plane
 
 	// Distances
 	T getDistanceTo(Vector3<T>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); } // plane must be normalized
-	template<bool NORMALIZED> T getDistanceTo(Vector3<T>::ConstArg point) const noexcept;
+	template<bool Normalized> T getDistanceTo(Vector3<T>::ConstArg point) const noexcept;
 	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
-	template<bool NORMALIZED> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
+	template<bool Normalized> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
 
 	// Intersection
 	bool contains(Vector3<T>::ConstArg point) const noexcept;
@@ -93,12 +94,9 @@ struct Plane
 	//bool testIntersection(const Ray3<T>& ray) const noexcept; // #TODO
 	//bool testIntersection(const Segment3<T>& segment) const noexcept;
 	//bool testIntersection(const Triangle<T>& triangle) const noexcept;
-	//bool findIntersection(const Line3<T>& line, T& t) const noexcept;
-	//bool findIntersection(const Line3<T>& line, Vector3<T>& point) const noexcept;
-	//bool findIntersection(const Ray3<T>& ray, T& t) const noexcept;
-	//bool findIntersection(const Ray3<T>& ray, Vector3<T>& point) const noexcept;
-	//bool findIntersection(const Segment3<T>& segment, T& t) const noexcept;
-	//bool findIntersection(const Segment3<T>& segment, Vector3<T>& point) const noexcept;
+	//template<typename TResult> std::optional<TResult> findIntersection(const Line3<T>& line) const noexcept; // #TODO
+	//template<typename TResult> std::optional<TResult> findIntersection(const Ray3<T>& ray) const noexcept;
+	//template<typename TResult> std::optional<TResult> findIntersection(const Segment3<T>& segment) const noexcept;
 
 	//static const Plane& getEmpty() noexcept { return EMPTY; }
 
@@ -177,9 +175,9 @@ struct Plane<float>
 
 	// Distances
 	float getDistanceTo(Vector3<float>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); } // plane must be normalized
-	template<bool NORMALIZED> float getDistanceTo(Vector3<float>::ConstArg point) const noexcept;
+	template<bool Normalized> float getDistanceTo(Vector3<float>::ConstArg point) const noexcept;
 	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
-	template<bool NORMALIZED> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
+	template<bool Normalized> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
 
 	// Intersection
 	bool contains(Vector3<float>::ConstArg point) const noexcept;
@@ -187,12 +185,9 @@ struct Plane<float>
 	//bool testIntersection(const Ray3<float>& ray) const noexcept; // #TODO
 	//bool testIntersection(const Segment3<float>& segment) const noexcept;
 	//bool testIntersection(const Triangle<float>& triangle) const noexcept;
-	//bool findIntersection(const Line3<float>& line, float& t) const noexcept;
-	//bool findIntersection(const Line3<float>& line, Vector3& point) const noexcept;
-	//bool findIntersection(const Ray3<float>& ray, float& t) const noexcept;
-	//bool findIntersection(const Ray3<float>& ray, Vector3& point) const noexcept;
-	//bool findIntersection(const Segment3<float>& segment, float& t) const noexcept;
-	//bool findIntersection(const Segment3<float>& segment, Vector3& point) const noexcept;
+	//template<typename TResult> std::optional<TResult> findIntersection(const Line3<float>& line) const noexcept; // #TODO
+	//template<typename TResult> std::optional<TResult> findIntersection(const Ray3<float>& ray) const noexcept;
+	//template<typename TResult> std::optional<TResult> findIntersection(const Segment3<float>& segment) const noexcept;
 
 	//static const Plane& getEmpty() noexcept { return EMPTY; }
 
@@ -318,20 +313,20 @@ inline Plane<T>& Plane<T>::normalize()
 //}
 
 template<typename T>
-template<bool NORMALIZED> 
+template<bool Normalized> 
 inline T Plane<T>::getDistanceTo(Vector3<T>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return std::fabs(dot(getNormal(), point) + d);
 	else
 		return std::fabs((dot(getNormal(), point) + d)/getNormal().getMagnitude());
 }
 
 template<typename T>
-template<bool NORMALIZED> 
+template<bool Normalized> 
 inline T Plane<T>::getSignedDistanceTo(Vector3<T>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return dot(getNormal(), point) + d;
 	else
 		return (dot(getNormal(), point) + d)/getNormal().getMagnitude();
@@ -427,19 +422,19 @@ inline Plane<float>& Plane<float>::normalize()
 //	return (getNormal()*(-2.f*(dot(getNormal(), point) + d)) + point); 
 //}
 
-template<bool NORMALIZED>
+template<bool Normalized>
 inline T Plane<float>::getDistanceTo(Vector3<float>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return std::fabs(dot(getNormal(), point) + d);
 	else
 		return std::fabs((dot(getNormal(), point) + d)/getNormal().getMagnitude());
 }
 
-template<bool NORMALIZED>
+template<bool Normalized>
 inline T Plane<float>::getSignedDistanceTo(Vector3<float>::ConstArg point) const
 {
-	if constexpr (NORMALIZED)
+	if constexpr (Normalized)
 		return dot(getNormal(), point) + d;
 	else
 		return (dot(getNormal(), point) + d)/getNormal().getMagnitude();
