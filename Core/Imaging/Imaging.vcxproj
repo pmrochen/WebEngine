@@ -190,6 +190,7 @@
     <ClInclude Include="Color4.hpp" />
     <ClInclude Include="ColorSpaces.hpp" />
     <ClInclude Include="Imaging.hpp" />
+    <ClInclude Include="PixelTypes.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
