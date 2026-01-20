@@ -15,8 +15,7 @@
 #include <Tuples/Tuple2.hpp>
 #include "Vector2.hpp"
 
-namespace core {
-namespace mathematics {
+namespace core::mathematics {
 namespace templates {
 
 template<typename T>
@@ -42,10 +41,10 @@ struct IntVector2
 
 	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
-	explicit operator std::pair<T, T>() noexcept { return std::pair<T, T>(x, y); }
-	template<typename U> explicit operator std::pair<U, U>() noexcept { return std::pair<U, U>(U(x), U(y)); }
-	explicit operator std::tuple<T, T>() noexcept { return std::tuple<T, T>(x, y); }
-	template<typename U> explicit operator std::tuple<U, U>() noexcept { return std::tuple<U, U>(U(x), U(y)); }
+	explicit operator std::pair<T, T>() { return std::pair<T, T>(x, y); }
+	template<typename U> explicit operator std::pair<U, U>() { return std::pair<U, U>(U(x), U(y)); }
+	explicit operator std::tuple<T, T>() { return std::tuple<T, T>(x, y); }
+	template<typename U> explicit operator std::tuple<U, U>() { return std::tuple<U, U>(U(x), U(y)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -141,8 +140,7 @@ using IntVector2 = templates::IntVector2<int>;
 using IntVector2Arg = templates::IntVector2<int>::ConstArg;
 using IntVector2Result = templates::IntVector2<int>::ConstResult;
 
-} // namespace mathematics
-} // namespace core
+} // namespace core::mathematics
 
 namespace std
 {

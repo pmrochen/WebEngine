@@ -16,7 +16,7 @@ namespace core::imaging {
 namespace detail {
 
 template<typename T>
-inline T branchlessIntMin(T x, T y)
+inline T branchlessIntMin(T x, T y) noexcept
 {
     if constexpr (std::is_signed_v<T>)
         return y + ((x - y) & ((x - y) >> std::numeric_limits<T>::digits));
@@ -25,7 +25,7 @@ inline T branchlessIntMin(T x, T y)
 }
 
 template<typename T>
-inline T branchlessIntMax(T x, T y)
+inline T branchlessIntMax(T x, T y) noexcept
 {
     if constexpr (std::is_signed_v<T>)
         return x - ((x - y) & ((x - y) >> std::numeric_limits<T>::digits));
@@ -34,7 +34,7 @@ inline T branchlessIntMax(T x, T y)
 }
 
 template<int Y, typename T>
-inline T branchlessIntMax(T x)
+inline T branchlessIntMax(T x) noexcept
 {
     if constexpr (Y == 0)
     {
@@ -121,13 +121,13 @@ inline T saturate(U x)
 }
 
 template<typename T>
-inline T makeLinear(T x) 
+inline T makeLinear(T x) noexcept
 { 
     return (x <= T(0.04045)) ? x/T(12.92) : std::pow((x + T(0.055))/T(1.055), T(2.4)); 
 }
 
 template<typename T>
-inline T makeSrgb(T x) 
+inline T makeSrgb(T x) noexcept
 { 
     if (!(x == x)) 
         return T(0); 

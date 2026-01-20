@@ -15,8 +15,7 @@
 #include "IntVector2.hpp"
 #include "Vector3.hpp"
 
-namespace core {
-namespace mathematics {
+namespace core::mathematics {
 namespace templates {
 
 template<typename T>
@@ -42,8 +41,8 @@ struct IntVector3
 
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
-	explicit operator std::tuple<T, T, T>() noexcept { return std::tuple<T, T, T>(x, y, z); }
-	template<typename U> explicit operator std::tuple<U, U, U>() noexcept { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
+	explicit operator std::tuple<T, T, T>() { return std::tuple<T, T, T>(x, y, z); }
+	template<typename U> explicit operator std::tuple<U, U, U>() { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -145,8 +144,7 @@ using IntVector3 = templates::IntVector3<int>;
 using IntVector3Arg = templates::IntVector3<int>::ConstArg;
 using IntVector3Result = templates::IntVector3<int>::ConstResult;
 
-} // namespace mathematics
-} // namespace core
+} // namespace core::mathematics
 
 namespace std
 {
