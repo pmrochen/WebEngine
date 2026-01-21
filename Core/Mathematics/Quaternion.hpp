@@ -82,6 +82,8 @@ struct Quaternion
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
+	static Quaternion fromAxisAngle(const Vector3<T>& axis, T angle) noexcept;
+
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()) && (w == T()); }
 	bool isApproxZero() const noexcept;
 	bool isIdentity() const noexcept { return (x == T()) && (y == T()) && (z == T()) && (w == T(1)); }
@@ -89,7 +91,7 @@ struct Quaternion
 	bool isApproxEqual(const Quaternion& q) const noexcept;
 	bool isApproxEqual(const Quaternion& q, T tolerance) const noexcept;
 	bool isFinite() const noexcept { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z) && std::isfinite(w); }
-	Vector3<T>::ConstResult /*getImaginary*/getVector() const noexcept { return reinterpret_cast<const Vector3&>(*this); }
+	Vector3<T>::ConstResult /*getImaginary*/getVector() const noexcept { return reinterpret_cast<const Vector3<T>&>(*this); }
 	void setVector(Vector3<T>::ConstArg vector) noexcept { x = vector.x; y = vector.y; z = vector.z; }
 	T /*getReal*/getScalar() const noexcept { return w; }
 	void setScalar(T scalar) noexcept { w = scalar; }
@@ -115,7 +117,6 @@ struct Quaternion
  
 	//static const Quaternion& getZero() noexcept { return ZERO; }
 	//static const Quaternion& getIdentity() noexcept { return IDENTITY; }
-	static Quaternion fromAxisAngle(const Vector3<T>& axis, T angle) noexcept;
 
 	static const Quaternion ZERO;
 	static const Quaternion IDENTITY;
@@ -188,7 +189,9 @@ struct Quaternion<float>
 	friend std::istream& operator>>(std::istream& s, Quaternion& q);
 	friend std::ostream& operator<<(std::ostream& s, const Quaternion& q) { return s << q.x << ' ' << q.y << ' ' << q.z << ' ' << q.w; }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar& x& y& z& w; } // #FIXME use simd::set(x, y, z, w)
+	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
+
+	static Quaternion fromAxisAngle(const Vector3<float>& axis, float angle) noexcept;
 
 	bool isZero() const noexcept { return simd::all4(simd::equal(xyzw, simd::zero<simd::float4>())); }
 	bool isApproxZero() const noexcept { simd::all4(simd::lessThan(simd::abs4(xyzw), TOLERANCE)); }
@@ -227,7 +230,6 @@ struct Quaternion<float>
 
 	//static const Quaternion& getZero() noexcept { return ZERO; }
 	//static const Quaternion& getIdentity() noexcept { return IDENTITY; }
-	static Quaternion fromAxisAngle(const Vector3<float>& axis, float angle) noexcept;
 
 	static const Quaternion ZERO;
 	static const Quaternion IDENTITY;
@@ -431,6 +433,20 @@ inline std::istream& operator>>(std::istream& s, Quaternion<T>& q)
 }
 
 template<typename T>
+inline Quaternion<T> Quaternion<T>::fromAxisAngle(const Vector3<T>& axis, T angle)
+{
+	T m = axis.getMagnitude();
+	if ((m > T(0)) && (angle != T(0)))
+	{
+		T half = angle*T(0.5);
+		T sinHalfN = std::sin(half)/m;
+		return Quaternion<T>(axis.x*sinHalfN, axis.y*sinHalfN, axis.z*sinHalfN, std::cos(half));
+	}
+
+	return IDENTITY;
+}
+
+template<typename T>
 inline bool Quaternion<T>::isApproxZero() const
 { 
 	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE) && 
@@ -526,20 +542,6 @@ inline Quaternion<T>& Quaternion<T>::normalize()
 	return *this;
 }
 
-template<typename T>
-inline Quaternion<T> Quaternion<T>::fromAxisAngle(const Vector3<T>& axis, T angle)
-{
-	T m = axis.getMagnitude();
-	if ((m > T(0)) && (angle != T(0)))
-	{
-		T half = angle*T(0.5);
-		T sinHalfN = std::sin(half)/m;
-		return Quaternion<T>(axis.x*sinHalfN, axis.y*sinHalfN, axis.z*sinHalfN, std::cos(half));
-	}
-
-	return IDENTITY;
-}
-
 #if SIMD_HAS_FLOAT4
 
 inline Quaternion<float>& Quaternion<float>::operator*=(Quaternion<float>::ConstArg q)
@@ -617,6 +619,19 @@ inline std::istream& operator>>(std::istream& s, Quaternion<float>& q)
 	return s;
 }
 
+inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& axis, float angle)
+{
+	float m = axis.getMagnitude();
+	if ((m > 0.f) && (angle != 0.f))
+	{
+		float half = angle*0.5f;
+		float sinHalfN = std::sin(half)/m;
+		return Quaternion<float>(axis*sinHalfN, std::cos(half));
+	}
+
+	return IDENTITY;
+}
+
 inline Vector3<float> Quaternion<float>::getAxis() const
 {
 	float cosine = 1.f - w*w;
@@ -669,19 +684,6 @@ inline Quaternion<float>& Quaternion<float>::normalize()
 		*this /= m;
 #endif
 	return *this;
-}
-
-inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& axis, float angle)
-{
-	float m = axis.getMagnitude();
-	if ((m > 0.f) && (angle != 0.f))
-	{
-		float half = angle*0.5f;
-		float sinHalfN = std::sin(half)/m;
-		return Quaternion<float>(axis*sinHalfN, std::cos(half));
-	}
-
-	return IDENTITY;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

@@ -92,10 +92,10 @@ struct Vector3
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
 
-	Vector2<T>::ConstResult xy/*getXY*/() const noexcept { return reinterpret_cast<const Vector2&>(*this); }
-	//void setXY(Vector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
+	Vector2<T>::ConstResult xy/*getXY*/() const noexcept { return reinterpret_cast<const Vector2<T>&>(*this); }
 	Vector2 xz/*getXZ*/() const noexcept { return Vector2(x, z); }
 	Vector2 zy/*getZY*/() const noexcept { return Vector2(z, y); }
+	//void setXY(Vector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()); }
 	bool isApproxZero() const noexcept;
 	bool isApproxEqual(const Vector3& v) const noexcept;
@@ -250,7 +250,7 @@ struct Vector3<float>
 	friend std::istream& operator>>(std::istream& s, Vector3& v);
 	friend std::ostream& operator<<(std::ostream& s, const Vector3& v) { return s << v.x << ' ' << v.y << ' ' << v.z; }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar& x& y& z; } // #FIXME use simd::set(x, y, z, z)
+	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use simd::set(x, y, z, z)
 
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XYYY>(xyz)); }

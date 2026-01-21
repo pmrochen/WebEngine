@@ -234,7 +234,7 @@ struct Vector2<float>
 	friend std::istream& operator>>(std::istream& s, Vector2& v);
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar& x& y; } // #FIXME use simd::set(x, y, y, y)
+	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; } // #FIXME use simd::set(x, y, y, y)
 
 	bool isZero() const noexcept { return simd::all2(simd::equal(xy, simd::zero<simd::float4>())); }
 	bool isApproxZero() const noexcept { simd::all2(simd::lessThan(simd::abs4(xy), TOLERANCE)); }
