@@ -59,6 +59,9 @@ struct Plane
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
 
+	// Conversion
+	HalfSpace<T>::ConstResult asHalfSpace() const noexcept { return reinterpret_cast<const HalfSpace<T>&>(*this); }
+
 	// Properties
 	bool isEmpty() const noexcept { return (a == T()) && (b == T()) && (c == T()) && (d == T()); }
 	bool isApproxEqual(const Plane& p) const noexcept;
@@ -83,20 +86,23 @@ struct Plane
 	//Vector3<T> reflect(Vector3<T>::ConstArg point) const noexcept; // #TODO -> Vector3
 
 	// Distances
-	T getDistanceTo(Vector3<T>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); } // plane must be normalized
+	T getDistanceTo(Vector3<T>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); }	// normalized plane
 	template<bool Normalized> T getDistanceTo(Vector3<T>::ConstArg point) const noexcept;
-	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
+	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); }		// normalized plane
 	template<bool Normalized> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
 
 	// Intersection
 	bool contains(Vector3<T>::ConstArg point) const noexcept;
 	bool testIntersection(const Line3<T>& line) const noexcept;
-	//bool testIntersection(const Ray3<T>& ray) const noexcept; // #TODO
-	//bool testIntersection(const Segment3<T>& segment) const noexcept;
-	//bool testIntersection(const Triangle<T>& triangle) const noexcept;
-	//template<typename TResult> std::optional<TResult> findIntersection(const Line3<T>& line) const noexcept; // #TODO
-	//template<typename TResult> std::optional<TResult> findIntersection(const Ray3<T>& ray) const noexcept;
-	//template<typename TResult> std::optional<TResult> findIntersection(const Segment3<T>& segment) const noexcept;
+	bool testIntersection(const Ray3<T>& ray) const noexcept;
+	bool testIntersection(const Segment3<T>& segment) const noexcept;
+	//bool testIntersection(const Triangle<T>& triangle) const noexcept; // #TODO Check if all vertices are on one side
+	std::optional<T> findIntersection(const Line3<T>& line) const noexcept;
+	std::optional<T> findIntersection(const Ray3<T>& ray) const noexcept;
+	std::optional<T> findIntersection(const Segment3<T>& segment) const noexcept;
+	template<typename U> std::optional<U> findIntersection(const Line3<T>& line) const noexcept;
+	template<typename U> std::optional<U> findIntersection(const Ray3<T>& ray) const noexcept;
+	template<typename U> std::optional<U> findIntersection(const Segment3<T>& segment) const noexcept;
 
 	//static const Plane& getEmpty() noexcept { return EMPTY; }
 
@@ -146,6 +152,9 @@ struct Plane<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
 
+	// Conversion
+	HalfSpace<float>::ConstResult asHalfSpace() const noexcept { return HalfSpace<float>(abcd); }
+
 	// Properties
 	bool isEmpty() const noexcept { return simd::all4(simd::equal(abcd, simd::zero<simd::float4>())); }
 	bool isApproxEqual(const Plane& p) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(abcd, p)), simd::set4(Constants<float>::TOLERANCE))); }
@@ -174,20 +183,20 @@ struct Plane<float>
 	//Vector3<float> reflect(Vector3<float>::ConstArg point) const noexcept; // #TODO -> Vector3
 
 	// Distances
-	float getDistanceTo(Vector3<float>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); } // plane must be normalized
+	float getDistanceTo(Vector3<float>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); }	// normalized plane
 	template<bool Normalized> float getDistanceTo(Vector3<float>::ConstArg point) const noexcept;
-	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
+	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); }		// normalized plane
 	template<bool Normalized> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
 
 	// Intersection
 	bool contains(Vector3<float>::ConstArg point) const noexcept;
 	bool testIntersection(const Line3<float>& line) const noexcept;
-	//bool testIntersection(const Ray3<float>& ray) const noexcept; // #TODO
-	//bool testIntersection(const Segment3<float>& segment) const noexcept;
-	//bool testIntersection(const Triangle<float>& triangle) const noexcept;
-	//template<typename TResult> std::optional<TResult> findIntersection(const Line3<float>& line) const noexcept; // #TODO
-	//template<typename TResult> std::optional<TResult> findIntersection(const Ray3<float>& ray) const noexcept;
-	//template<typename TResult> std::optional<TResult> findIntersection(const Segment3<float>& segment) const noexcept;
+	bool testIntersection(const Ray3<float>& ray) const noexcept;
+	bool testIntersection(const Segment3<float>& segment) const noexcept;
+	//bool testIntersection(const Triangle<float>& triangle) const noexcept; // #TODO Check if all vertices are on one side
+	template<typename U> std::optional<U> findIntersection(const Line3<float>& line) const noexcept;
+	template<typename U> std::optional<U> findIntersection(const Ray3<float>& ray) const noexcept;
+	template<typename U> std::optional<U> findIntersection(const Segment3<float>& segment) const noexcept;
 
 	//static const Plane& getEmpty() noexcept { return EMPTY; }
 
@@ -344,6 +353,76 @@ inline bool Plane<T>::testIntersection(const Line3<T>& line) const
 	return (std::fabs(dot(getNormal(), line.direction)) >= Constants<T>::TOLERANCE);
 }
 
+template<typename T>
+inline bool Plane<T>::testIntersection(const Ray3<T>& ray) const
+{
+	return findIntersection(ray).has_value();
+}
+
+template<typename T>
+inline bool Plane<T>::testIntersection(const Segment3<T>& segment) const
+{
+	return findIntersection(segment).has_value();
+}
+
+template<typename T>
+inline std::optional<T> Plane<T>::findIntersection(const Line3<T>& line) const
+{
+	Vector3<T>::ConstResult n = getNormal();
+	T nd = dot(n, line.direction);
+	return (std::fabs(nd) < Constants<T>::TOLERANCE) ? std::optional<T>() : std::optional<T>((-d - dot(n, line.origin))/nd);
+}
+
+template<typename T>
+inline std::optional<T> Plane<T>::findIntersection(const Ray3<T>& ray) const
+{
+	std::optional<T> result(findIntersection(ray.asLine()));
+	return (result.has_value() && (result.value() >= T(0))) ? result : std::optional<T>();
+}
+
+template<typename T>
+inline std::optional<T> Plane<T>::findIntersection(const Segment3<T>& segment) const
+{
+	std::optional<T> result(findIntersection(Line3(segment.start, segment.end - segment.start)));
+	return (result.has_value() && (result.value() >= T(0)) && (result.value() <= T(1))) ? result : std::optional<T>();
+}
+
+template<typename T>
+template<typename U> 
+inline std::optional<U> Plane<T>::findIntersection(const Line3<T>& line) const
+{
+	static_assert(is_same_v<U, T> || is_same_v<U, Vector3<T>>);
+	std::optional<T> result(findIntersection(line));
+	if constexpr (is_same_v<U, T>)
+		return result;
+	else //if constexpr (is_same_v<U, Vector3<T>>)
+		return result.has_value() ? std::optional<U>(line.origin + line.direction*result.value()) : std::optional<U>();
+}
+
+template<typename T>
+template<typename U> 
+inline std::optional<U> Plane<T>::findIntersection(const Ray3<T>& ray) const
+{
+	static_assert(is_same_v<U, T> || is_same_v<U, Vector3<T>>);
+	std::optional<T> result(findIntersection(ray));
+	if constexpr (is_same_v<U, T>)
+		return result;
+	else //if constexpr (is_same_v<U, Vector3<T>>)
+		return result.has_value() ? std::optional<U>(ray.origin + ray.direction*result.value()) : std::optional<U>();
+}
+
+template<typename T>
+template<typename U> 
+inline std::optional<U> Plane<T>::findIntersection(const Segment3<T>& segment) const
+{
+	static_assert(is_same_v<U, T> || is_same_v<U, Vector3<T>>);
+	std::optional<T> result(findIntersection(segment));
+	if constexpr (is_same_v<U, T>)
+		return result;
+	else //if constexpr (is_same_v<U, Vector3<T>>)
+		return result.has_value() ? std::optional<U>(lerp(segment.start, segment.end, result.value())) : std::optional<U>();
+}
+
 #if SIMD_HAS_FLOAT4
 
 inline Plane<float>::Plane<float>(Vector3<float>::ConstArg p0, Vector3<float>::ConstArg p1, Vector3<float>::ConstArg p2)
@@ -448,6 +527,68 @@ inline bool Plane<float>::contains(Vector3<float>::ConstArg point) const
 inline bool Plane<float>::testIntersection(const Line3<float>& line) const
 {
 	return (std::fabs(dot(getNormal(), line.direction)) >= Constants<float>::TOLERANCE);
+}
+
+inline bool Plane<float>::testIntersection(const Ray3<float>& ray) const
+{
+	return findIntersection(ray).has_value();
+}
+
+inline bool Plane<float>::testIntersection(const Segment3<float>& segment) const
+{
+	return findIntersection(segment).has_value();
+}
+
+inline std::optional<float> Plane<float>::findIntersection(const Line3<float>& line) const
+{
+	Vector3<float> n(getNormal());
+	float nd = dot(n, line.direction);
+	return (std::fabs(nd) < Constants<float>::TOLERANCE) ? std::optional<float>() : std::optional<float>((-d - dot(n, line.origin))/nd);
+}
+
+inline std::optional<float> Plane<float>::findIntersection(const Ray3<float>& ray) const
+{
+	std::optional<float> result(findIntersection(ray.asLine()));
+	return (result.has_value() && (result.value() >= 0.f)) ? result : std::optional<float>();
+}
+
+inline std::optional<float> Plane<float>::findIntersection(const Segment3<float>& segment) const
+{
+	std::optional<float> result(findIntersection(Line3(segment.start, segment.end - segment.start)));
+	return (result.has_value() && (result.value() >= 0.f) && (result.value() <= 1.f)) ? result : std::optional<float>();
+}
+
+template<typename U>
+inline std::optional<U> Plane<float>::findIntersection(const Line3<float>& line) const
+{
+	static_assert(is_same_v<U, float> || is_same_v<U, Vector3<float>>);
+	std::optional<float> result(findIntersection(line));
+	if constexpr (is_same_v<U, float>)
+		return result;
+	else //if constexpr (is_same_v<U, Vector3<float>>)
+		return result.has_value() ? std::optional<U>(line.origin + line.direction*result.value()) : std::optional<U>();
+}
+
+template<typename U>
+inline std::optional<U> Plane<float>::findIntersection(const Ray3<float>& ray) const
+{
+	static_assert(is_same_v<U, float> || is_same_v<U, Vector3<float>>);
+	std::optional<float> result(findIntersection(ray));
+	if constexpr (is_same_v<U, float>)
+		return result;
+	else //if constexpr (is_same_v<U, Vector3<float>>)
+		return result.has_value() ? std::optional<U>(ray.origin + ray.direction*result.value()) : std::optional<U>();
+}
+
+template<typename U>
+inline std::optional<U> Plane<float>::findIntersection(const Segment3<float>& segment) const
+{
+	static_assert(is_same_v<U, float> || is_same_v<U, Vector3<float>>);
+	std::optional<float> result(findIntersection(segment));
+	if constexpr (is_same_v<U, float>)
+		return result;
+	else //if constexpr (is_same_v<U, Vector3<float>>)
+		return result.has_value() ? std::optional<U>(lerp(segment.start, segment.end, result.value())) : std::optional<U>();
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

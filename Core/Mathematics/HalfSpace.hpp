@@ -59,12 +59,15 @@ struct HalfSpace
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
 
+	// Conversion
+	Plane<T>::ConstResult asPlane() const noexcept { return reinterpret_cast<const Plane<T>&>(*this); }
+
 	// Properties
 	bool isEmpty() const noexcept { return (a == T()) && (b == T()) && (c == T()) && (d == T()); }
 	bool isApproxEqual(const HalfSpace& h) const noexcept;
 	bool isApproxEqual(const HalfSpace& h, T tolerance) const noexcept;
 	bool isFinite() const noexcept { return std::isfinite(a) && std::isfinite(b) && std::isfinite(c) && std::isfinite(d); }
-	Vector3<T>::ConstResult getNormal() const noexcept { return reinterpret_cast<const Vector3&>(*this); }
+	Vector3<T>::ConstResult getNormal() const noexcept { return reinterpret_cast<const Vector3<T>&>(*this); }
 	void setNormal(Vector3<T>::ConstArg normal) noexcept { a = normal.x; b = normal.y; c = normal.z; }
 	T getConstant() const noexcept { return d; }
 	void setConstant(T constant) noexcept { d = constant; }
@@ -80,9 +83,9 @@ struct HalfSpace
 	HalfSpace& normalize() noexcept;
 
 	// Distances
-	T getDistanceTo(Vector3<T>::ConstArg point) const { return std::max(dot(getNormal(), point) + d, 0.f); } // plane must be normalized
+	T getDistanceTo(Vector3<T>::ConstArg point) const { return std::max(dot(getNormal(), point) + d, 0.f); }	// normalized half-space
 	template<bool Normalized> T getDistanceTo(Vector3<T>::ConstArg point) const;
-	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
+	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); }	// normalized half-space
 	template<bool Normalized> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
 
 	// Intersection
@@ -134,6 +137,9 @@ struct HalfSpace<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
 
+	// Conversion
+	Plane<float>::ConstResult asPlane() const noexcept;
+
 	// Properties
 	bool isEmpty() const noexcept { return simd::all4(simd::equal(abcd, simd::zero<simd::float4>())); }
 	bool isApproxEqual(const HalfSpace& h) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(abcd, h)), simd::set4(Constants<float>::TOLERANCE))); }
@@ -159,9 +165,9 @@ struct HalfSpace<float>
 	HalfSpace& normalize() noexcept;
 
 	// Distances
-	float getDistanceTo(Vector3<float>::ConstArg point) const { return std::max(dot(getNormal(), point) + d, 0.f); } // plane must be normalized
+	float getDistanceTo(Vector3<float>::ConstArg point) const { return std::max(dot(getNormal(), point) + d, 0.f); }	// normalized half-space
 	template<bool Normalized> float getDistanceTo<(Vector3<float>::ConstArg point) const;
-	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); } // plane must be normalized
+	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); }	// normalized half-space
 	template<bool Normalized> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
 
 	// Intersection
@@ -436,17 +442,20 @@ using HalfSpaceResult = templates::HalfSpace<float>::ConstResult;
 namespace core::mathematics::templates {
 
 template<typename T>
-template<typename U>
-inline HalfSpace<T>::HalfSpace(const Plane<U>& p) : a(p.a), b(p.b), c(p.c), d(p.d)
+inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.d)
 {
 }
 
 #if SIMD_HAS_FLOAT4
 
-template<typename U> 
-inline HalfSpace<float>::HalfSpace(const Plane<U>& p)
+inline HalfSpace<float>::HalfSpace(const Plane<float>& p)
 {
 	abcd = p.abcd;
+}
+
+inline Plane<float>::ConstResult HalfSpace<float>::asPlane() const
+{ 
+	return Plane<float>(abcd); 
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
