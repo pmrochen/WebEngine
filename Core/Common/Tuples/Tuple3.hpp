@@ -9,8 +9,7 @@
 #include <type_traits>
 #include <tuple>
 
-namespace core {
-namespace tuples {
+namespace core::tuples {
 namespace templates {
 
 template<typename T>
@@ -53,14 +52,27 @@ using LongLong3 = templates::Tuple3<long long>;
 using Float3 = templates::Tuple3<float>;
 using Double3 = templates::Tuple3<double>;
 
-} // namespace tuples
-} // namespace core
+} // namespace core::tuples
 
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple3<T>> : std::integral_constant<std::size_t, 3> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::tuples::templates::Tuple3<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::tuples::templates::Tuple3<T>> : std::integral_constant<std::size_t, 3> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::tuples::templates::Tuple3<T>& v) noexcept

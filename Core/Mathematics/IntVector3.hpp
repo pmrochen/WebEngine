@@ -148,9 +148,23 @@ using IntVector3Result = templates::IntVector3<int>::ConstResult;
 
 namespace std
 {
+	
+template<std::size_t I, typename T>
+struct tuple_element;
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::IntVector3<T>> : std::integral_constant<std::size_t, 3> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::IntVector3<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::IntVector3<T>> : std::integral_constant<std::size_t, 3> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::mathematics::templates::IntVector3<T>& v) noexcept

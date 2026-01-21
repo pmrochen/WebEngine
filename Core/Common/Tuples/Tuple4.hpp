@@ -9,8 +9,7 @@
 #include <type_traits>
 #include <tuple>
 
-namespace core {
-namespace tuples {
+namespace core::tuples {
 namespace templates {
 
 template<typename T>
@@ -59,8 +58,7 @@ using Double4 = templates::Tuple4<double>;
 using Half4 = templates::Tuple4<half_float::half>;
 #endif // HALF_HALF_HPP
 
-} // namespace tuples
-} // namespace core
+} // namespace core::tuples
 
 #ifdef HALF_HALF_HPP
 namespace ::core::serialization { 
@@ -77,8 +75,22 @@ inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& 
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple4<T>> : std::integral_constant<std::size_t, 4> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::tuples::templates::Tuple4<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::tuples::templates::Tuple4<T>> : std::integral_constant<std::size_t, 4> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::tuples::templates::Tuple4<T>& v) noexcept

@@ -10,8 +10,7 @@
 #include <utility>
 #include <tuple>
 
-namespace core {
-namespace tuples {
+namespace core::tuples {
 namespace templates {
 
 template<typename T>
@@ -64,8 +63,7 @@ using Double2 = templates::Tuple2<double>;
 using Half2 = templates::Tuple2<half_float::half>;
 #endif // HALF_HALF_HPP
 
-} // namespace tuples
-} // namespace core
+} // namespace core::tuples
 
 #ifdef HALF_HALF_HPP
 namespace ::core::serialization { 
@@ -81,8 +79,22 @@ inline void serialize(A& ar, core::tuples::templates::Tuple2<half_float::half>& 
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple2<T>> : std::integral_constant<std::size_t, 2> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::tuples::templates::Tuple2<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::tuples::templates::Tuple2<T>> : std::integral_constant<std::size_t, 2> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::tuples::templates::Tuple2<T>& v) noexcept

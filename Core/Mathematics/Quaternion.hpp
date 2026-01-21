@@ -789,8 +789,22 @@ using QuaternionResult = templates::Quaternion<float>::ConstResult;
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::mathematics::templates::Quaternion<T>> : std::integral_constant<std::size_t, 4> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::Quaternion<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::Quaternion<T>> : std::integral_constant<std::size_t, 4> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::mathematics::templates::Quaternion<T>& v) noexcept

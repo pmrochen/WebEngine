@@ -802,8 +802,22 @@ inline Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::mathematics::templates::Vector3<T>> : std::integral_constant<std::size_t, 3> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::Vector3<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::Vector3<T>> : std::integral_constant<std::size_t, 3> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::mathematics::templates::Vector3<T>& v) noexcept

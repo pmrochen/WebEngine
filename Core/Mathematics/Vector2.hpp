@@ -639,8 +639,22 @@ inline Vector2<float>::Vector2(const IntVector2<U>& v)
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::mathematics::templates::Vector2<T>> : std::integral_constant<std::size_t, 2> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::Vector2<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::Vector2<T>> : std::integral_constant<std::size_t, 2> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::mathematics::templates::Vector2<T>& v) noexcept
