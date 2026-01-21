@@ -75,10 +75,10 @@ struct IntVector4
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
-	IntVector2<T>::ConstResult getXY() const noexcept { return *reinterpret_cast<const IntVector2*>(this); }
-	void setXY(IntVector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
-	IntVector3<T>::ConstResult getXYZ() const noexcept { return *reinterpret_cast<const IntVector3*>(this); }
-	void setXYZ(IntVector3<T>::ConstArg v) noexcept { x = v.x; y = v.y; z = v.z; }
+	IntVector2<T>::ConstResult xy/*getXY*/() const noexcept { return reinterpret_cast<const IntVector2<T>&>(*this); }
+	IntVector3<T>::ConstResult xyz/*getXYZ*/() const noexcept { return reinterpret_cast<const IntVector3<T>&>(*this); }
+	//void setXY(IntVector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
+	//void setXYZ(IntVector3<T>::ConstArg v) noexcept { x = v.x; y = v.y; z = v.z; }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()) && (w == T()); }
 	bool allLessThan(const IntVector4& v) const noexcept { return (x < v.x) && (y < v.y) && (z < v.z) && (w < v.w); }
 	bool allLessThanEqual(const IntVector4& v) const noexcept { return (x <= v.x) && (y <= v.y) && (z <= v.z) && (w <= v.w); }

@@ -71,10 +71,10 @@ struct IntVector3
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
 
-	IntVector2<T>::ConstResult getXY() const noexcept { return *reinterpret_cast<const IntVector2*>(this); }
-	void setXY(IntVector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
-	IntVector2 getXZ() const noexcept { return IntVector2(x, z); }
-	IntVector2 getZY() const noexcept { return IntVector2(z, y); }
+	IntVector2<T>::ConstResult xy/*getXY*/() const noexcept { return reinterpret_cast<const IntVector2<T>&>(*this); }
+	IntVector2 xz/*getXZ*/() const noexcept { return IntVector2(x, z); }
+	IntVector2 zy/*getZY*/() const noexcept { return IntVector2(z, y); }
+	//void setXY(IntVector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
 	bool isZero() const noexcept { return (x == T()) && (y == T()) && (z == T()); }
 	bool allLessThan(const IntVector3& v) const noexcept { return (x < v.x) && (y < v.y) && (z < v.z); }
 	bool allLessThanEqual(const IntVector3& v) const noexcept { return (x <= v.x) && (y <= v.y) && (z <= v.z); }
