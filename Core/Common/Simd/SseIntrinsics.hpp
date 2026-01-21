@@ -230,7 +230,7 @@ struct WZZZ : public Swizzle<W, Z, Z, Z> {};
 struct WZYX : public Swizzle<W, Z, Y, X> {};
 
 template<typename T>
-inline T zero() { static_assert(false); }
+inline T zero(); //{ static_assert(false); }
 
 template<>
 inline __m128 zero()
@@ -239,7 +239,7 @@ inline __m128 zero()
 }
 
 template<typename T, int S>
-inline T constant1() { static_assert(false); }
+inline T constant1(); //{ static_assert(false); }
 
 template<int S>
 inline __m128 constant1()
@@ -253,7 +253,7 @@ inline __m128 constant1()
 }
 
 template<typename T, int S>
-inline T constant4() { static_assert(false); }
+inline T constant4(); //{ static_assert(false); }
 
 template<int S>
 inline __m128 constant4()
@@ -267,7 +267,7 @@ inline __m128 constant4()
 }
 
 template<typename T, int X, int Y, int Z, int W>
-inline T constant4() { static_assert(false); }
+inline T constant4(); //{ static_assert(false); }
 
 template<int X, int Y, int Z, int W>
 inline __m128 constant4()
@@ -281,7 +281,7 @@ inline __m128 constant4()
 }
 
 template<typename T, int S>
-inline T constant4i() { static_assert(false); }
+inline T constant4i(); //{ static_assert(false); }
 
 template<int S>
 inline __m128 constant4i()
@@ -306,7 +306,7 @@ inline __m128i constant4i()
 }
 
 template <typename T, int X, int Y, int Z, int W>
-inline T constant4i() { static_assert(false); }
+inline T constant4i(); //{ static_assert(false); }
 
 template<int X, int Y, int Z, int W>
 inline __m128 constant4i()

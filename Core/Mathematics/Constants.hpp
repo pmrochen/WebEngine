@@ -27,38 +27,38 @@ namespace mathematics {
 //template<typename T> constexpr T RAD_TO_DEG = T(57.29577951308232286465L);
 
 template<typename T>
-struct Constants
-{
-	static constexpr T TOLERANCE/*ZERO_TOLERANCE*/ = T();
-	static constexpr T EPSILON = T();
-	static constexpr T INF = T();
-	static constexpr T MINUS_INF = T();
-	static constexpr T E = T();
-	static constexpr T LN2 = T();
-	static constexpr T PI = T();
-	static constexpr T PI_SQR = T();
-	static constexpr T HALF_PI = T();
-	static constexpr T TWO_PI = T();
-	static constexpr T INV_PI = T();
-	static constexpr T SQRT_2 = T();
-	static constexpr T SQRT_3 = T();
-	static constexpr T DEG_TO_RAD = T();
-	static constexpr T RAD_TO_DEG = T();
-
-	//static constexpr T /*zero*/tolerance() noexcept { return T(); }
-	//static constexpr T infinity() noexcept { return T(); }
-	//static constexpr T e() noexcept { return T(); }
-	//static constexpr T ln2() noexcept { return T(); }
-	//static constexpr T pi() noexcept { return T(); }
-	//static constexpr T piSquare() noexcept { return T(); }
-	//static constexpr T halfPi() noexcept { return T(); }
-	//static constexpr T twoPi() noexcept { return T(); }
-	//static constexpr T inversePi() noexcept { return T(); }
-	//static constexpr T sqrt2() noexcept { return T(); }
-	//static constexpr T sqrt3() noexcept { return T(); }
-	//static constexpr T degToRad() noexcept { return T(); }
-	//static constexpr T radToDeg() noexcept { return T(); }
-};
+struct Constants;
+//{
+//	static constexpr T TOLERANCE/*ZERO_TOLERANCE*/ = T();
+//	static constexpr T EPSILON = T();
+//	static constexpr T INF = T();
+//	static constexpr T MINUS_INF = T();
+//	static constexpr T E = T();
+//	static constexpr T LN2 = T();
+//	static constexpr T PI = T();
+//	static constexpr T PI_SQR = T();
+//	static constexpr T HALF_PI = T();
+//	static constexpr T TWO_PI = T();
+//	static constexpr T INV_PI = T();
+//	static constexpr T SQRT_2 = T();
+//	static constexpr T SQRT_3 = T();
+//	static constexpr T DEG_TO_RAD = T();
+//	static constexpr T RAD_TO_DEG = T();
+//
+//	//static constexpr T /*zero*/tolerance() noexcept { return T(); }
+//	//static constexpr T infinity() noexcept { return T(); }
+//	//static constexpr T e() noexcept { return T(); }
+//	//static constexpr T ln2() noexcept { return T(); }
+//	//static constexpr T pi() noexcept { return T(); }
+//	//static constexpr T piSquare() noexcept { return T(); }
+//	//static constexpr T halfPi() noexcept { return T(); }
+//	//static constexpr T twoPi() noexcept { return T(); }
+//	//static constexpr T inversePi() noexcept { return T(); }
+//	//static constexpr T sqrt2() noexcept { return T(); }
+//	//static constexpr T sqrt3() noexcept { return T(); }
+//	//static constexpr T degToRad() noexcept { return T(); }
+//	//static constexpr T radToDeg() noexcept { return T(); }
+//};
 
 template<>
 struct Constants<float>
