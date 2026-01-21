@@ -37,6 +37,7 @@ struct Pixel
 	static constexpr int BIT_DEPTH = RBits + GBits + BBits + ABits;
 	static constexpr int NUM_COMPONENTS = (int)(RBits > 0) + (int)(GBits > 0) + (int)(BBits > 0) + (int)(ABits > 0);
     static constexpr int SIZE = Size;
+    static constexpr int SIZE_BITS = Size*8;
     static constexpr int R_BITS = RBits;
 	static constexpr int G_BITS = GBits;
 	static constexpr int B_BITS = BBits;
@@ -152,34 +153,77 @@ inline typename TPixel::PackedType pack(TComponent r, TComponent g, TComponent b
     return v;
 }
 
+template<typename TResult, typename TComponent, int NComponents, typename TPixel>
+inline TResult unpack(typename TPixel::PackedType c) noexcept
+{
+    static_assert((TPixel::R_BITS > 0) && (NComponents > 0) && (NComponents <= 4));
+    typename TPixel::PackedType r;
+    if constexpr (TPixel::R_SHIFT > 0)
+        r = (c >> TPixel::R_SHIFT) & TPixel::R_MAX;
+    else
+        r = c & TPixel::R_MAX;
+    if constexpr (NComponents > 1)
+    {
+        typename TPixel::PackedType g;
+        if constexpr (TPixel::G_BITS > 0)
+            g = (c >> TPixel::G_SHIFT) & TPixel::G_MAX;
+        else
+            g = {};
+        if constexpr (NComponents > 2)
+        {
+            typename TPixel::PackedType b;
+            if constexpr ((TPixel::B_BITS > 0) && (TPixel::B_SHIFT > 0))
+                b = (c >> TPixel::B_SHIFT) & TPixel::B_MAX;
+            else if constexpr (TPixel::B_BITS > 0)
+                b = c & TPixel::B_MAX;
+            else
+                b = {};
+            if constexpr (NComponents > 3)
+            {
+                typename TPixel::PackedType a;
+                if constexpr ((TPixel::A_BITS > 0) && std::is_unsigned_v<typename TPixel::PackedType> && ((TPixel::A_SHIFT + TPixel::A_BITS) == TPixel::SIZE_BITS))
+                    a = c >> TPixel::A_SHIFT;
+                else if constexpr (TPixel::A_BITS > 0)
+                    a = (c >> TPixel::A_SHIFT) & TPixel::A_MAX;
+                else 
+                    a = TPixel::A_MAX;
+                return TResult(TComponent(r), TComponent(g), TComponent(b), TComponent(a));
+            }
+            return TResult(TComponent(r), TComponent(g), TComponent(b));
+        }
+        return TResult(TComponent(r), TComponent(g));
+    }
+    return TResult(TComponent(r));
+}
+
 } // namespace detail
 
 template<typename TResult, typename TComponent>
-inline TResult makePackedRgb(TComponent r, TComponent g, TComponent b) noexcept
+inline TResult makePackedRgb/*packRgb*/(TComponent r, TComponent g, TComponent b) noexcept
 {
     return detail::pack<detail::Rgb<TResult>>(r, g, b);
 }
 
 template<typename TResult, typename TComponent>
-inline TResult makePackedBgr(TComponent r, TComponent g, TComponent b) noexcept
+inline TResult makePackedBgr/*packBgr*/(TComponent r, TComponent g, TComponent b) noexcept
 {
     return detail::pack<detail::Bgr<TResult>>(r, g, b);
 }
 
 template<typename TResult, typename TComponent>
-inline TResult makePackedRgba(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
+inline TResult makePackedRgba/*packRgba*/(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
 { 
     return detail::pack<detail::Rgba<TResult>>(r, g, b, a);
 }
 
 template<typename TResult, typename TComponent>
-inline TResult makePackedBgra(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
+inline TResult makePackedBgra/*packBgra*/(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
 { 
     return detail::pack<detail::Bgra<TResult>>(r, g, b, a);
 }
 
 template<typename TResult, typename TComponent>
-inline TResult makePackedNative(TComponent r, TComponent g, TComponent b) noexcept
+inline TResult makePacked/*Native*/(TComponent r, TComponent g, TComponent b) noexcept
 {
 #if IMAGING_NATIVE_ORDER_RGBA
     return makePackedRgb<TResult, TComponent>(r, g, b);
@@ -189,7 +233,7 @@ inline TResult makePackedNative(TComponent r, TComponent g, TComponent b) noexce
 }
 
 template<typename TResult, typename TComponent>
-inline TResult makePackedNative(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
+inline TResult makePacked/*Native*/(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
 { 
 #if IMAGING_NATIVE_ORDER_RGBA
     return makePackedRgba<TResult, TComponent>(r, g, b, a);
@@ -198,4 +242,48 @@ inline TResult makePackedNative(TComponent r, TComponent g, TComponent b, TCompo
 #endif
 }
 
+template<typename TResult, typename TPacked>
+inline TResult unpackRgb(TPacked c) noexcept
+{
+    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Rgb<TPacked>>(c);
+}
+
+template<typename TResult, typename TPacked>
+inline TResult unpackBgr(TPacked c) noexcept
+{
+    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Bgr<TPacked>>(c);
+}
+
+template<typename TResult, typename TPacked>
+inline TResult unpackRgba(TPacked c) noexcept
+{ 
+    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Rgba<TPacked>>(c);
+}
+
+template<typename TResult, typename TPacked>
+inline TResult unpackBgra(TPacked c) noexcept
+{ 
+    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Bgra<TPacked>>(c);
+}
+/*
+template<typename TResult, typename TPacked>
+inline TResult unpackNative(TPacked c) noexcept
+{
+#if IMAGING_NATIVE_ORDER_RGBA
+    return unpackRgb<TResult, TPacked>(c);
+#else
+    return unpackBgr<TResult, TPacked>(c);
+#endif
+}
+
+template<typename TResult, typename TPacked>
+inline TResult unpackNative(TPacked c) noexcept
+{ 
+#if IMAGING_NATIVE_ORDER_RGBA
+    return unpackRgba<TResult, TPacked>(c);
+#else
+    return unpackBgra<TResult, TPacked>(c);
+#endif
+}
+*/
 } // namespace core::imaging

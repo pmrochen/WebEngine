@@ -28,6 +28,7 @@ template<typename T>
 struct Color3
 {
 	using Real = T;
+	using ComponentType = T;
 	using ConstArg = const Color3&;
 	using ConstResult = const Color3&;
 
@@ -75,6 +76,29 @@ struct Color3
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b; }
 
+	template<typename U> static Color3 fromPackedRgb(U c) noexcept;
+	std::uint32_t toPackedRgb() const noexcept { return toPackedRgb<std::uint32_t>(); }
+	template<typename U> U toPackedRgb() const noexcept;
+	template<typename U> static Color3 fromPackedBgr(U c) noexcept;
+	std::uint32_t toPackedBgr() const noexcept { return toPackedBgr<std::uint32_t>(); }
+	template<typename U> U toPackedBgr() const noexcept;
+#if IMAGING_NATIVE_ORDER_RGBA
+	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedRgb(c); }
+	std::uint32_t toPacked/*Native*/() const noexcept { return toPackedRgb(); }
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedRgb<U>(); }
+#else
+	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedBgr(c); }
+	std::uint32_t toPacked/*Native*/() const noexcept { return toPackedBgr(); }
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgr<U>(); }
+#endif
+
+	static Color3 fromHsv(T h, T s, T v) { return hsvToRgb<Color3>(h, s, v); }
+	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
+	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
+	static Color3 fromXyz(T x, T y, T z) { return xyzToRgb<Color3>(x, y, z); }
+	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
+	template<typename U> U toXyz() const { return rgbToXyz<U>(r, g, b); }
+
 	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()); }
 	bool isApproxZero() const noexcept;
 	bool isApproxEqual(const Color3& c) const noexcept;
@@ -98,23 +122,6 @@ struct Color3
 	Color3& saturate();
 	Color3& makeLinear() noexcept;
 	Color3& makeSrgb() noexcept;
-	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
-	static Color3 fromHsv(T h, T s, T v) { return hsvToRgb<Color3>(h, s, v); }
-	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
-	template<typename U> U toXyz() const { return rgbToXyz<U>(r, g, b); }
-	static Color3 fromXyz(T x, T y, T z) { return xyzToRgb<Color3>(x, y, z); }
-	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
-	template<typename U> U toPackedRgb() const noexcept;
-	template<typename U> static Color3 fromPackedRgb(U c) noexcept; // #TODO
-	template<typename U> U toPackedBgr() const noexcept;
-	template<typename U> static Color3 fromPackedBgr(U c) noexcept; // #TODO
-#if IMAGING_NATIVE_ORDER_RGBA
-	template<typename U> U toPackedNative() const noexcept { return toPackedRgb<U>(); }
-	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedRgb(c); }
-#else
-	template<typename U> U toPackedNative() const noexcept { return toPackedBgr<U>(); }
-	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedBgr(c); }
-#endif
 
 	//static const Color3& getZero() noexcept { return ZERO; }
 	//static const Color3& getUnitR() noexcept { return UNIT_R; }
@@ -152,6 +159,7 @@ template<>
 struct Color3<float>
 {
 	using Real = float;
+	using ComponentType = float;
 	using ConstArg = const Color3;
 	using ConstResult = const Color3;
 
@@ -225,6 +233,29 @@ struct Color3<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar& r& g& b; } // #FIXME use simd::set(r, g, b, b)
 
+	template<typename U> static Color3 fromPackedRgb(U c) noexcept;
+	std::uint32_t toPackedRgb() const noexcept { return toPackedRgb<std::uint32_t>(); }
+	template<typename U> U toPackedRgb() const noexcept;
+	template<typename U> static Color3 fromPackedBgr(U c) noexcept;
+	std::uint32_t toPackedBgr() const noexcept { return toPackedBgr<std::uint32_t>(); }
+	template<typename U> U toPackedBgr() const noexcept;
+#if IMAGING_NATIVE_ORDER_RGBA
+	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedRgb(c); }
+	std::uint32_t toPacked/*Native*/() const noexcept { return toPackedRgb(); }
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedRgb<U>(); }
+#else
+	template<typename U> static Color3 fromPacked/*Native*/(U c) noexcept { return fromPackedBgr(c); }
+	std::uint32_t toPacked/*Native*/() const noexcept { return toPackedBgr(); }
+	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgr<U>(); }
+#endif
+
+	static Color3 fromHsv(float h, float s, float v) { return hsvToRgb<Color3>(h, s, v); }
+	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
+	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
+	static Color3 fromXyz(float x, float y, float z) { return xyzToRgb<Color3>(x, y, z); }
+	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>((simd::float4)c/*std::get<simd::float4>(c)*/); }
+	template<typename U> U toXyz() const { return rgbToXyz<U>(rgb); }
+
 	bool isZero() const noexcept { return simd::all3(simd::equal(rgb, simd::zero<simd::float4>())); }
 	bool isApproxZero() const noexcept { simd::all3(simd::lessThan(simd::abs4(rgb), TOLERANCE)); }
 	bool isApproxEqual(const Color3& c) const noexcept { simd::all3(simd::lessThan(simd::abs4(simd::sub4(rgb, c)), TOLERANCE)); }
@@ -252,23 +283,6 @@ struct Color3<float>
 	Color3& saturate() noexcept { rgb = simd::min4(simd::max4(rgb, simd::zero<simd::float4>()), ONE); return *this; }
 	Color3& makeLinear() noexcept { set(makeLinear(r), makeLinear(g), makeLinear(b)); }
 	Color3& makeSrgb() noexcept { set(makeSrgb(r), makeSrgb(g), makeSrgb(b)); }
-	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
-	static Color3 fromHsv(float h, float s, float v) { return hsvToRgb<Color3>(h, s, v); }
-	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
-	template<typename U> U toXyz() const { return rgbToXyz<U>(rgb); }
-	static Color3 fromXyz(float x, float y, float z) { return xyzToRgb<Color3>(x, y, z); }
-	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>((simd::float4)c/*std::get<simd::float4>(c)*/); }
-	template<typename U> U toPackedRgb() const noexcept;
-	template<typename U> static Color3 fromPackedRgb(U c) noexcept; // #TODO
-	template<typename U> U toPackedBgr() const noexcept;
-	template<typename U> static Color3 fromPackedBgr(U c) noexcept; // #TODO
-#if IMAGING_NATIVE_ORDER_RGBA
-	template<typename U> U toPackedNative() const noexcept { return toPackedRgb<U>(); }
-	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedRgb(c); }
-#else
-	template<typename U> U toPackedNative() const noexcept { return toPackedBgr<U>(); }
-	template<typename U> static Color3 fromPackedNative(U c) noexcept { return fromPackedBgr(c); }
-#endif
 
 	//static const Color3& getZero() noexcept { return ZERO; }
 	//static const Color3& getUnitR() noexcept { return UNIT_R; }
@@ -404,6 +418,42 @@ inline std::istream& operator>>(std::istream& s, Color3<T>& c)
 }
 
 template<typename T>
+template<typename U> 
+inline Color3<T> Color3<T>::fromPackedRgb(U c)
+{
+	Color3<T> result(unpackRgb<Color3<T>>(c));
+	result *= T(1)/(T)detail::Rgb<U>::R_MAX;
+	return result;
+}
+
+template<typename T>
+template<typename U> 
+inline U Color3<T>::toPackedRgb() const
+{
+	return makePackedRgb<U>(saturate<int, detail::Rgb<U>::R_MAX>(c.r),
+		saturate<int, detail::Rgb<U>::G_MAX>(c.g),
+		saturate<int, detail::Rgb<U>::B_MAX>(c.b));
+}
+
+template<typename T>
+template<typename U> 
+inline Color3<T> Color3<T>::fromPackedBgr(U c)
+{
+	Color3<T> result(unpackBgr<Color3<T>>(c));
+	result *= T(1)/(T)detail::Bgr<U>::R_MAX;
+	return result;
+}
+
+template<typename T>
+template<typename U> 
+inline U Color3<T>::toPackedBgr() const
+{
+	return makePackedBgr<U>(saturate<int, detail::Bgr<U>::R_MAX>(c.r),
+		saturate<int, detail::Bgr<U>::G_MAX>(c.g),
+		saturate<int, detail::Bgr<U>::B_MAX>(c.b));
+}
+
+template<typename T>
 inline bool Color3<T>::isApproxZero() const
 { 
 	return (std::fabs(r) < Constants<T>::TOLERANCE) && (std::fabs(g) < Constants<T>::TOLERANCE) &&
@@ -469,24 +519,6 @@ inline Color3<T>& Color3<T>::makeSrgb()
 	return *this;
 }
 
-template<typename T>
-template<typename U> 
-inline U Color3<T>::toPackedRgb() const
-{
-	return makePackedRgb<U>(saturate<int, detail::Rgb<U>::R_MAX>(c.r),
-		saturate<int, detail::Rgb<U>::G_MAX>(c.g),
-		saturate<int, detail::Rgb<U>::B_MAX>(c.b));
-}
-
-template<typename T>
-template<typename U> 
-inline U Color3<T>::toPackedBgr() const
-{
-	return makePackedBgr<U>(saturate<int, detail::Bgr<U>::R_MAX>(c.r),
-		saturate<int, detail::Bgr<U>::G_MAX>(c.g),
-		saturate<int, detail::Bgr<U>::B_MAX>(c.b));
-}
-
 #if SIMD_HAS_FLOAT4
 
 template<>
@@ -499,18 +531,36 @@ inline std::istream& operator>>(std::istream& s, Color3<float>& c)
 }
 
 template<typename U> 
+inline Color3<float> Color3<float>::fromPackedRgb(U c)
+{
+	static const simd::float4 s = simd::set4(1.f/(float)detail::Rgb<U>::R_MAX);
+	return Color3<float>(simd::mul4(unpackRgb<Color3<float>>(c), s));
+}
+
+template<typename U> 
 inline U Color3<float>::toPackedRgb() const
 {
+	static const simd::float4 s = simd::set4((float)detail::Rgb<U>::R_MAX);
+	//static const simd::float4 half = simd::set4(0.5f);
 	Color3<float> c(simd::mulAdd4(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color4<float>::ONE),
-		simd::constant4<simd::float4, detail::Rgb<U>::R_MAX>(), Color3<float>::HALF));
+		s, /*half*/Color4<float>::HALF));
 	return makePackedRgb<U>(c.r, c.g, c.b);
+}
+
+template<typename U> 
+inline Color3<float> Color3<float>::fromPackedBgr(U c)
+{
+	static const simd::float4 s = simd::set4(1.f/(float)detail::Bgr<U>::R_MAX);
+	return Color3<float>(simd::mul4(unpackBgr<Color3<float>>(c), s));
 }
 
 template<typename U> 
 inline U Color3<float>::toPackedBgr() const
 {
+	static const simd::float4 s = simd::set4((float)detail::Bgr<U>::R_MAX);
+	//static const simd::float4 half = simd::set4(0.5f);
 	Color3<float> c(simd::mulAdd4(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color4<float>::ONE),
-		simd::constant4<simd::float4, detail::Bgr<U>::R_MAX>(), Color3<float>::HALF));
+		s, /*half*/Color4<float>::HALF));
 	return makePackedBgr<U>(c.r, c.g, c.b);
 }
 
@@ -550,8 +600,22 @@ namespace core::imaging::templates {
 namespace std
 {
 
+template<std::size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::imaging::templates::Color3<T>> : std::integral_constant<std::size_t, 3> {};
+struct tuple_size;
+
+template<std::size_t I, typename T>
+struct tuple_element<I, core::imaging::templates::Color3<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::imaging::templates::Color3<T>> : std::integral_constant<std::size_t, 3> 
+{
+};
 
 template<std::size_t I, typename T>
 inline T& get(core::imaging::templates::Color3<T>& c) noexcept
