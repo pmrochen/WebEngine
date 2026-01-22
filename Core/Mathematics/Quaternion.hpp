@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
 #include <type_traits>
 #include <tuple>
+#include <cstddef>
+#include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple4.hpp>
 #include "Constants.hpp"
@@ -81,6 +81,9 @@ struct Quaternion
 	friend std::ostream& operator<<(std::ostream& s, const Quaternion& q) { return s << q.x << ' ' << q.y << ' ' << q.z << ' ' << q.w; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
+
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
 
 	static Quaternion fromAxisAngle(const Vector3<T>& axis, T angle) noexcept;
 
@@ -191,6 +194,13 @@ struct Quaternion<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
 
+	template<std::size_t I> float& get() noexcept;
+	template<std::size_t I> const float& get() const noexcept;
+	template<typename U> U& get() noexcept;				// intentionally undefined
+	template<typename U> const U& get() const noexcept;	// intentionally undefined
+	template<> simd::float4& get() noexcept { return xyzw; }
+	template<> const simd::float4& get() const noexcept { return xyzw; }
+
 	static Quaternion fromAxisAngle(const Vector3<float>& axis, float angle) noexcept;
 
 	bool isZero() const noexcept { return simd::all4(simd::equal(xyzw, simd::zero<simd::float4>())); }
@@ -247,6 +257,62 @@ const Quaternion<float> Quaternion<float>::IDENTITY{ 0.f, 0.f, 0.f, 1.f };
 const Quaternion<float> Quaternion<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
 
 #endif /* SIMD_HAS_FLOAT4 */
+
+template<std::size_t I, typename T>
+inline T& get(Quaternion<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Quaternion<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Quaternion<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Quaternion<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
 
 template<typename T>
 inline T dot(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
@@ -430,6 +496,36 @@ template<typename T>
 inline std::istream& operator>>(std::istream& s, Quaternion<T>& q) 
 { 
 	return s >> q.x >> std::skipws >> q.y >> std::skipws >> q.z >> std::skipws >> q.w; 
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& Quaternion<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Quaternion<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
 }
 
 template<typename T>
@@ -619,6 +715,34 @@ inline std::istream& operator>>(std::istream& s, Quaternion<float>& q)
 	return s;
 }
 
+template<std::size_t I>
+inline float& Quaternion<float>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<std::size_t I>
+inline const float& Quaternion<float>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
 inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& axis, float angle)
 {
 	float m = axis.getMagnitude();
@@ -791,77 +915,21 @@ using QuaternionResult = templates::Quaternion<float>::ConstResult;
 namespace std
 {
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element;
 
 template<typename T>
 struct tuple_size;
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element<I, core::mathematics::templates::Quaternion<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::Quaternion<T>> : std::integral_constant<std::size_t, 4> 
+struct tuple_size<core::mathematics::templates::Quaternion<T>> : integral_constant<size_t, 4> 
 {
 };
-
-template<std::size_t I, typename T>
-inline T& get(core::mathematics::templates::Quaternion<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const core::mathematics::templates::Quaternion<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::mathematics::templates::Quaternion<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::mathematics::templates::Quaternion<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
 
 } // namespace std

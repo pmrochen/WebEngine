@@ -5,14 +5,14 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
 #include <type_traits>
 #include <algorithm>
 #include <tuple>
+#include <cstddef>
+#include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple3.hpp>
 #include "ColorSpaces.hpp"
@@ -75,6 +75,9 @@ struct Color3
 	friend std::ostream& operator<<(std::ostream& s, const Color3& c) { return s << c.r << ' ' << c.g << ' ' << c.b; }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b; }
+
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
 
 	template<typename U> static Color3 fromPackedRgb(U c) noexcept;
 	std::uint32_t toPackedRgb() const noexcept { return toPackedRgb<std::uint32_t>(); }
@@ -231,7 +234,14 @@ struct Color3<float>
 	friend std::istream& operator>>(std::istream& s, Color3& c);
 	friend std::ostream& operator<<(std::ostream& s, const Color3& c) { return s << c.r << ' ' << c.g << ' ' << c.b; }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar& r& g& b; } // #FIXME use simd::set(r, g, b, b)
+	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b; } // #FIXME use simd::set(r, g, b, b)
+
+	template<std::size_t I> float& get() noexcept;
+	template<std::size_t I> const float& get() const noexcept;
+	template<typename U> U& get() noexcept;				// intentionally undefined
+	template<typename U> const U& get() const noexcept;	// intentionally undefined
+	template<> simd::float4& get() noexcept { return rgb; }
+	template<> const simd::float4& get() const noexcept { return rgb; }
 
 	template<typename U> static Color3 fromPackedRgb(U c) noexcept;
 	std::uint32_t toPackedRgb() const noexcept { return toPackedRgb<std::uint32_t>(); }
@@ -250,10 +260,10 @@ struct Color3<float>
 #endif
 
 	static Color3 fromHsv(float h, float s, float v) { return hsvToRgb<Color3>(h, s, v); }
-	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(std::get<0>(c), std::get<1>(c), std::get<2>(c)); }
+	template<typename U> static Color3 fromHsv(U c) { return hsvToRgb<Color3>(c.get<0>(), c.get<1>(), c.get<2>()); }
 	template<typename U> U toHsv() const { return rgbToHsv<U>(r, g, b); }
 	static Color3 fromXyz(float x, float y, float z) { return xyzToRgb<Color3>(x, y, z); }
-	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>((simd::float4)c/*std::get<simd::float4>(c)*/); }
+	template<typename U> static Color3 fromXyz(U c) { return xyzToRgb<Color3>((simd::float4)c/*c.get<simd::float4>()*/); }
 	template<typename U> U toXyz() const { return rgbToXyz<U>(rgb); }
 
 	bool isZero() const noexcept { return simd::all3(simd::equal(rgb, simd::zero<simd::float4>())); }
@@ -320,6 +330,60 @@ const Color3<float> Color3<float>::LUMINANCE{ 0.2126f, 0.7152f, 0.0722f };
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<std::size_t I, typename T>
+inline T& get(Color3<T>& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Color3<T>& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Color3<T>&& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Color3<T>&& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+//template<typename T, typename U>
+//inline T& get(Color3<U>& c) noexcept;
+//
+//template<typename T, typename U>
+//inline const T& get(const Color3<U>& c) noexcept;
+
 template<typename T>
 inline T luminance(T r, T g, T b) noexcept
 {
@@ -370,6 +434,18 @@ inline Color3<T> makeSrgb(const Color3<T>& c) noexcept
 
 #if SIMD_HAS_FLOAT4
 
+//template<>
+//inline core::simd::float4& get(Color3<float>& c) noexcept
+//{
+//	return c.rgb;
+//}
+//
+//template<>
+//inline const core::simd::float4& get(const Color3<float>& c) noexcept
+//{
+//	return c.rgb;
+//}
+
 template<>
 inline float luminance(float r, float g, float b) noexcept
 {
@@ -415,6 +491,32 @@ template<typename T>
 inline std::istream& operator>>(std::istream& s, Color3<T>& c) 
 { 
 	return s >> c.r >> std::skipws >> c.g >> std::skipws >> c.b; 
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& Color3<T>::get()
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Color3<T>::get() const
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	static_assert(false);
 }
 
 template<typename T>
@@ -530,6 +632,30 @@ inline std::istream& operator>>(std::istream& s, Color3<float>& c)
 	return s; 
 }
 
+template<std::size_t I>
+inline float& Color3<float>::get()
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	static_assert(false);
+}
+
+template<std::size_t I>
+inline const float& Color3<float>::get() const
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	static_assert(false);
+}
+
 template<typename U> 
 inline Color3<float> Color3<float>::fromPackedRgb(U c)
 {
@@ -600,95 +726,21 @@ namespace core::imaging::templates {
 namespace std
 {
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element;
 
 template<typename T>
 struct tuple_size;
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element<I, core::imaging::templates::Color3<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::imaging::templates::Color3<T>> : std::integral_constant<std::size_t, 3> 
+struct tuple_size<core::imaging::templates::Color3<T>> : integral_constant<size_t, 3> 
 {
 };
-
-template<std::size_t I, typename T>
-inline T& get(core::imaging::templates::Color3<T>& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const core::imaging::templates::Color3<T>& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::imaging::templates::Color3<T>&& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::imaging::templates::Color3<T>&& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-#if SIMD_HAS_FLOAT4
-
-//template<typename T, typename U>
-//inline T& get(core::imaging::templates::Color3<U>& c) noexcept
-//{
-//}
-//
-//template<typename T, typename U>
-//inline const T& get(const core::imaging::templates::Color3<U>& c) noexcept
-//{
-//}
-//
-//template<>
-//inline core::simd::float4& get(core::imaging::templates::Color3<float>& c) noexcept
-//{
-//	return c.rgb;
-//}
-//
-//template<>
-//inline const core::simd::float4& get(const core::imaging::templates::Color3<float>& c) noexcept
-//{
-//	return c.rgb;
-//}
-
-#endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace std

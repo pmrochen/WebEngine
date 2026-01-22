@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <type_traits>
 #include <algorithm>
 #include <tuple>
+#include <cstddef>
 #include <Tuples/Tuple4.hpp>
 #include "IntVector2.hpp"
 #include "IntVector3.hpp"
@@ -75,6 +75,9 @@ struct IntVector4
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
 	IntVector2<T>::ConstResult xy/*getXY*/() const noexcept { return reinterpret_cast<const IntVector2<T>&>(*this); }
 	IntVector3<T>::ConstResult xyz/*getXYZ*/() const noexcept { return reinterpret_cast<const IntVector3<T>&>(*this); }
 	//void setXY(IntVector2<T>::ConstArg v) noexcept { x = v.x; y = v.y; }
@@ -104,6 +107,62 @@ struct IntVector4
 	T x, y, z, w;
 };
 
+template<std::size_t I, typename T>
+inline T& get(IntVector4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const IntVector4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(IntVector4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const IntVector4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
 template<typename T>
 inline IntVector4<T> minimum(const IntVector4<T>& v1, const IntVector4<T>& v2)
 {
@@ -120,6 +179,36 @@ template<typename T>
 inline std::istream& operator>>(std::istream& s, IntVector4<T>& v) 
 { 
 	return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z >> std::skipws >> v.w; 
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& IntVector4<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& IntVector4<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
 }
 
 template<typename T>
@@ -155,77 +244,21 @@ using IntVector4Result = templates::IntVector4<int>::ConstResult;
 namespace std
 {
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element;
 
 template<typename T>
 struct tuple_size;
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element<I, core::mathematics::templates::IntVector4<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::IntVector4<T>> : std::integral_constant<std::size_t, 4> 
+struct tuple_size<core::mathematics::templates::IntVector4<T>> : integral_constant<size_t, 4> 
 {
 };
-
-template<std::size_t I, typename T>
-inline T& get(core::mathematics::templates::IntVector4<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const core::mathematics::templates::IntVector4<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::mathematics::templates::IntVector4<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::mathematics::templates::IntVector4<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
 
 } // namespace std

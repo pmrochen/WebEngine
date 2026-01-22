@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
@@ -14,6 +12,8 @@
 #include <tuple>
 #include <optional>
 #include <algorithm>
+#include <cstddef>
+#include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
 #include "Scalar.hpp"
@@ -59,7 +59,9 @@ struct Plane
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
 
-	// Conversion
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
 	HalfSpace<T>::ConstResult asHalfSpace() const noexcept { return reinterpret_cast<const HalfSpace<T>&>(*this); }
 
 	// Properties
@@ -152,7 +154,13 @@ struct Plane<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
 
-	// Conversion
+	template<std::size_t I> float& get() noexcept;
+	template<std::size_t I> const float& get() const noexcept;
+	template<typename U> U& get() noexcept;				// intentionally undefined
+	template<typename U> const U& get() const noexcept;	// intentionally undefined
+	template<> simd::float4& get() noexcept { return abcd; }
+	template<> const simd::float4& get() const noexcept { return abcd; }
+
 	HalfSpace<float>::ConstResult asHalfSpace() const noexcept { return HalfSpace<float>(abcd); }
 
 	// Properties
@@ -217,6 +225,62 @@ const Plane<float> Plane<float>::EMPTY{};
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<std::size_t I, typename T>
+inline T& get(Plane<T>& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Plane<T>& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Plane<T>&& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Plane<T>&& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
 template<typename T>
 inline Plane<T>::Plane<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2)
 {
@@ -229,6 +293,36 @@ template<typename T>
 inline std::istream& operator>>(std::istream& s, Plane<T>& p) 
 { 
 	return s >> p.a >> std::skipws >> p.b >> std::skipws >> p.c >> std::skipws >> p.d; 
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& Plane<T>::get()
+{
+	if constexpr (I == 0)
+		return a;
+	else if constexpr (I == 1)
+		return b;
+	else if constexpr (I == 2)
+		return c;
+	else if constexpr (I == 3)
+		return d;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Plane<T>::get() const
+{
+	if constexpr (I == 0)
+		return a;
+	else if constexpr (I == 1)
+		return b;
+	else if constexpr (I == 2)
+		return c;
+	else if constexpr (I == 3)
+		return d;
+	static_assert(false);
 }
 
 template<typename T>
@@ -441,6 +535,34 @@ inline std::istream& operator>>(std::istream& s, Plane<float>& p)
 	return s; 
 }
 
+template<std::size_t I>
+inline float& Plane<float>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<std::size_t I>
+inline const float& Plane<float>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
 inline Plane<float>& Plane<float>::translate(Vector3<float>::ConstArg offset)
 {
 	Vector3 p(-getConstant()*getNormal());
@@ -610,63 +732,21 @@ using PlaneResult = templates::Plane<float>::ConstResult;
 namespace std
 {
 
+template<size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::mathematics::templates::Plane<T>> : std::integral_constant<std::size_t, 4> {};
+struct tuple_size;
 
-template<std::size_t I, typename T>
-inline T& get(core::mathematics::templates::Plane<T>& p) noexcept
+template<size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::Plane<T>>
 {
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
+	using type = T;
+};
 
-template<std::size_t I, typename T>
-inline const T& get(const core::mathematics::templates::Plane<T>& p) noexcept
+template<typename T>
+struct tuple_size<core::mathematics::templates::Plane<T>> : integral_constant<size_t, 4> 
 {
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::mathematics::templates::Plane<T>&& p) noexcept
-{
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::mathematics::templates::Plane<T>&& p) noexcept
-{
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
+};
 
 } // namespace std

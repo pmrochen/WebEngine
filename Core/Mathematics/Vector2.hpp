@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
@@ -14,6 +12,8 @@
 #include <algorithm>
 #include <utility>
 #include <tuple>
+#include <cstddef>
+#include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple2.hpp>
 #include "Constants.hpp"
@@ -87,6 +87,9 @@ struct Vector2
 	friend std::ostream& operator<<(std::ostream& s, const Vector2& v) { return s << v.x << ' ' << v.y; }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
+
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
 
 	bool isZero() const noexcept { return (x == T()) && (y == T()); }
 	bool isApproxZero() const noexcept;
@@ -236,6 +239,13 @@ struct Vector2<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; } // #FIXME use simd::set(x, y, y, y)
 
+	template<std::size_t I> float& get() noexcept;
+	template<std::size_t I> const float& get() const noexcept;
+	template<typename U> U& get() noexcept;				// intentionally undefined
+	template<typename U> const U& get() const noexcept;	// intentionally undefined
+	template<> simd::float4& get() noexcept { return xy; }
+	template<> const simd::float4& get() const noexcept { return xy; }
+
 	bool isZero() const noexcept { return simd::all2(simd::equal(xy, simd::zero<simd::float4>())); }
 	bool isApproxZero() const noexcept { simd::all2(simd::lessThan(simd::abs4(xy), TOLERANCE)); }
 	bool isApproxEqual(const Vector2& v) const noexcept { simd::all2(simd::lessThan(simd::abs4(simd::sub4(xy, v)), TOLERANCE)); }
@@ -304,6 +314,46 @@ const Vector2<float> Vector2<float>::INF{ std::numeric_limits<float>::infinity()
 const Vector2<float> Vector2<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
 
 #endif /* SIMD_HAS_FLOAT4 */
+
+template<std::size_t I, typename T>
+inline T& get(Vector2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Vector2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Vector2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Vector2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
 
 template<typename T>
 inline T dot(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
@@ -439,6 +489,28 @@ inline std::istream& operator>>(std::istream& s, Vector2<T>& v)
 }
 
 template<typename T>
+template<std::size_t I>
+inline T& Vector2<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Vector2<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
+
+template<typename T>
 inline bool Vector2<T>::isApproxZero() const
 { 
 	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE); 
@@ -522,6 +594,26 @@ inline std::istream& operator>>(std::istream& s, Vector2<float>& v)
 	s >> x >> std::skipws >> y; 
 	v.set(x, y); 
 	return s; 
+}
+
+template<std::size_t I>
+inline float& Vector2<float>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
+
+template<std::size_t I>
+inline const float& Vector2<float>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
 }
 
 inline void Vector2<float>::setMagnitude(float magnitude)
@@ -639,61 +731,21 @@ inline Vector2<float>::Vector2(const IntVector2<U>& v)
 namespace std
 {
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element;
 
 template<typename T>
 struct tuple_size;
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element<I, core::mathematics::templates::Vector2<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::Vector2<T>> : std::integral_constant<std::size_t, 2> 
+struct tuple_size<core::mathematics::templates::Vector2<T>> : integral_constant<size_t, 2> 
 {
 };
-
-template<std::size_t I, typename T>
-inline T& get(core::mathematics::templates::Vector2<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const core::mathematics::templates::Vector2<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::mathematics::templates::Vector2<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::mathematics::templates::Vector2<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
 
 } // namespace std

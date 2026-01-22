@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <cstddef>
 #include <type_traits>
 #include <tuple>
+#include <cstddef>
 
 namespace core::tuples {
 namespace templates {
@@ -34,6 +34,9 @@ struct Tuple4
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
 	T x, y, z, w;
 
 	//union
@@ -42,6 +45,92 @@ struct Tuple4
 	//	struct { T r, g, b, a; };
 	//};
 };
+
+template<std::size_t I, typename T>
+inline T& get(Tuple4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Tuple4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Tuple4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Tuple4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& Tuple4<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Tuple4<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
 
 } // namespace templates
 
@@ -63,8 +152,7 @@ using Half4 = templates::Tuple4<half_float::half>;
 #ifdef HALF_HALF_HPP
 namespace ::core::serialization { 
 template<class A> 
-inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& t, 
-    const unsigned int version) 
+inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& t, const unsigned int version) 
 { 
     ar & reinterpret_cast<short&>(t.x) & reinterpret_cast<short&>(t.y) & 
         reinterpret_cast<short&>(t.z) & reinterpret_cast<short&>(t.w); 
@@ -75,77 +163,21 @@ inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& 
 namespace std
 {
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element;
 
 template<typename T>
 struct tuple_size;
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element<I, core::tuples::templates::Tuple4<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple4<T>> : std::integral_constant<std::size_t, 4> 
+struct tuple_size<core::tuples::templates::Tuple4<T>> : integral_constant<size_t, 4> 
 {
 };
-
-template<std::size_t I, typename T>
-inline T& get(core::tuples::templates::Tuple4<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const core::tuples::templates::Tuple4<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::tuples::templates::Tuple4<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::tuples::templates::Tuple4<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
 
 } // namespace std

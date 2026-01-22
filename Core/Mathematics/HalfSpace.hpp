@@ -5,14 +5,14 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <limits>
 #include <type_traits>
 #include <tuple>
 #include <algorithm>
+#include <cstddef>
+#include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
 #include "Scalar.hpp"
@@ -59,7 +59,9 @@ struct HalfSpace
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
 
-	// Conversion
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
 	Plane<T>::ConstResult asPlane() const noexcept { return reinterpret_cast<const Plane<T>&>(*this); }
 
 	// Properties
@@ -137,7 +139,13 @@ struct HalfSpace<float>
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
 
-	// Conversion
+	template<std::size_t I> float& get() noexcept;
+	template<std::size_t I> const float& get() const noexcept;
+	template<typename U> U& get() noexcept;				// intentionally undefined
+	template<typename U> const U& get() const noexcept;	// intentionally undefined
+	template<> simd::float4& get() noexcept { return abcd; }
+	template<> const simd::float4& get() const noexcept { return abcd; }
+
 	Plane<float>::ConstResult asPlane() const noexcept;
 
 	// Properties
@@ -190,6 +198,62 @@ const HalfSpace<float> HalfSpace<float>::EMPTY{};
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<std::size_t I, typename T>
+inline T& get(HalfSpace<T>& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const HalfSpace<T>& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(HalfSpace<T>&& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(HalfSpace<T>&& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
 template<typename T>
 inline HalfSpace<T>::HalfSpace<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2)
 {
@@ -202,6 +266,36 @@ template<typename T>
 inline std::istream& operator>>(std::istream& s, HalfSpace<T>& h) 
 { 
 	return s >> h.a >> std::skipws >> h.b >> std::skipws >> h.c >> std::skipws >> h.d; 
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& HalfSpace<T>::get()
+{
+	if constexpr (I == 0)
+		return a;
+	else if constexpr (I == 1)
+		return b;
+	else if constexpr (I == 2)
+		return c;
+	else if constexpr (I == 3)
+		return d;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& HalfSpace<T>::get() const
+{
+	if constexpr (I == 0)
+		return a;
+	else if constexpr (I == 1)
+		return b;
+	else if constexpr (I == 2)
+		return c;
+	else if constexpr (I == 3)
+		return d;
+	static_assert(false);
 }
 
 template<typename T>
@@ -338,6 +432,34 @@ inline std::istream& operator>>(std::istream& s, HalfSpace<float>& h)
 	return s; 
 }
 
+template<std::size_t I>
+inline float& HalfSpace<float>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<std::size_t I>
+inline const float& HalfSpace<float>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
 inline HalfSpace<float>& HalfSpace<float>::translate(Vector3<float>::ConstArg offset)
 {
 	Vector3 p(-getConstant()*getNormal());
@@ -465,63 +587,21 @@ inline Plane<float>::ConstResult HalfSpace<float>::asPlane() const
 namespace std
 {
 
+template<size_t I, typename T>
+struct tuple_element;
+
 template<typename T>
-struct tuple_size<core::mathematics::templates::HalfSpace<T>> : std::integral_constant<std::size_t, 4> {};
+struct tuple_size;
 
-template<std::size_t I, typename T>
-inline T& get(core::mathematics::templates::HalfSpace<T>& h) noexcept
+template<size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::HalfSpace<T>>
 {
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
+	using type = T;
+};
 
-template<std::size_t I, typename T>
-inline const T& get(const core::mathematics::templates::HalfSpace<T>& h) noexcept
+template<typename T>
+struct tuple_size<core::mathematics::templates::HalfSpace<T>> : integral_constant<size_t, 4> 
 {
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::mathematics::templates::HalfSpace<T>&& h) noexcept
-{
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::mathematics::templates::HalfSpace<T>&& h) noexcept
-{
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
+};
 
 } // namespace std

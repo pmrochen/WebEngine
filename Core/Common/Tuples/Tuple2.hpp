@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <cstddef>
 #include <type_traits>
 #include <utility>
 #include <tuple>
+#include <cstddef>
 
 namespace core::tuples {
 namespace templates {
@@ -39,6 +39,9 @@ struct Tuple2
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
 
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
 	T x, y;
 
 	//union
@@ -47,6 +50,68 @@ struct Tuple2
 	//	struct { T r, g; }; 
 	//};
 };
+
+template<std::size_t I, typename T>
+inline T& get(Tuple2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Tuple2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Tuple2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Tuple2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& Tuple2<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Tuple2<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
 
 } // namespace templates
 
@@ -68,8 +133,7 @@ using Half2 = templates::Tuple2<half_float::half>;
 #ifdef HALF_HALF_HPP
 namespace ::core::serialization { 
 template<class A> 
-inline void serialize(A& ar, core::tuples::templates::Tuple2<half_float::half>& t, 
-    const unsigned int version) 
+inline void serialize(A& ar, core::tuples::templates::Tuple2<half_float::half>& t, const unsigned int version) 
 { 
     ar & reinterpret_cast<short&>(t.x) & reinterpret_cast<short&>(t.y); 
 }
@@ -79,61 +143,21 @@ inline void serialize(A& ar, core::tuples::templates::Tuple2<half_float::half>& 
 namespace std
 {
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element;
 
 template<typename T>
 struct tuple_size;
 
-template<std::size_t I, typename T>
+template<size_t I, typename T>
 struct tuple_element<I, core::tuples::templates::Tuple2<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple2<T>> : std::integral_constant<std::size_t, 2> 
+struct tuple_size<core::tuples::templates::Tuple2<T>> : integral_constant<size_t, 2> 
 {
 };
-
-template<std::size_t I, typename T>
-inline T& get(core::tuples::templates::Tuple2<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const core::tuples::templates::Tuple2<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(core::tuples::templates::Tuple2<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const core::tuples::templates::Tuple2<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
 
 } // namespace std
