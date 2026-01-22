@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <cmath>
 #include <utility>
 #include <type_traits>
+#include <cmath>
 #include "Constants.hpp"
 
 #ifndef MATHEMATICS_API
@@ -26,8 +26,7 @@
 #define MATHEMATICS_FAST_NORMALIZE 1
 #endif
 
-namespace core {
-namespace mathematics {
+namespace core::mathematics {
 
 //extern MATHEMATICS_API std::pair<int, int> /*makeRational*/rational(float x, int maxDenominator);
 //extern MATHEMATICS_API std::pair<int, int> /*makeRational*/rational(double x, int maxDenominator);
@@ -145,5 +144,4 @@ inline T smootherStep(T a, T b, T t)
 	return t*t*t*(t*(t*T(6) - T(15)) + T(10));
 }
 
-} // namespace mathematics
-} // namespace core
+} // namespace core::mathematics
