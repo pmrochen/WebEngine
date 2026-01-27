@@ -28,16 +28,17 @@ struct IntVector3
 	static constexpr int NUM_COMPONENTS = 3;
 
 	constexpr IntVector3() noexcept : x(), y(), z() {}
-	constexpr explicit IntVector3(const T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
-	constexpr IntVector3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
+	explicit IntVector3(Uninitialized) noexcept {}
+	constexpr explicit IntVector3(T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
+	constexpr IntVector3(T x, T y, T z) noexcept : x(x), y(y), z(z) {}
 	constexpr IntVector3(IntVector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z() {}
-	constexpr IntVector3(IntVector2<T>::ConstArg v, const T z) noexcept : x(v.x), y(v.y), z(z) {}
+	constexpr IntVector3(IntVector2<T>::ConstArg v, T z) noexcept : x(v.x), y(v.y), z(z) {}
 	template<typename U> explicit IntVector3(Vector3<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)), z(T(v.z)) {}
 	explicit IntVector3(const tuples::templates::Tuple3<T>& t) noexcept : x(t.x), y(t.y), z(t.z) {}
 	template<typename U> explicit IntVector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
 	explicit IntVector3(const std::tuple<T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)) {}
 	template<typename U> explicit IntVector3(const std::tuple<U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))) {}
-	explicit IntVector3(const T* const v) noexcept { x = v[0]; y = v[1]; z = v[2]; }
+	explicit IntVector3(const T* v) noexcept : x(v[0]), y(v[1]), z(v[2]) {}
 
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(x), U(y), U(z)); }
@@ -53,17 +54,17 @@ struct IntVector3
 	IntVector3& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; return *this; }
 	IntVector3& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
 	IntVector3& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
-	IntVector3& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; return *this; }
+	IntVector3& operator*=(T f) noexcept { x *= f; y *= f; z *= f; return *this; }
 	IntVector3& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
-	IntVector3& operator/=(const T f) noexcept { x /= f; y /= f; z /= f; return *this; }
+	IntVector3& operator/=(T f) noexcept { x /= f; y /= f; z /= f; return *this; }
 	friend IntVector3 operator+(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
 	friend IntVector3 operator-(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
 	friend IntVector3 operator*(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z); }
-	friend IntVector3 operator*(const T f, ConstArg v) noexcept { return IntVector3(f*v.x, f*v.y, f*v.z); }
-	friend IntVector3 operator*(ConstArg v, const T f) noexcept { return IntVector3(v.x*f, v.y*f, v.z*f); }
+	friend IntVector3 operator*(T f, ConstArg v) noexcept { return IntVector3(f*v.x, f*v.y, f*v.z); }
+	friend IntVector3 operator*(ConstArg v, T f) noexcept { return IntVector3(v.x*f, v.y*f, v.z*f); }
 	friend IntVector3 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
-	friend IntVector3 operator/(const T f, ConstArg v) noexcept { return IntVector3(f/v.x, f/v.y, f/v.z); }
-	friend IntVector3 operator/(ConstArg v, const T f) noexcept { return IntVector3(v.x/f, v.y/f, v.z/f); }
+	friend IntVector3 operator/(T f, ConstArg v) noexcept { return IntVector3(f/v.x, f/v.y, f/v.z); }
+	friend IntVector3 operator/(ConstArg v, T f) noexcept { return IntVector3(v.x/f, v.y/f, v.z/f); }
 	bool operator==(const IntVector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator!=(const IntVector3& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, IntVector3& v);
@@ -89,8 +90,8 @@ struct IntVector3
 	bool anyGreaterThanEqual(const IntVector3& v) const noexcept { return (x >= v.x) || (y >= v.y) || (z >= v.z); }
 	T getMinComponent() const { return std::min(std::min(x, y), z); }
 	T getMaxComponent() const { return std::max(std::max(x, y), z); }
-	IntVector3& setZero() noexcept { x = T(); y = T(); z = T(); return *this; }
-	IntVector3& set(const T x, const T y, const T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
+	IntVector3& setZero/*zero*/() noexcept { x = T(); y = T(); z = T(); return *this; }
+	IntVector3& set(T x, T y, T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
 	IntVector3& setMinimum(const IntVector3& v1, const IntVector3& v2);
 	IntVector3& setMaximum(const IntVector3& v1, const IntVector3& v2);
 	IntVector3& negate() noexcept { x = -x; y = -y; z = -z; return *this; }

@@ -28,8 +28,9 @@ struct IntVector2
 	static constexpr int NUM_COMPONENTS = 2;
 
 	constexpr IntVector2() noexcept : x(), y() {}
-	constexpr explicit IntVector2(const T scalar) noexcept : x(scalar), y(scalar) {}
-	constexpr IntVector2(const T x, const T y) noexcept : x(x), y(y) {}
+	explicit IntVector2(Uninitialized) noexcept {}
+	constexpr explicit IntVector2(T scalar) noexcept : x(scalar), y(scalar) {}
+	constexpr IntVector2(T x, T y) noexcept : x(x), y(y) {}
 	template<typename U> explicit IntVector2(Vector2<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)) {}
 	explicit IntVector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
 	template<typename U> explicit IntVector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
@@ -37,7 +38,7 @@ struct IntVector2
 	template<typename U> explicit IntVector2(const std::pair<U, U>& t) noexcept : x(T(t.first)), y(T(t.second)) {}
 	explicit IntVector2(const std::tuple<T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)) {}
 	template<typename U> explicit IntVector2(const std::tuple<U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))) {}
-	explicit IntVector2(const T* const v) noexcept { x = v[0]; y = v[1]; }
+	explicit IntVector2(const T* v) noexcept : x(v[0]), y(v[1]) {}
 
 	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
 	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
@@ -55,17 +56,17 @@ struct IntVector2
 	IntVector2& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; return *this; }
 	IntVector2& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; return *this; }
 	IntVector2& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
-	IntVector2& operator*=(const T f) noexcept { x *= f; y *= f; return *this; }
+	IntVector2& operator*=(T f) noexcept { x *= f; y *= f; return *this; }
 	IntVector2& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; return *this; }
-	IntVector2& operator/=(const T f) noexcept { x /= f; y /= f; return *this; }
+	IntVector2& operator/=(T f) noexcept { x /= f; y /= f; return *this; }
 	friend IntVector2 operator+(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x + v2.x, v1.y + v2.y); }
 	friend IntVector2 operator-(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x - v2.x, v1.y - v2.y); }
 	friend IntVector2 operator*(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x*v2.x, v1.y*v2.y); }
-	friend IntVector2 operator*(const T f, ConstArg v) noexcept { return IntVector2(f*v.x, f*v.y); }
-	friend IntVector2 operator*(ConstArg v, const T f) noexcept { return IntVector2(v.x*f, v.y*f); }
+	friend IntVector2 operator*(T f, ConstArg v) noexcept { return IntVector2(f*v.x, f*v.y); }
+	friend IntVector2 operator*(ConstArg v, T f) noexcept { return IntVector2(v.x*f, v.y*f); }
 	friend IntVector2 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector2(v1.x/v2.x, v1.y/v2.y); }
-	friend IntVector2 operator/(const T f, ConstArg v) noexcept { return IntVector2(f/v.x, f/v.y); }
-	friend IntVector2 operator/(ConstArg v, const T f) noexcept { return IntVector2(v.x/f, v.y/f); }
+	friend IntVector2 operator/(T f, ConstArg v) noexcept { return IntVector2(f/v.x, f/v.y); }
+	friend IntVector2 operator/(ConstArg v, T f) noexcept { return IntVector2(v.x/f, v.y/f); }
 	bool operator==(const IntVector2& v) const noexcept { return (x == v.x) && (y == v.y); }
 	bool operator!=(const IntVector2& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, IntVector2& v);
@@ -87,8 +88,8 @@ struct IntVector2
 	bool anyGreaterThanEqual(const IntVector2& v) const noexcept { return (x >= v.x) || (y >= v.y); }
 	T getMinComponent() const { return std::min(x, y); }
 	T getMaxComponent() const { return std::max(x, y); }
-	IntVector2& setZero() noexcept { x = T(); y = T(); return *this; }
-	IntVector2& set(const T x, const T y) noexcept { this->x = x; this->y = y; return *this; }
+	IntVector2& setZero/*zero*/() noexcept { x = T(); y = T(); return *this; }
+	IntVector2& set(T x, T y) noexcept { this->x = x; this->y = y; return *this; }
 	IntVector2& setMinimum(const IntVector2& v1, const IntVector2& v2);
 	IntVector2& setMaximum(const IntVector2& v1, const IntVector2& v2);
 	IntVector2& negate() noexcept { x = -x; y = -y; return *this; }

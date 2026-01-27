@@ -34,6 +34,7 @@ struct YawPitchRoll
 	using Real = T;
 
 	constexpr YawPitchRoll() noexcept : yaw(), pitch(), roll() {}
+	explicit YawPitchRoll(Uninitialized) noexcept {}
 	constexpr YawPitchRoll(T yaw, T pitch, T roll) noexcept : yaw(yaw), pitch(pitch), roll(roll) {}
 	explicit YawPitchRoll(const Euler<T>& e) noexcept;
 	explicit YawPitchRoll(const Quaternion<T>& q) noexcept;
@@ -54,13 +55,13 @@ struct YawPitchRoll
 	YawPitchRoll& operator+=(const YawPitchRoll& r) noexcept { yaw += r.yaw; pitch += r.pitch; roll += r.roll; return *this; }
 	YawPitchRoll& operator-=(const YawPitchRoll& r) noexcept { yaw -= r.yaw; pitch -= r.pitch; roll -= r.roll; return *this; }
 	YawPitchRoll& operator*=(T f) noexcept { yaw *= f; pitch *= f; roll *= f; return *this; }
-	YawPitchRoll& operator/=(T f) noexcept { T s = T(1)/f; yaw *= s; pitch *= s; roll *= s; return *this; }
+	YawPitchRoll& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	friend YawPitchRoll operator+(const YawPitchRoll& r1, const YawPitchRoll& r2) noexcept;
 	friend YawPitchRoll operator-(const YawPitchRoll& r1, const YawPitchRoll& r2) noexcept;
 	friend YawPitchRoll operator*(T f, const YawPitchRoll& r) noexcept { return YawPitchRoll(f*r.yaw, f*r.pitch, f*r.roll); }
 	friend YawPitchRoll operator*(const YawPitchRoll& r, T f) noexcept { return YawPitchRoll(r.yaw*f, r.pitch*f, r.roll*f); }
 	friend YawPitchRoll operator/(T f, const YawPitchRoll& r) noexcept { return YawPitchRoll(f/r.yaw, f/r.pitch, f/r.roll); }
-	friend YawPitchRoll operator/(const YawPitchRoll& r, T f) noexcept { T s = T(1)/f; return YawPitchRoll(r.yaw*s, r.pitch*s, r.roll*s); }
+	friend YawPitchRoll operator/(const YawPitchRoll& r, T f) noexcept { return operator*(r, T(1)/f); }
 	bool operator==(const YawPitchRoll& r) const noexcept { return (yaw == r.yaw) && (pitch == r.pitch) && (roll == r.roll); }
 	bool operator!=(const YawPitchRoll& r) const noexcept { return !(*this == r); }
 	friend std::istream& operator>>(std::istream& s, YawPitchRoll& r);

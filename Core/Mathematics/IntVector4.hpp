@@ -29,19 +29,20 @@ struct IntVector4
 	static constexpr int NUM_COMPONENTS = 4;
 
 	constexpr IntVector4() noexcept : x(), y(), z(), w() {}
-	constexpr explicit IntVector4(const T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
-	constexpr IntVector4(const T x, const T y, const T z, const T w) noexcept : x(x), y(y), z(z), w(w) {}
+	explicit IntVector4(Uninitialized) noexcept {}
+	constexpr explicit IntVector4(T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
+	constexpr IntVector4(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	constexpr IntVector4(IntVector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z(), w(T(1)) {}
-	constexpr IntVector4(IntVector2<T>::ConstArg v, const T z, const T w) noexcept : x(v.x), y(v.y), z(z), w(w) {}
+	constexpr IntVector4(IntVector2<T>::ConstArg v, T z, T w) noexcept : x(v.x), y(v.y), z(z), w(w) {}
 	constexpr IntVector4(IntVector2<T>::ConstArg xy, IntVector2<T>::ConstArg zw) noexcept : x(xy.x), y(xy.y), z(zw.x), w(zw.y) {}
 	constexpr IntVector4(IntVector3<T>::ConstArg v) noexcept : x(v.x), y(v.y), z(v.z), w(T(1)) {}
-	constexpr IntVector4(IntVector3<T>::ConstArg v, const T w) noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
+	constexpr IntVector4(IntVector3<T>::ConstArg v, T w) noexcept : x(v.x), y(v.y), z(v.z), w(w) {}
 	template<typename U> explicit IntVector4(Vector4<U>::ConstArg v) noexcept : x(T(v.x)), y(T(v.y)), z(T(v.z)), w(T(v.w)) {}
 	explicit IntVector4(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit IntVector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit IntVector4(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
 	template<typename U> explicit IntVector4(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
-	explicit IntVector4(const T* const v) noexcept { x = v[0]; y = v[1]; z = v[2]; w = v[3]; }
+	explicit IntVector4(const T* v) noexcept : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
@@ -57,17 +58,17 @@ struct IntVector4
 	IntVector4& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	IntVector4& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
 	IntVector4& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
-	IntVector4& operator*=(const T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
+	IntVector4& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
 	IntVector4& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
-	IntVector4& operator/=(const T f) noexcept { x /= f; y /= f; z /= f; w /= f; return *this; }
+	IntVector4& operator/=(T f) noexcept { x /= f; y /= f; z /= f; w /= f; return *this; }
 	friend IntVector4 operator+(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); }
 	friend IntVector4 operator-(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); }
 	friend IntVector4 operator*(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z, v1.w*v2.w); }
-	friend IntVector4 operator*(const T f, ConstArg v) noexcept { return IntVector4(f*v.x, f*v.y, f*v.z, f*v.w); }
-	friend IntVector4 operator*(ConstArg v, const T f) noexcept { return IntVector4(v.x*f, v.y*f, v.z*f, v.w*f); }
+	friend IntVector4 operator*(T f, ConstArg v) noexcept { return IntVector4(f*v.x, f*v.y, f*v.z, f*v.w); }
+	friend IntVector4 operator*(ConstArg v, T f) noexcept { return IntVector4(v.x*f, v.y*f, v.z*f, v.w*f); }
 	friend IntVector4 operator/(ConstArg v1, ConstArg v2) noexcept { return IntVector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
-	friend IntVector4 operator/(const T f, ConstArg v) noexcept { return IntVector4(f/v.x, f/v.y, f/v.z, f/v.w); }
-	friend IntVector4 operator/(ConstArg v, const T f) noexcept { return IntVector4(v.x/f, v.y/f, v.z/f, v.w/f); }
+	friend IntVector4 operator/(T f, ConstArg v) noexcept { return IntVector4(f/v.x, f/v.y, f/v.z, f/v.w); }
+	friend IntVector4 operator/(ConstArg v, T f) noexcept { return IntVector4(v.x/f, v.y/f, v.z/f, v.w/f); }
 	bool operator==(const IntVector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator!=(const IntVector4& v) const noexcept { return !(*this == v); }
 	friend std::istream& operator>>(std::istream& s, IntVector4& v);
@@ -93,8 +94,8 @@ struct IntVector4
 	bool anyGreaterThanEqual(const IntVector4& v) const noexcept { return (x >= v.x) || (y >= v.y) || (z >= v.z) || (w >= v.w); }
 	T getMinComponent() const { return std::min(std::min(std::min(x, y), z), w); }
 	T getMaxComponent() const { return std::max(std::max(std::max(x, y), z), w); }
-	IntVector4& setZero() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
-	IntVector4& set(const T x, const T y, const T z, const T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
+	IntVector4& setZero/*zero*/() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
+	IntVector4& set(T x, T y, T z, T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
 	IntVector4& setMinimum(const IntVector4& v1, const IntVector4& v2);
 	IntVector4& setMaximum(const IntVector4& v1, const IntVector4& v2);
 	IntVector4& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }

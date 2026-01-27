@@ -70,6 +70,7 @@ struct Euler
 	using Real = T;
 
 	constexpr Euler() noexcept : x(), y(), z(), order() {}
+	explicit Euler(Uninitialized) noexcept {}
 	constexpr explicit Euler(EulerOrder order) noexcept : x(), y(), z(), order(order) {}
 	constexpr Euler(T x, T y, T z, EulerOrder order) noexcept : x(x), y(y), z(z), order(order) {}
 	constexpr Euler(const Euler& e, EulerOrder order) noexcept : x(e.x), y(e.y), z(e.z), order(order) {}
@@ -92,13 +93,13 @@ struct Euler
 	Euler& operator+=(const Euler& e); // throw (std::invalid_argument);
 	Euler& operator-=(const Euler& e); // throw (std::invalid_argument);
 	Euler& operator*=(T f) noexcept { x *= f; y *= f; z *= f; return *this; }
-	Euler& operator/=(T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; return *this; }
+	Euler& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	friend Euler operator+(const Euler& e1, const Euler& e2); // throw (std::invalid_argument);
 	friend Euler operator-(const Euler& e1, const Euler& e2); // throw (std::invalid_argument);
 	friend Euler operator*(T f, const Euler& e) noexcept { return Euler(f*e.x, f*e.y, f*e.z, e.order); }
 	friend Euler operator*(const Euler& e, T f) noexcept { return Euler(e.x*f, e.y*f, e.z*f, e.order); }
 	friend Euler operator/(T f, const Euler& e) noexcept { return Euler(f/e.x, f/e.y, f/e.z, e.order); }
-	friend Euler operator/(const Euler& e, T f) noexcept { T s = T(1)/f; return Euler(e.x*s, e.y*s, e.z*s, e.order); }
+	friend Euler operator/(const Euler& e, T f) noexcept { return operator*(e, T(1)/f); }
 	bool operator==(const Euler& e) const noexcept { return (order == e.order) && (x == e.x) && (y == e.y) && (z == e.z); }
 	bool operator!=(const Euler& e) const noexcept { return !(*this == e); }
 	friend std::istream& operator>>(std::istream& s, Euler& e);
