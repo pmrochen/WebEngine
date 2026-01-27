@@ -45,6 +45,7 @@ struct Vector3
 	static constexpr int NUM_COMPONENTS = 3;
 
 	constexpr Vector3() noexcept : x(), y(), z() {}
+	explicit Vector3(Uninitialized) noexcept {}
 	constexpr explicit Vector3(T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
 	constexpr Vector3(T x, T y, T z) noexcept : x(x), y(y), z(z) {}
 	constexpr Vector3(Vector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z() {}
@@ -54,7 +55,7 @@ struct Vector3
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)) {}
 	explicit Vector3(const std::tuple<T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)) {}
 	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))) {}
-	explicit Vector3(const T* v) noexcept { x = v[0]; y = v[1]; z = v[2]; }
+	explicit Vector3(const T* v) noexcept : x(v[0]), y(v[1]), z(v[2]) {}
 	explicit Vector3(Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)), z((axis == Axis::Z) ? T(1) : T(0)) {}
 
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(x, y, z); }
@@ -73,7 +74,7 @@ struct Vector3
 	Vector3& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	Vector3& operator*=(T f) noexcept { x *= f; y *= f; z *= f; return *this; }
 	Vector3& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
-	Vector3& operator/=(T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; return *this; }
+	Vector3& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
 	friend Vector3 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
 	friend Vector3 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
@@ -82,7 +83,7 @@ struct Vector3
 	friend Vector3 operator*(ConstArg v, T f) noexcept { return Vector3(v.x*f, v.y*f, v.z*f); }
 	friend Vector3 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector3(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z); }
 	friend Vector3 operator/(T f, ConstArg v) noexcept { return Vector3(f/v.x, f/v.y, f/v.z); }
-	friend Vector3 operator/(ConstArg v, T f) noexcept { T s = T(1)/f; return Vector3(v.x*s, v.y*s, v.z*s); }
+	friend Vector3 operator/(ConstArg v, T f) noexcept { return operator*(v, T(1)/f); }
 	friend Vector3 operator*(ConstArg v, const Matrix3<T>& m) noexcept; // #TODO
 	//friend Vector3 operator*(const Matrix3<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
@@ -121,7 +122,7 @@ struct Vector3
 	Axis getMajorAxis() const noexcept;
 	T getMinComponent() const { return std::min(std::min(x, y), z); }
 	T getMaxComponent() const { return std::max(std::max(x, y), z); }
-	Vector3& setZero() noexcept { x = T(); y = T(); z = T(); return *this; }
+	Vector3& setZero/*zero*/() noexcept { x = T(); y = T(); z = T(); return *this; }
 	Vector3& set(T x, T y, T z) noexcept { this->x = x; this->y = y; this->z = z; return *this; }
 	Vector3& setMinimum(const Vector3& v1, const Vector3& v2);
 	Vector3& setMaximum(const Vector3& v1, const Vector3& v2);
@@ -179,32 +180,35 @@ struct Vector3<float>
 
 	static constexpr int NUM_COMPONENTS = 3;
 
-	/*constexpr*/ Vector3() noexcept { xyz = simd::zero<simd::float4>(); }
+	/*constexpr*/ Vector3() noexcept : xyz(simd::zero<simd::float4>()) {}
+	explicit Vector3(Uninitialized) noexcept {}
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	/*constexpr*/ explicit Vector3(float scalar) noexcept { xyz = simd::set4(scalar); }
-	/*constexpr*/ Vector3(float x, float y, float z) noexcept { xyz = simd::set4(x, y, z, z); }
-	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = simd::cutoff2(v); }
-	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept { xyz = simd::combine2(v, simd::set2(z)); }
+	/*constexpr*/ explicit Vector3(float scalar) noexcept : xyz(simd::set4(scalar)) {}
+	/*constexpr*/ Vector3(float x, float y, float z) noexcept : xyz(simd::set4(x, y, z, z)) {}
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept : xyz(simd::cutoff2(v)) {}
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept : xyz(simd::combine2(v, simd::set2(z))) {}
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
-	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = simd::set4(t.x, t.y, t.z, t.z); }
-	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { float z = (float)t.z; xyz = simd::set4((float)t.x, (float)t.y, z, z); }
-	explicit Vector3(const std::tuple<float, float, float>& t) noexcept { float z = std::get<2>(t); xyz = simd::set4(std::get<0>(t), std::get<1>(t), z, z); }
-	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept { float z = (float)std::get<2>(t); xyz = simd::set4((float)std::get<0>(t), (float)std::get<1>(t), z, z); }
-	explicit Vector3(const float* v) noexcept { set(v[0], v[1], v[2]); }
+	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept : xyz(simd::set4(t.x, t.y, t.z, t.z)) {}
+	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : Vector3((float)t.x, (float)t.y, (float)t.z) {}
+	explicit Vector3(const std::tuple<float, float, float>& t) noexcept : Vector3(std::get<0>(t), std::get<1>(t), std::get<2>(t)) {}
+	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept : Vector3((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t)) {}
+	explicit Vector3(const float* v) noexcept : Vector3(v[0], v[1], v[2]) {}
 #else
-	/*constexpr*/ explicit Vector3(float scalar) noexcept { xyz = simd::set3(scalar); }
-	/*constexpr*/ Vector3(float x, float y, float z) noexcept { xyz = simd::set3(x, y, z); }
-	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept { xyz = simd::cutoff2(v); }
-	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept { xyz = simd::combine2(v, simd::set1(z)); }
+	/*constexpr*/ explicit Vector3(float scalar) noexcept : xyz(simd::set3(scalar)) {}
+	/*constexpr*/ Vector3(float x, float y, float z) noexcept : xyz(simd::set3(x, y, z)) {}
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept : xyz(simd::cutoff2(v)) {}
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept : xyz(simd::combine2(v, simd::set1(z))) {}
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
-	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept { xyz = simd::set3(t.x, t.y, t.z); }
-	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept { xyz = simd::set3((float)t.x, (float)t.y, (float)t.z); }
-	explicit Vector3(const std::tuple<float, float, float>& t) noexcept { xyz = simd::set3(std::get<0>(t), std::get<1>(t), std::get<2>(t)); }
-	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept { xyz = simd::set3((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t)); }
-	explicit Vector3(const float* v) noexcept { xyz = simd::load3(v); }
+	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept : xyz(simd::set3(t.x, t.y, t.z)) {}
+	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : xyz(simd::set3((float)t.x, (float)t.y, (float)t.z)) {}
+	explicit Vector3(const std::tuple<float, float, float>& t) noexcept : xyz(simd::set3(std::get<0>(t), std::get<1>(t), std::get<2>(t))) {}
+	template<typename U> explicit Vector3(const std::tuple<U, U, U>& t) noexcept : xyz(simd::set3((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t))) {}
+	explicit Vector3(const float* v) noexcept : xyz(simd::load3(v)) {}
 #endif
-	explicit Vector3(Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f); }
+	explicit Vector3(Axis axis) noexcept : Vector3((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f) {}
 	explicit Vector3(simd::float4 v) noexcept : xyz(v) {}
+	Vector3(const Vector3& v) noexcept : xyz(v.xyz) {}
+	Vector3& operator=(const Vector3& v) noexcept { xyz = v.xyz; return *this; }
 
 	operator simd::float4() const noexcept { return xyz; }
 	explicit operator tuples::templates::Tuple3<float>() noexcept { return tuples::templates::Tuple3<float>(x, y, z); }
@@ -294,7 +298,7 @@ struct Vector3<float>
 	Axis getMajorAxis() const noexcept { (Axis)simd::asIndex(simd::equal(xyz, simd::hMax3(xyz))); }
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin3(xyz)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax3(xyz)); }
-	Vector3& setZero() noexcept { xyz = simd::zero<simd::float4>(); return *this; }
+	Vector3& setZero/*zero*/() noexcept { xyz = simd::zero<simd::float4>(); return *this; }
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector3& set(float x, float y, float z) noexcept { xyz = simd::set4(x, y, z, z); return *this; }
 #else
@@ -828,6 +832,28 @@ using Vector3Result = templates::Vector3<float>::ConstResult;
 
 } // namespace core::mathematics
 
+namespace std
+{
+
+template<size_t I, typename T>
+struct tuple_element;
+
+template<typename T>
+struct tuple_size;
+
+template<size_t I, typename T>
+struct tuple_element<I, core::mathematics::templates::Vector3<T>>
+{
+	using type = T;
+};
+
+template<typename T>
+struct tuple_size<core::mathematics::templates::Vector3<T>> : integral_constant<size_t, 3> 
+{
+};
+
+} // namespace std
+
 #include "IntVector3.hpp"
 #include "Quaternion.hpp"
 
@@ -881,14 +907,8 @@ inline Vector3<float> rotate(const Vector3<float>& v, const Quaternion<float>& q
 }
 
 template<typename U> 
-inline Vector3<float>::Vector3(const IntVector3<U>& v)
+inline Vector3<float>::Vector3(const IntVector3<U>& v) : Vector3((float)v.x, (float)v.y, (float)v.z)
 {
-#if MATHEMATICS_SIMD_EXPAND_LAST
-	float t = (float)v.z;
-	xyz = simd::set4((float)v.x, (float)v.y, t, t);
-#else
-	xyz = simd::set4((float)v.x, (float)v.y, (float)v.z);
-#endif
 }
 
 inline Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
@@ -906,25 +926,3 @@ inline Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 #endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace core::mathematics::templates
-
-namespace std
-{
-
-template<size_t I, typename T>
-struct tuple_element;
-
-template<typename T>
-struct tuple_size;
-
-template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::Vector3<T>>
-{
-	using type = T;
-};
-
-template<typename T>
-struct tuple_size<core::mathematics::templates::Vector3<T>> : integral_constant<size_t, 3> 
-{
-};
-
-} // namespace std

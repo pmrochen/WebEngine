@@ -36,6 +36,7 @@ struct HalfSpace
 	using ConstResult = const HalfSpace&;
 
 	constexpr HalfSpace() noexcept : a(), b(), c(), d() {}
+	explicit HalfSpace(Uninitialized) noexcept {}
 	constexpr HalfSpace(T a, T b, T c, T d) noexcept : a(a), b(b), c(c), d(d) {}
 	constexpr HalfSpace(Vector3<T>::ConstArg normal, T constant) noexcept : x(normal.x), y(normal.y), z(normal.z), w(constant) {}
 	HalfSpace(Vector3<T>::ConstArg normal, Vector3<T>::ConstArg point) noexcept : a(normal.x), b(normal.y), c(normal.z), d(-dot(normal, point)) {}
@@ -43,10 +44,10 @@ struct HalfSpace
 	HalfSpace(const Plane<T>& p) noexcept;
 	explicit HalfSpace(const std::tuple<T, T, T, T>& t) noexcept : a(std::get<0>(t)), b(std::get<1>(t)), c(std::get<2>(t)), d(std::get<3>(t)) {}
 	template<typename U> explicit HalfSpace(const std::tuple<U, U, U, U>& t) noexcept : a(T(std::get<0>(t))), b(T(std::get<1>(t))), c(T(std::get<2>(t))), d(T(std::get<3>(t))) {}
-	//explicit HalfSpace(const T* h) noexcept { a = h[0]; b = h[1]; c = h[2]; d = h[3]; }
+	//explicit HalfSpace(const T* h) noexcept : a(h[0]), b(h[1]), c(h[2]), d(h[3]) {}
 
-	explicit operator std::tuple<T, T, T, T>() noexcept { return std::tuple<T, T, T, T>(a, b, c, d); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(a), U(b), U(c), U(d)); }
+	//explicit operator std::tuple<T, T, T, T>() noexcept { return std::tuple<T, T, T, T>(a, b, c, d); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(a), U(b), U(c), U(d)); }
 	//explicit operator T*() noexcept { return &a; }
 	//explicit operator const T*() const noexcept { return &a; }
 	//T& operator[](int i) noexcept { return (&a)[i]; }
@@ -113,20 +114,23 @@ struct HalfSpace<float>
 	using ConstArg = const HalfSpace;
 	using ConstResult = const HalfSpace;
 
-	/*constexpr*/ HalfSpace() noexcept { abcd = simd::zero<simd::float4>(); }
-	/*constexpr*/ HalfSpace(float a, float b, float c, float d) noexcept { abcd = simd::set4(a, b, c, d); }
-	/*constexpr*/ HalfSpace(Vector3<float>::ConstArg normal, float constant) noexcept { abcd = simd::insert<simd::W>(constant, normal); }
-	HalfSpace(Vector3<float>::ConstArg normal, Vector3<float>::ConstArg point) noexcept { abcd = simd::insert<simd::W>(-dot(normal, point), normal); }
+	/*constexpr*/ HalfSpace() noexcept : abcd(simd::zero<simd::float4>()) {}
+	explicit HalfSpace(Uninitialized) noexcept {}
+	/*constexpr*/ HalfSpace(float a, float b, float c, float d) noexcept : abcd(simd::set4(a, b, c, d)) {}
+	/*constexpr*/ HalfSpace(Vector3<float>::ConstArg normal, float constant) noexcept : abcd(simd::insert<simd::W>(constant, normal)) {}
+	HalfSpace(Vector3<float>::ConstArg normal, Vector3<float>::ConstArg point) noexcept : abcd(simd::insert<simd::W>(-dot(normal, point), normal)) {}
 	HalfSpace(Vector3<float>::ConstArg p0, Vector3<float>::ConstArg p1, Vector3<float>::ConstArg p2) noexcept;
 	HalfSpace(const Plane<float>& p) noexcept;
-	explicit HalfSpace(const std::tuple<float, float, float, float>& t) noexcept { abcd = simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t)); }
-	template<typename U> explicit HalfSpace(const std::tuple<U, U, U, U>& t) noexcept { abcd = simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t)); }
-	//explicit HalfSpace(const float* h) noexcept { abcd = simd::load4(h); }
+	explicit HalfSpace(const std::tuple<float, float, float, float>& t) noexcept : abcd(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
+	template<typename U> explicit HalfSpace(const std::tuple<U, U, U, U>& t) noexcept : abcd(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
+	//explicit HalfSpace(const float* h) noexcept : abcd(simd::load4(h)) {}
 	explicit HalfSpace(simd::float4 h) noexcept : abcd(h) {}
+	HalfSpace(const HalfSpace& h) noexcept : abcd(h.abcd) {}
+	HalfSpace& operator=(const HalfSpace& h) noexcept { abcd = h.abcd; return *this; }
 
 	operator simd::float4() const noexcept { return abcd; }
-	explicit operator std::tuple<float, float, float, float>() noexcept { return std::tuple<float, float, float, float>(a, b, c, d); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(a), U(b), U(c), U(d)); }
+	//explicit operator std::tuple<float, float, float, float>() noexcept { return std::tuple<float, float, float, float>(a, b, c, d); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(a), U(b), U(c), U(d)); }
 	//explicit operator float* () noexcept { return &a; }
 	//explicit operator const float* () const noexcept { return &a; }
 	//float& operator[](int i) noexcept { return (&a)[i]; }
@@ -559,31 +563,6 @@ using HalfSpaceResult = templates::HalfSpace<float>::ConstResult;
 
 } // namespace core::mathematics
 
-#include "Plane.hpp"
-
-namespace core::mathematics::templates {
-
-template<typename T>
-inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.d)
-{
-}
-
-#if SIMD_HAS_FLOAT4
-
-inline HalfSpace<float>::HalfSpace(const Plane<float>& p)
-{
-	abcd = p.abcd;
-}
-
-inline Plane<float>::ConstResult HalfSpace<float>::asPlane() const
-{ 
-	return Plane<float>(abcd); 
-}
-
-#endif /* SIMD_HAS_FLOAT4 */
-
-} // namespace core::mathematics::templates
-
 namespace std
 {
 
@@ -605,3 +584,27 @@ struct tuple_size<core::mathematics::templates::HalfSpace<T>> : integral_constan
 };
 
 } // namespace std
+
+#include "Plane.hpp"
+
+namespace core::mathematics::templates {
+
+template<typename T>
+inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.d)
+{
+}
+
+#if SIMD_HAS_FLOAT4
+
+inline HalfSpace<float>::HalfSpace(const Plane<float>& p) : abcd(p.abcd)
+{
+}
+
+inline Plane<float>::ConstResult HalfSpace<float>::asPlane() const
+{ 
+	return Plane<float>(abcd); 
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+} // namespace core::mathematics::templates

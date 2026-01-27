@@ -17,12 +17,18 @@
 #include "Constants.hpp"
 #include "Scalar.hpp"
 #include "Vector3.hpp"
-#include "Matrix3.hpp"
-#include "YawPitchRoll.hpp"
-#include "Euler.hpp"
 
 namespace core::mathematics {
 namespace templates {
+
+template<typename T>
+struct Matrix3;
+
+template<typename T>
+struct YawPitchRoll;
+
+template<typename T>
+struct Euler;
 
 template<typename T>
 struct Quaternion
@@ -34,6 +40,7 @@ struct Quaternion
 	static constexpr int NUM_COMPONENTS = 4;
 
 	constexpr Quaternion() noexcept : x(), y(), z(), w() {}
+	explicit Quaternion(Uninitialized) noexcept {}
 	constexpr explicit Quaternion(T scalar) noexcept : x(), y(), z(), w(scalar) {}
 	constexpr Quaternion(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	constexpr explicit Quaternion(Vector3<T>::ConstArg vector) noexcept : x(vector.x), y(vector.y), z(vector.z), w() {}
@@ -45,7 +52,7 @@ struct Quaternion
 	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit Quaternion(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
 	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
-	explicit Quaternion(const T* q) noexcept { x = q[0]; y = q[1]; z = q[2]; w = q[3]; }
+	explicit Quaternion(const T* q) noexcept : x(q[0]), y(q[1]), z(q[2]), w(q[3]) {}
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
@@ -64,7 +71,7 @@ struct Quaternion
 	Quaternion& operator*=(Vector3<T>::ConstArg v) noexcept;
 	Quaternion& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
 	//Quaternion& operator/=(ConstArg q) noexcept { *this = *this/q; return *this; }
-	Quaternion& operator/=(T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; w *= s; return *this; }
+	Quaternion& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	friend Quaternion operator+(ConstArg q1, ConstArg q2) noexcept { return Quaternion(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w); }
 	friend Quaternion operator-(ConstArg q1, ConstArg q2) noexcept { return Quaternion(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w); }
 	friend Quaternion operator*(ConstArg q1, ConstArg q2) noexcept;
@@ -74,7 +81,7 @@ struct Quaternion
 	friend Quaternion operator*(ConstArg q, T f) noexcept { return Quaternion(q.x*f, q.y*f, q.z*f, q.w*f); }
 	//friend Quaternion operator/(ConstArg q1, ConstArg q2) noexcept { return q1*(Quaternion(-q2.x, -q2.y, -q2.z, q2.w)/q2.getNorm()); }
 	friend Quaternion operator/(T f, ConstArg q) noexcept { return f*(Quaternion(-q.x, -q.y, -q.z, q.w)/q.getNorm()); }
-	friend Quaternion operator/(ConstArg q, T f) noexcept { T s = T(1)/f; return Quaternion(q.x*s, q.y*s, q.z*s, q.w*s); }
+	friend Quaternion operator/(ConstArg q, T f) noexcept { return operator*(q, T(1)/f); }
 	bool operator==(const Quaternion& q) const noexcept { return (x == q.x) && (y == q.y) && (z == q.z) && (w == q.w); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
 	friend std::istream& operator>>(std::istream& s, Quaternion& q);
@@ -104,12 +111,12 @@ struct Quaternion
 	T getNorm() const noexcept { return (x*x + y*y + z*z + w*w); }
 	T getMagnitude() const noexcept { return getAbsoluteValue(); }
 	T getMagnitudeSquared() const noexcept { return getNorm(); }
-	Quaternion& setZero() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
-	Quaternion& setIdentity() noexcept { x = T(); y = T(); z = T(); w = T(1); return *this; }
+	Quaternion& setZero/*zero*/() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
+	Quaternion& setIdentity/*makeIdentity*/() noexcept { x = T(); y = T(); z = T(); w = T(1); return *this; }
 	Quaternion& set(Vector3<T>::ConstArg vector, T scalar) noexcept { x = vector.x; y = vector.y; z = vector.z; w = scalar; return *this; }
 	Quaternion& set(T x, T y, T z, T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
-	Quaternion& setConjugate(ConstArg q) noexcept { x = -q.x; y = -q.y; z = -q.z; w = q.w; return *this; }
-	Quaternion& setInverse(ConstArg q) noexcept { *this = Quaternion(-q.x, -q.y, -q.z, q.w)/q.getNorm(); return *this; }
+	Quaternion& setConjugate/*conjugateOf*/(ConstArg q) noexcept { x = -q.x; y = -q.y; z = -q.z; w = q.w; return *this; }
+	Quaternion& setInverse/*inverseOf*/(ConstArg q) noexcept { *this = Quaternion(-q.x, -q.y, -q.z, q.w)/q.getNorm(); return *this; }
 	Quaternion& conjugate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Quaternion& invert() noexcept { *this = Quaternion(-x, -y, -z, w)/getNorm(); return *this; }
 	Quaternion& rotate(ConstArg q) noexcept { *this = q*(*this)*Quaternion(-q.x, -q.y, -q.z, q.w); return *this; }
@@ -135,6 +142,15 @@ template<typename T> const Quaternion<T> Quaternion<T>::TOLERANCE{ Constants<T>:
 #if SIMD_HAS_FLOAT4
 
 template<>
+struct Matrix3<float>;
+
+template<>
+struct YawPitchRoll<float>;
+
+template<>
+struct Euler<float>;
+
+template<>
 struct Quaternion<float>
 {
 	using Real = float;
@@ -143,20 +159,23 @@ struct Quaternion<float>
 
 	static constexpr int NUM_COMPONENTS = 4;
 
-	/*constexpr*/ Quaternion() noexcept { xyzw = simd::zero<simd::float4>(); }
-	/*constexpr*/ explicit Quaternion(float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, simd::zero<simd::float4>()); }
-	/*constexpr*/ Quaternion(float x, float y, float z, float w) noexcept { xyzw = simd::set4(x, y, z, w); }
-	/*constexpr*/ explicit Quaternion(Vector3<float>::ConstArg vector) noexcept { xyzw = simd::cutoff3(vector); }
-	/*constexpr*/ Quaternion(Vector3<float>::ConstArg vector, float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, vector); }
+	/*constexpr*/ Quaternion() noexcept : xyzw(simd::zero<simd::float4>()) {}
+	explicit Quaternion(Uninitialized) noexcept {}
+	/*constexpr*/ explicit Quaternion(float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, simd::zero<simd::float4>())) {}
+	/*constexpr*/ Quaternion(float x, float y, float z, float w) noexcept : xyzw(simd::set4(x, y, z, w)) {}
+	/*constexpr*/ explicit Quaternion(Vector3<float>::ConstArg vector) noexcept : xyzw(simd::cutoff3(vector)) {}
+	/*constexpr*/ Quaternion(Vector3<float>::ConstArg vector, float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, vector)) {}
 	explicit Quaternion(const Matrix3<float>& m) noexcept;
 	explicit Quaternion(const YawPitchRoll<float>& ypr) noexcept;
 	explicit Quaternion(const Euler<float>& e) noexcept;
-	explicit Quaternion(const tuples::templates::Tuple4<float>& t) noexcept { xyzw = simd::set4(t.x, t.y, t.z, t.w); }
-	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept { xyzw = simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
-	explicit Quaternion(const std::tuple<float, float, float, float>& t) noexcept { xyzw = simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t)); }
-	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept { xyzw = simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t)); }
-	explicit Quaternion(const float* q) noexcept { xyzw = simd::load4(q); }
+	explicit Quaternion(const tuples::templates::Tuple4<float>& t) noexcept : xyzw(simd::set4(t.x, t.y, t.z, t.w)) {}
+	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : xyzw(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
+	explicit Quaternion(const std::tuple<float, float, float, float>& t) noexcept : xyzw(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
+	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept : xyzw(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
+	explicit Quaternion(const float* q) noexcept : xyzw(simd::load4(q)) {}
 	explicit Quaternion(simd::float4 q) noexcept : xyzw(q) {}
+	Quaternion(const Quaternion& q) noexcept : xyzw(q.xyzw) {}
+	Quaternion& operator=(const Quaternion& q) noexcept { xyzw = q.xyzw; return *this; }
 
 	operator simd::float4() const noexcept { return xyzw; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
@@ -224,12 +243,12 @@ struct Quaternion<float>
 	float getNorm() const noexcept { return simd::toFloat(simd::dot4(xyzw, xyzw)); }
 	float getMagnitude() const noexcept { return getAbsoluteValue(); }
 	float getMagnitudeSquared() const noexcept { return getNorm(); }
-	Quaternion& setZero() noexcept { xyzw = simd::zero<simd::float4>(); return *this; }
-	Quaternion& setIdentity() noexcept { *this = IDENTITY; return *this; }
+	Quaternion& setZero/*zero*/() noexcept { xyzw = simd::zero<simd::float4>(); return *this; }
+	Quaternion& setIdentity/*makeIdentity*/() noexcept { *this = IDENTITY; return *this; }
 	Quaternion& set(Vector3<float>::ConstArg vector, float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, vector); return *this; }
 	Quaternion& set(float x, float y, float z, float w) noexcept { xyzw = simd::set4(x, y, z, w); return *this; }
-	Quaternion& setConjugate(ConstArg q) noexcept { xyzw = simd::neg3(q); return *this; }
-	Quaternion& setInverse(ConstArg q) noexcept { *this = Quaternion(simd::neg3(q))/q.getNorm(); return *this; }
+	Quaternion& setConjugate/*conjugateOf*/(ConstArg q) noexcept { xyzw = simd::neg3(q); return *this; }
+	Quaternion& setInverse/*inverseOf*/(ConstArg q) noexcept { *this = Quaternion(simd::neg3(q))/q.getNorm(); return *this; }
 	Quaternion& conjugate() noexcept { xyzw = simd::neg3(xyzw); return *this; }
 	Quaternion& invert() noexcept { *this = Quaternion(simd::neg3(xyzw))/getNorm(); return *this; }
 	Quaternion& rotate(ConstArg q) noexcept { *this = q*(*this)*Quaternion(simd::neg3(q.xyzw)); return *this; }

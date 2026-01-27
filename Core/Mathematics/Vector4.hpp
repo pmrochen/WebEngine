@@ -40,6 +40,7 @@ struct Vector4
 	static constexpr int NUM_COMPONENTS = 4;
 
 	constexpr Vector4() noexcept : x(), y(), z(), w() {}
+	explicit Vector4(Uninitialized) noexcept {}
 	constexpr explicit Vector4(T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
 	constexpr Vector4(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	constexpr Vector4(Vector2<T>::ConstArg v) noexcept : x(v.x), y(v.y), z(), w(T(1)) {}
@@ -52,7 +53,7 @@ struct Vector4
 	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit Vector4(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
 	template<typename U> explicit Vector4(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
-	explicit Vector4(const T* v) noexcept { x = v[0]; y = v[1]; z = v[2]; w = v[3]; }
+	explicit Vector4(const T* v) noexcept : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
 	explicit Vector4(Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)), z((axis == Axis::Z) ? T(1) : T(0)), w((axis == Axis::W) ? T(1) : T(0)) {}
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
@@ -71,7 +72,7 @@ struct Vector4
 	Vector4& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 	Vector4& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
 	Vector4& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
-	Vector4& operator/=(T f) noexcept { T s = T(1)/f; x *= s; y *= s; z *= s; w *= s; return *this; }
+	Vector4& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
 	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); }
 	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); }
@@ -80,7 +81,7 @@ struct Vector4
 	friend Vector4 operator*(ConstArg v, T f) noexcept { return Vector4(v.x*f, v.y*f, v.z*f, v.w*f); }
 	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
 	friend Vector4 operator/(T f, ConstArg v) noexcept { return Vector4(f/v.x, f/v.y, f/v.z, f/v.w); }
-	friend Vector4 operator/(ConstArg v, T f) noexcept { T s = T(1)/f; return Vector4(v.x*s, v.y*s, v.z*s, v.w*s); }
+	friend Vector4 operator/(ConstArg v, T f) noexcept { return operator*(v, T(1)/f); }
 	friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
 	//friend Vector4 operator*(const Matrix4<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
@@ -118,7 +119,7 @@ struct Vector4
 	void setLength(T length) noexcept { setMagnitude(length); }
 	T getMinComponent() const { return std::min(std::min(std::min(x, y), z), w); }
 	T getMaxComponent() const { return std::max(std::max(std::max(x, y), z), w); }
-	Vector4& setZero() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
+	Vector4& setZero/*zero*/() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
 	Vector4& set(T x, T y, T z, T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
 	Vector4& setMinimum(const Vector4& v1, const Vector4& v2);
 	Vector4& setMaximum(const Vector4& v1, const Vector4& v2);
@@ -170,22 +171,25 @@ struct Vector4<float>
 
 	static constexpr int NUM_COMPONENTS = 4;
 
-	/*constexpr*/ Vector4() noexcept { xyzw = simd::zero<simd::float4>(); }
-	/*constexpr*/ explicit Vector4(float scalar) noexcept { xyzw = simd::set4(scalar); }
-	/*constexpr*/ Vector4(float x, float y, float z, float w) noexcept { xyzw = simd::set4(x, y, z, w); }
-	/*constexpr*/ Vector4(Vector2<float>::ConstArg v) noexcept { xyzw = simd::insert2(v, UNIT_W); }
-	/*constexpr*/ Vector4(Vector2<float>::ConstArg v, float z, float w) noexcept { xyzw = simd::combine2(v, simd::set2(z, w)); }
-	/*constexpr*/ Vector4(Vector2<float>::ConstArg xy, Vector2<float>::ConstArg zw) noexcept { xyzw = simd::combine2(xy, zw); }
-	/*constexpr*/ Vector4(Vector3<float>::ConstArg v) noexcept { xyzw = simd::insert3(v, UNIT_W); }
-	/*constexpr*/ Vector4(Vector3<float>::ConstArg v, float w) noexcept { xyzw = simd::insert<simd::W>(w, v); }
+	/*constexpr*/ Vector4() noexcept : xyzw(simd::zero<simd::float4>()) {}
+	explicit Vector4(Uninitialized) noexcept {}
+	/*constexpr*/ explicit Vector4(float scalar) noexcept : xyzw(simd::set4(scalar)) {}
+	/*constexpr*/ Vector4(float x, float y, float z, float w) noexcept : xyzw(simd::set4(x, y, z, w)) {}
+	/*constexpr*/ Vector4(Vector2<float>::ConstArg v) noexcept : xyzw(simd::insert2(v, UNIT_W)) {}
+	/*constexpr*/ Vector4(Vector2<float>::ConstArg v, float z, float w) noexcept : xyzw(simd::combine2(v, simd::set2(z, w))) {}
+	/*constexpr*/ Vector4(Vector2<float>::ConstArg xy, Vector2<float>::ConstArg zw) noexcept : xyzw(simd::combine2(xy, zw)) {}
+	/*constexpr*/ Vector4(Vector3<float>::ConstArg v) noexcept : xyzw(simd::insert3(v, UNIT_W)) {}
+	/*constexpr*/ Vector4(Vector3<float>::ConstArg v, float w) noexcept : xyzw(simd::insert<simd::W>(w, v)) {}
 	template<typename U> explicit Vector4(const IntVector4<U>& v) noexcept;
-	explicit Vector4(const tuples::templates::Tuple4<float>& t) noexcept { xyzw = simd::set4(t.x, t.y, t.z, t.w); }
-	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept { xyzw = simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w); }
-	explicit Vector4(const std::tuple<float, float, float, float>& t) noexcept { xyzw = simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t)); }
-	template<typename U> explicit Vector4(const std::tuple<U, U, U, U>& t) noexcept { xyzw = simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t)); }
-	explicit Vector4(const float* v) noexcept { xyzw = simd::load4(v); }
-	explicit Vector4(Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::W) ? 1.f : 0.f); }
+	explicit Vector4(const tuples::templates::Tuple4<float>& t) noexcept : xyzw(simd::set4(t.x, t.y, t.z, t.w)) {}
+	template<typename U> explicit Vector4(const tuples::templates::Tuple4<U>& t) noexcept : xyzw(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
+	explicit Vector4(const std::tuple<float, float, float, float>& t) noexcept : xyzw(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
+	template<typename U> explicit Vector4(const std::tuple<U, U, U, U>& t) noexcept : xyzw(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
+	explicit Vector4(const float* v) noexcept : xyzw(simd::load4(v)) {}
+	explicit Vector4(Axis axis) noexcept : Vector4((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f, (axis == Axis::Z) ? 1.f : 0.f, (axis == Axis::W) ? 1.f : 0.f)) {}
 	explicit Vector4(simd::float4 v) noexcept : xyzw(v) {}
+	Vector4(const Vector4& v) noexcept : xyzw(v.xyzw) {}
+	Vector4& operator=(const Vector4& v) noexcept { xyzw = v.xyzw; return *this; }
 
 	operator simd::float4() const noexcept { return xyzw; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
@@ -260,7 +264,7 @@ struct Vector4<float>
 	void setLength(float length) noexcept { setMagnitude(length); }
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin4(xyzw)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax4(xyzw)); }
-	Vector4& setZero() noexcept { xyzw = simd::zero<simd::float4>(); return *this; }
+	Vector4& setZero/*zero*/() noexcept { xyzw = simd::zero<simd::float4>(); return *this; }
 	Vector4& set(float x, float y, float z, float w) noexcept { xyzw = simd::set4(x, y, z, w); return *this; }
 	Vector4& setMinimum(const Vector4& v1, const Vector4& v2) noexcept { xyzw = simd::min4(v1, v2); return *this; }
 	Vector4& setMaximum(const Vector4& v1, const Vector4& v2) noexcept { xyzw = simd::max4(v1, v2); return *this; }
@@ -577,7 +581,7 @@ inline Vector4<T>& Vector4<T>::setMaximum(const Vector4<T>& v1, const Vector4<T>
 }
 
 template<typename T>
-inline Vector3<T>& Vector3<T>::normalize()
+inline Vector4<T>& Vector4<T>::normalize()
 {
 //#if MATHEMATICS_FAST_NORMALIZE
 //	if costexpr(std::is_same_v<T, float>)
@@ -708,28 +712,6 @@ using Vector4Result = templates::Vector4<float>::ConstResult;
 
 } // namespace core::mathematics
 
-#include "IntVector4.hpp"
-
-namespace core::mathematics::templates {
-
-template<typename T>
-template<typename U> 
-inline Vector4<T>::Vector4(const IntVector4<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v.z)), w(T(v.w)) 
-{
-}
-
-#if SIMD_HAS_FLOAT4
-
-template<typename U> 
-inline Vector4<float>::Vector4(const IntVector4<U>& v)
-{ 
-	xyzw = simd::set4((float)v.x, (float)v.y, (float)v.z, (float)v.w); 
-}
-
-#endif /* SIMD_HAS_FLOAT4 */
-
-} // namespace core::mathematics::templates
-
 namespace std
 {
 
@@ -751,3 +733,24 @@ struct tuple_size<core::mathematics::templates::Vector4<T>> : integral_constant<
 };
 
 } // namespace std
+
+#include "IntVector4.hpp"
+
+namespace core::mathematics::templates {
+
+template<typename T>
+template<typename U> 
+inline Vector4<T>::Vector4(const IntVector4<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v.z)), w(T(v.w)) 
+{
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<typename U> 
+inline Vector4<float>::Vector4(const IntVector4<U>& v) : Vector4((float)v.x, (float)v.y, (float)v.z, (float)v.w)
+{
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+} // namespace core::mathematics::templates

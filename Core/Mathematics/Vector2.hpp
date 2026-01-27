@@ -21,6 +21,11 @@
 #include "Scalar.hpp"
 
 namespace core::mathematics {
+
+struct Uninitialized
+{
+};
+
 namespace templates {
 
 template<typename T>
@@ -39,6 +44,7 @@ struct Vector2
 	static constexpr int NUM_COMPONENTS = 2;
 
 	constexpr Vector2() noexcept : x(), y() {}
+	explicit Vector2(Uninitialized) noexcept {}
 	constexpr explicit Vector2(T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr Vector2(T x, T y) noexcept : x(x), y(y) {}
 	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
@@ -48,7 +54,7 @@ struct Vector2
 	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : x(T(t.first)), y(T(t.second)) {}
 	explicit Vector2(const std::tuple<T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)) {}
 	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))) {}
-	explicit Vector2(const T* v) noexcept { x = v[0]; y = v[1]; }
+	explicit Vector2(const T* v) noexcept : x(v[0]), y(v[1]) {}
 	explicit Vector2(Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)) {}
 
 	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
@@ -69,7 +75,7 @@ struct Vector2
 	Vector2& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
 	Vector2& operator*=(T f) noexcept { x *= f; y *= f; return *this; }
 	Vector2& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; return *this; }
-	Vector2& operator/=(T f) noexcept { T s = T(1)/f; x *= s; y *= s; return *this; }
+	Vector2& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	Vector2& operator*=(const Matrix2<T>& m) noexcept; // #TODO
 	friend Vector2 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x + v2.x, v1.y + v2.y); }
 	friend Vector2 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x - v2.x, v1.y - v2.y); }
@@ -78,7 +84,7 @@ struct Vector2
 	friend Vector2 operator*(ConstArg v, T f) noexcept { return Vector2(v.x*f, v.y*f); }
 	friend Vector2 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector2(v1.x/v2.x, v1.y/v2.y); }
 	friend Vector2 operator/(T f, ConstArg v) noexcept { return Vector2(f/v.x, f/v.y); }
-	friend Vector2 operator/(ConstArg v, T f) noexcept { T s = T(1)/f; return Vector2(v.x*s, v.y*s); }
+	friend Vector2 operator/(ConstArg v, T f) noexcept { return operator*(v, T(1)/f); }
 	friend Vector2 operator*(ConstArg v, const Matrix2<T>& m) noexcept; // #TODO
 	//friend Vector2 operator*(const Matrix2<T>& m, ConstArg v) noexcept; // valid for column vectors only
 	bool operator==(const Vector2& v) const noexcept { return (x == v.x) && (y == v.y); }
@@ -113,7 +119,7 @@ struct Vector2
 	Axis getMajorAxis() const noexcept { return (std::fabs(y) > std::fabs(x)) ? Axis::Y : Axis::X; }
 	T getMinComponent() const { return std::min(x, y); }
 	T getMaxComponent() const { return std::max(x, y); }
-	Vector2& setZero() noexcept { x = T(); y = T(); return *this; }
+	Vector2& setZero/*zero*/() noexcept { x = T(); y = T(); return *this; }
 	Vector2& set(T x, T y) noexcept { this->x = x; this->y = y; return *this; }
 	Vector2& setMinimum(const Vector2& v1, const Vector2& v2);
 	Vector2& setMaximum(const Vector2& v1, const Vector2& v2);
@@ -161,32 +167,35 @@ struct Vector2<float>
 
 	static constexpr int NUM_COMPONENTS = 2;
 
-	/*constexpr*/ Vector2() noexcept { xy = simd::zero<simd::float4>(); }
+	/*constexpr*/ Vector2() noexcept : xy(simd::zero<simd::float4>()) {}
+	explicit Vector2(Uninitialized) noexcept {}
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	/*constexpr*/ explicit Vector2(float scalar) noexcept { xy = simd::set4(scalar); }
-	/*constexpr*/ Vector2(float x, float y) noexcept { xy = simd::set4(x, y, y, y); }
+	/*constexpr*/ explicit Vector2(float scalar) noexcept : xy(simd::set4(scalar)) {}
+	/*constexpr*/ Vector2(float x, float y) noexcept : xy(simd::set4(x, y, y, y)) {}
 	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
-	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept { xy = simd::set4(t.x, t.y, t.y, t.y); }
-	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept { float y = (float)t.y; xy = simd::set4((float)t.x, y, y, y); }
-	explicit Vector2(const std::pair<float, float>& t) noexcept { xy = simd::set4(t.first, t.second, t.second, t.second); }
-	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept { float y = (float)t.second; xy = simd::set4((float)t.first, y, y, y); }
-	explicit Vector2(const std::tuple<float, float>& t) noexcept { float y = std::get<1>(t); xy = simd::set4(std::get<0>(t), y, y, y); }
-	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept { float y = (float)std::get<1>(t); xy = simd::set4((float)std::get<0>(t), y, y, y); }
-	explicit Vector2(const float* v) noexcept { set(v[0], v[1]); }
+	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept : xy(simd::set4(t.x, t.y, t.y, t.y)) {}
+	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) : Vector2((float)t.x, (float)t.y) {}
+	explicit Vector2(const std::pair<float, float>& t) noexcept : xy(simd::set4(t.first, t.second, t.second, t.second)) {}
+	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : Vector2((float)t.first, (float)t.second) {}
+	explicit Vector2(const std::tuple<float, float>& t) noexcept : Vector2(std::get<0>(t), std::get<1>(t)) {}
+	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept : Vector2((float)std::get<0>(t), (float)std::get<1>(t)) {}
+	explicit Vector2(const float* v) noexcept : Vector2(v[0], v[1]) {}
 #else
-	/*constexpr*/ explicit Vector2(float scalar) noexcept { xy = simd::set2(scalar); }
-	/*constexpr*/ Vector2(float x, float y) noexcept { xy = simd::set2(x, y); }
+	/*constexpr*/ explicit Vector2(float scalar) noexcept : xy(simd::set2(scalar)) {}
+	/*constexpr*/ Vector2(float x, float y) noexcept : xy(simd::set2(x, y)) {}
 	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
-	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept { xy = simd::set2(t.x, t.y); }
-	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept { xy = simd::set2((float)t.x, (float)t.y); }
-	explicit Vector2(const std::pair<float, float>& t) noexcept { xy = simd::set2(t.first, t.second); }
-	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept { xy = simd::set2((float)t.first, (float)t.second); }
-	explicit Vector2(const std::tuple<float, float>& t) noexcept { xy = simd::set2(std::get<0>(t), std::get<1>(t)); }
-	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept { xy = simd::set2((float)std::get<0>(t), (float)std::get<1>(t)); }
-	explicit Vector2(const float* v) noexcept { xy = simd::load2(v); }
+	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept : xy(simd::set2(t.x, t.y)) {}
+	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : xy(simd::set2((float)t.x, (float)t.y)) {}
+	explicit Vector2(const std::pair<float, float>& t) noexcept : xy(simd::set2(t.first, t.second)) {}
+	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : xy(simd::set2((float)t.first, (float)t.second)) {}
+	explicit Vector2(const std::tuple<float, float>& t) noexcept : xy(simd::set2(std::get<0>(t), std::get<1>(t))) {}
+	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept : xy(simd::set2((float)std::get<0>(t), (float)std::get<1>(t))) {}
+	explicit Vector2(const float* v) noexcept : xy(simd::load2(v)) {}
 #endif
-	explicit Vector2(Axis axis) noexcept { set((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f); }
+	explicit Vector2(Axis axis) noexcept : Vector2((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f) {}
 	explicit Vector2(simd::float4 v) noexcept : xy(v) {}
+	Vector2(const Vector2& v) noexcept : xy(v.xy) {}
+	Vector2& operator=(const Vector2& v) noexcept { xy = v.xy; return *this; }
 
 	operator simd::float4() const noexcept { return xy; }
 	explicit operator tuples::templates::Tuple2<float>() noexcept { return tuples::templates::Tuple2<float>(x, y); }
@@ -268,7 +277,7 @@ struct Vector2<float>
 	Axis getMajorAxis() const noexcept { (Axis)simd::asIndex(simd::equal(xy, simd::hMax2(xy))); }
 	float getMinComponent() const noexcept { return simd::toFloat(simd::hMin2(xy)); }
 	float getMaxComponent() const noexcept { return simd::toFloat(simd::hMax2(xy)); }
-	Vector2& setZero() noexcept { xy = simd::zero<simd::float4>(); return *this; }
+	Vector2& setZero/*zero*/() noexcept { xy = simd::zero<simd::float4>(); return *this; }
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector2& set(float x, float y) noexcept { xy = simd::set4(x, y, y, y); return *this; }
 #else
@@ -701,33 +710,6 @@ using Vector2Result = templates::Vector2<float>::ConstResult;
 
 } // namespace core::mathematics
 
-#include "IntVector2.hpp"
-
-namespace core::mathematics::templates {
-
-template<typename T>
-template<typename U> 
-inline Vector2<T>::Vector2(const IntVector2<U>& v) : x(T(v.x)), y(T(v.y))
-{
-}
-
-#if SIMD_HAS_FLOAT4
-
-template<typename U>
-inline Vector2<float>::Vector2(const IntVector2<U>& v)
-{
-#if MATHEMATICS_SIMD_EXPAND_LAST
-	float t = (float)v.y;
-	xy = simd::set4((float)v.x, t, t, t);
-#else
-	xy = simd::set2((float)v.x, (float)v.y);
-#endif
-}
-
-#endif /* SIMD_HAS_FLOAT4 */
-
-} // namespace core::mathematics::templates
-
 namespace std
 {
 
@@ -749,3 +731,24 @@ struct tuple_size<core::mathematics::templates::Vector2<T>> : integral_constant<
 };
 
 } // namespace std
+
+#include "IntVector2.hpp"
+
+namespace core::mathematics::templates {
+
+template<typename T>
+template<typename U> 
+inline Vector2<T>::Vector2(const IntVector2<U>& v) : x(T(v.x)), y(T(v.y))
+{
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<typename U>
+inline Vector2<float>::Vector2(const IntVector2<U>& v) : Vector2((float)v.x, (float)v.y)
+{
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+} // namespace core::mathematics::templates
