@@ -186,6 +186,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AffineTransform.hpp" />
     <ClInclude Include="Axis.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="HalfSpace.hpp" />
@@ -193,6 +194,9 @@
     <ClInclude Include="IntVector3.hpp" />
     <ClInclude Include="IntVector4.hpp" />
     <ClInclude Include="Mathematics.hpp" />
+    <ClInclude Include="Matrix2.hpp" />
+    <ClInclude Include="Matrix3.hpp" />
+    <ClInclude Include="Matrix4.hpp" />
     <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Quaternion.hpp" />
     <ClInclude Include="Scalar.hpp" />
