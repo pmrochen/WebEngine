@@ -79,23 +79,23 @@ struct Plane
 	Plane& set(T a, T b, T c, T d) noexcept { this->a = a; this->b = b; this->c = c; this->d = d; return *this; }
 
 	// Transformation
-	Plane& translate(Vector3<T>::ConstArg offset) noexcept;
+	Plane& translate(const Vector3<T>& offset) noexcept;
 	Plane& transform(const Matrix3<T>& matrix, bool orthogonal = false) noexcept;
 	Plane& transform(const AffineTransform<T>& transformation, bool orthogonal = false) noexcept;
 	Plane& flip() noexcept { a = -a; b = -b; c = -c; d = -d; return *this; }
 	Plane& normalize() noexcept;
 
 	// Reflection of a point on a normalized plane
-	//Vector3<T> reflect(Vector3<T>::ConstArg point) const noexcept; // #TODO -> Vector3
+	//Vector3<T> reflect(const Vector3<T>& point) const noexcept; // #TODO -> Vector3
 
 	// Distances
-	T getDistanceTo(Vector3<T>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); }	// normalized plane
-	template<bool Normalized> T getDistanceTo(Vector3<T>::ConstArg point) const noexcept;
-	T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); }		// normalized plane
-	template<bool Normalized> T getSignedDistanceTo(Vector3<T>::ConstArg point) const noexcept;
+	T getDistance(const Vector3<T>& point) const noexcept { return std::fabs(dot(getNormal(), point) + d); }	// normalized plane
+	template<typename U = void> T getDistance(const Vector3<T>& point) const;
+	T getSignedDistance(const Vector3<T>& point) const noexcept { return (dot(getNormal(), point) + d); }		// normalized plane
+	template<typename U = void> T getSignedDistance(const Vector3<T>& point) const noexcept;
 
 	// Intersection
-	bool contains(Vector3<T>::ConstArg point) const noexcept;
+	bool contains(const Vector3<T>& point) const noexcept;
 	bool testIntersection(const Line3<T>& line) const noexcept;
 	bool testIntersection(const Ray3<T>& ray) const noexcept;
 	bool testIntersection(const Segment3<T>& segment) const noexcept;
@@ -185,23 +185,23 @@ struct Plane<float>
 	Plane& set(float a, float b, float c, float d) noexcept { abcd = simd::set4(a, b, c, d); return *this; }
 
 	// Transformation
-	Plane& translate(Vector3<float>::ConstArg offset) noexcept;
+	Plane& translate(const Vector3<float>& offset) noexcept;
 	Plane& transform(const Matrix3<float>& matrix, bool orthogonal = false) noexcept;
 	Plane& transform(const AffineTransform<float>& transformation, bool orthogonal = false) noexcept;
 	Plane& flip() noexcept { abcd = simd::neg4(abcd); return *this; }
 	Plane& normalize() noexcept;
 
 	// Reflection of a point on a normalized plane
-	//Vector3<float> reflect(Vector3<float>::ConstArg point) const noexcept; // #TODO -> Vector3
+	//Vector3<float> reflect(const Vector3<float>& point) const noexcept; // #TODO -> Vector3
 
 	// Distances
-	float getDistanceTo(Vector3<float>::ConstArg point) const noexcept { return std::fabs(dot(getNormal(), point) + d); }	// normalized plane
-	template<bool Normalized> float getDistanceTo(Vector3<float>::ConstArg point) const noexcept;
-	float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept { return (dot(getNormal(), point) + d); }		// normalized plane
-	template<bool Normalized> float getSignedDistanceTo(Vector3<float>::ConstArg point) const noexcept;
+	float getDistance(const Vector3<float>& point) const noexcept { return std::fabs(dot(getNormal(), point) + d); }	// normalized plane
+	template<typename U = void> float getDistance(const Vector3<float>& point) const;
+	float getSignedDistance(const Vector3<float>& point) const noexcept { return (dot(getNormal(), point) + d); }		// normalized plane
+	template<typename U = void> float getSignedDistance(const Vector3<float>& point) const noexcept;
 
 	// Intersection
-	bool contains(Vector3<float>::ConstArg point) const noexcept;
+	bool contains(const Vector3<float>& point) const noexcept;
 	bool testIntersection(const Line3<float>& line) const noexcept;
 	bool testIntersection(const Ray3<float>& ray) const noexcept;
 	bool testIntersection(const Segment3<float>& segment) const noexcept;
@@ -344,7 +344,7 @@ inline bool Plane<T>::isApproxEqual(const Plane<T>& p, T tolerance) const
 }
 
 template<typename T>
-inline Plane<T>& Plane<T>::translate(Vector3<T>::ConstArg offset)
+inline Plane<T>& Plane<T>::translate(const Vector3<T>& offset)
 {
 	Vector3 p(-getConstant()*getNormal());
 	setConstant(-dot(getNormal(), p + offset));
@@ -414,33 +414,33 @@ inline Plane<T>& Plane<T>::normalize()
 }
 
 //template<typename T>
-//inline Vector3<T> Plane<T>::reflect(Vector3<T>::ConstArg point) const
+//inline Vector3<T> Plane<T>::reflect(const Vector3<T>& point) const
 //{ 
 //	return (getNormal()*(T(-2)*(dot(getNormal(), point) + d)) + point); 
 //}
 
 template<typename T>
-template<bool Normalized> 
-inline T Plane<T>::getDistanceTo(Vector3<T>::ConstArg point) const
+template<typename U>
+inline T Plane<T>::getDistance(const Vector3<T>& point) const
 {
-	if constexpr (Normalized)
+	if costexpr(std::is_same_v<U, Normalized>)
 		return std::fabs(dot(getNormal(), point) + d);
 	else
 		return std::fabs((dot(getNormal(), point) + d)/getNormal().getMagnitude());
 }
 
 template<typename T>
-template<bool Normalized> 
-inline T Plane<T>::getSignedDistanceTo(Vector3<T>::ConstArg point) const
+template<typename U>
+inline T Plane<T>::getSignedDistance(const Vector3<T>& point) const
 {
-	if constexpr (Normalized)
+	if costexpr(std::is_same_v<U, Normalized>)
 		return dot(getNormal(), point) + d;
 	else
 		return (dot(getNormal(), point) + d)/getNormal().getMagnitude();
 }
 
 template<typename T>
-inline bool Plane<T>::contains(Vector3<T>::ConstArg point) const
+inline bool Plane<T>::contains(const Vector3<T>& point) const
 { 
 	return (std::fabs(dot(getNormal(), point) + d) < Constants<T>::TOLERANCE); 
 }
@@ -567,7 +567,7 @@ inline const float& Plane<float>::get() const
 	static_assert(false);
 }
 
-inline Plane<float>& Plane<float>::translate(Vector3<float>::ConstArg offset)
+inline Plane<float>& Plane<float>::translate(const Vector3<float>& offset)
 {
 	Vector3 p(-getConstant()*getNormal());
 	setConstant(-dot(getNormal(), p + offset));
@@ -622,30 +622,30 @@ inline Plane<float>& Plane<float>::normalize()
 	return *this;
 }
 
-//inline Vector3<float> Plane<float>::reflect(Vector3<float>::ConstArg point) const
+//inline Vector3<float> Plane<float>::reflect(const Vector3<float>& point) const
 //{ 
 //	return (getNormal()*(-2.f*(dot(getNormal(), point) + d)) + point); 
 //}
 
-template<bool Normalized>
-inline T Plane<float>::getDistanceTo(Vector3<float>::ConstArg point) const
+template<typename U>
+inline float Plane<float>::getDistance(const Vector3<float>& point) const
 {
-	if constexpr (Normalized)
+	if costexpr(std::is_same_v<U, Normalized>)
 		return std::fabs(dot(getNormal(), point) + d);
 	else
 		return std::fabs((dot(getNormal(), point) + d)/getNormal().getMagnitude());
 }
 
-template<bool Normalized>
-inline T Plane<float>::getSignedDistanceTo(Vector3<float>::ConstArg point) const
+template<typename U>
+inline float Plane<float>::getSignedDistance(const Vector3<float>& point) const
 {
-	if constexpr (Normalized)
+	if costexpr(std::is_same_v<U, Normalized>)
 		return dot(getNormal(), point) + d;
 	else
 		return (dot(getNormal(), point) + d)/getNormal().getMagnitude();
 }
 
-inline bool Plane<float>::contains(Vector3<float>::ConstArg point) const
+inline bool Plane<float>::contains(const Vector3<float>& point) const
 {
 	return (std::fabs(dot(getNormal(), point) + d) < Constants<float>::TOLERANCE);
 }
