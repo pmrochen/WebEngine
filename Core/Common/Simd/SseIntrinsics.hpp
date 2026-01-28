@@ -34,6 +34,7 @@
 #include <smmintrin.h> // SSE 4.1
 #endif
 
+//#include <tuple>
 #include <cstdint>
 
 #define SIMD_HAS_FLOAT4 1
@@ -244,6 +245,8 @@ inline T constant1(); //{ static_assert(false); }
 template<int S>
 inline __m128 constant1()
 {
+	if constexpr (S == 0)
+		return _mm_setzero_ps();
 	static const _MM_ALIGN16 union
 	{
 		float f[4];
@@ -258,6 +261,8 @@ inline T constant4(); //{ static_assert(false); }
 template<int S>
 inline __m128 constant4()
 {
+	if constexpr (S == 0)
+		return _mm_setzero_ps();
 	static const _MM_ALIGN16 union
 	{
 		float f[4];
@@ -272,6 +277,8 @@ inline T constant4(); //{ static_assert(false); }
 template<int X, int Y, int Z, int W>
 inline __m128 constant4()
 {
+	if constexpr ((X == 0) && (Y == 0) && (Z == 0) && (W == 0))
+		return _mm_setzero_ps();
 	static const _MM_ALIGN16 union
 	{
 		float f[4];
@@ -286,6 +293,8 @@ inline T constant4i(); //{ static_assert(false); }
 template<int S>
 inline __m128 constant4i()
 {
+	if constexpr (S == 0)
+		return _mm_setzero_ps();
 	static const _MM_ALIGN16 union
 	{
 		int i[4];
@@ -297,6 +306,8 @@ inline __m128 constant4i()
 template<int S>
 inline __m128i constant4i()
 {
+	if constexpr (S == 0)
+		return _mm_setzero_si128();
 	static const _MM_ALIGN16 union
 	{
 		int i[4];
@@ -311,6 +322,8 @@ inline T constant4i(); //{ static_assert(false); }
 template<int X, int Y, int Z, int W>
 inline __m128 constant4i()
 {
+	if constexpr ((X == 0) && (Y == 0) && (Z == 0) && (W == 0))
+		return _mm_setzero_ps();
 	static const _MM_ALIGN16 union
 	{
 		int i[4];
@@ -322,6 +335,8 @@ inline __m128 constant4i()
 template<int X, int Y, int Z, int W>
 inline __m128i constant4i()
 {
+	if constexpr ((X == 0) && (Y == 0) && (Z == 0) && (W == 0))
+		return _mm_setzero_si128();
 	static const _MM_ALIGN16 union
 	{
 		int i[4];
@@ -521,36 +536,9 @@ inline void store4(__m128 u, float* v)
 //	_mm_storeu_ps(&m[12], row3);
 //}
 
-inline void unpack2x2(const float* m, __m128& row0, __m128& row1)
+inline __m128 pack2x2(__m128 row0, __m128 row1)
 {
-	__m128 t = _mm_loadu_ps(m);
-	__m128 zero = _mm_setzero_ps();
-	row0 = _mm_movelh_ps(t, zero);
-	row1 = _mm_movehl_ps(zero, t);
-}
-
-inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
-{
-	__m128 t0 = _mm_loadu_ps(&m[0]);
-	__m128 t1 = _mm_loadu_ps(&m[4]);
-	__m128 mask3 = detail::MASK3;
-	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
-	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
-	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
-	row2 = _mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2));		// 0, m22, m21, m20
-}
-
-inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
-{
-	__m128 t0 = _mm_loadu_ps(&m[0]);
-	__m128 t1 = _mm_loadu_ps(&m[4]);
-	__m128 mask3 = detail::MASK3;
-	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3)); 	
-	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
-	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
-	__m128 t3 = _mm_loadu_ps(&m[8]); 									
-	row2 = _mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3); 	// 0, m22, m21, m20
-	row3 = _mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3); 	// 0, m32, m31, m30
+	return _mm_movelh_ps(row0, row1);
 }
 
 inline void pack2x2(__m128 row0, __m128 row1, float* m)
@@ -578,6 +566,82 @@ inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m
 	_mm_storeu_ps(&m[0], row0);
 	_mm_storeu_ps(&m[4], t);
 	_mm_storeu_ps(&m[8], row2);
+}
+
+//inline std::tuple<__m128, __m128> unpack2x2(__m128 m)
+//{
+//	__m128 zero = _mm_setzero_ps();
+//	return { _mm_movelh_ps(m, zero), _mm_movehl_ps(zero, m) };
+//}
+//
+//inline std::tuple<__m128, __m128> unpack2x2(const float* m)
+//{
+//	__m128 t = _mm_loadu_ps(m);
+//	__m128 zero = _mm_setzero_ps();
+//	return { _mm_movelh_ps(t, zero), _mm_movehl_ps(zero, t) };
+//}
+
+inline void unpack2x2(__m128 m, __m128& row0, __m128& row1)
+{
+	__m128 zero = _mm_setzero_ps();
+	row0 = _mm_movelh_ps(m, zero);
+	row1 = _mm_movehl_ps(zero, m);
+}
+
+inline void unpack2x2(const float* m, __m128& row0, __m128& row1)
+{
+	__m128 t = _mm_loadu_ps(m);
+	__m128 zero = _mm_setzero_ps();
+	row0 = _mm_movelh_ps(t, zero);
+	row1 = _mm_movehl_ps(zero, t);
+}
+
+//inline std::tuple<__m128, __m128, __m128> unpack3x3(const float* m)
+//{
+//	__m128 t0 = _mm_loadu_ps(&m[0]);
+//	__m128 t1 = _mm_loadu_ps(&m[4]);
+//	__m128 mask3 = detail::MASK3;
+//	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+//	return { _mm_and_ps(t0, mask3), 										// 0, m02, m01, m00
+//		_mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3),	// 0, m12, m11, m10
+//		_mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2)) };	// 0, m22, m21, m20
+//}
+
+inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
+{
+	__m128 t0 = _mm_loadu_ps(&m[0]);
+	__m128 t1 = _mm_loadu_ps(&m[4]);
+	__m128 mask3 = detail::MASK3;
+	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
+	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
+	row2 = _mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2));		// 0, m22, m21, m20
+}
+
+//inline std::tuple<__m128, __m128, __m128, __m128> unpack4x3(const float* m)
+//{
+//	__m128 t0 = _mm_loadu_ps(&m[0]);
+//	__m128 t1 = _mm_loadu_ps(&m[4]);
+//	__m128 mask3 = detail::MASK3;
+//	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+//	__m128 t3 = _mm_loadu_ps(&m[8]);
+//	return { _mm_and_ps(t0, mask3), 											// 0, m02, m01, m00
+//		_mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3),		// 0, m12, m11, m10
+//		_mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3), 	// 0, m22, m21, m20
+//		_mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3) }; 	// 0, m32, m31, m30
+//}
+
+inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
+{
+	__m128 t0 = _mm_loadu_ps(&m[0]);
+	__m128 t1 = _mm_loadu_ps(&m[4]);
+	__m128 mask3 = detail::MASK3;
+	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+	__m128 t3 = _mm_loadu_ps(&m[8]);
+	row0 = _mm_and_ps(t0, mask3); 												// 0, m02, m01, m00
+	row1 = _mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3);	// 0, m12, m11, m10
+	row2 = _mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3); 	// 0, m22, m21, m20
+	row3 = _mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3); 	// 0, m32, m31, m30
 }
 
 inline void transpose2x2(__m128& row0, __m128& row1)
@@ -668,11 +732,6 @@ inline __m128 insert3(__m128 xyz, __m128 v)
 	const __m128 mask3 = detail::MASK3;
 	return _mm_or_ps(_mm_and_ps(mask3, xyz), _mm_andnot_ps(mask3, v));
 #endif
-}
-
-inline __m128 combine2(__m128 xy, __m128 zw)
-{
-	return _mm_movelh_ps(xy, zw);
 }
 
 inline __m128 and4(__m128 v1, __m128 v2)

@@ -186,7 +186,7 @@ struct Vector3<float>
 	/*constexpr*/ explicit Vector3(float scalar) noexcept : xyz(simd::set4(scalar)) {}
 	/*constexpr*/ Vector3(float x, float y, float z) noexcept : xyz(simd::set4(x, y, z, z)) {}
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept : xyz(simd::cutoff2(v)) {}
-	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept : xyz(simd::combine2(v, simd::set2(z))) {}
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept : xyz(simd::pack2x2(v, simd::set2(z))) {}
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept : xyz(simd::set4(t.x, t.y, t.z, t.z)) {}
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : Vector3((float)t.x, (float)t.y, (float)t.z) {}
@@ -197,7 +197,7 @@ struct Vector3<float>
 	/*constexpr*/ explicit Vector3(float scalar) noexcept : xyz(simd::set3(scalar)) {}
 	/*constexpr*/ Vector3(float x, float y, float z) noexcept : xyz(simd::set3(x, y, z)) {}
 	/*constexpr*/ Vector3(Vector2<float>::ConstArg v) noexcept : xyz(simd::cutoff2(v)) {}
-	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept : xyz(simd::combine2(v, simd::set1(z))) {}
+	/*constexpr*/ Vector3(Vector2<float>::ConstArg v, float z) noexcept : xyz(simd::pack2x2(v, simd::set1(z))) {}
 	template<typename U> explicit Vector3(const IntVector3<U>& v) noexcept;
 	explicit Vector3(const tuples::templates::Tuple3<float>& t) noexcept : xyz(simd::set3(t.x, t.y, t.z)) {}
 	template<typename U> explicit Vector3(const tuples::templates::Tuple3<U>& t) noexcept : xyz(simd::set3((float)t.x, (float)t.y, (float)t.z)) {}

@@ -176,8 +176,8 @@ struct Vector4<float>
 	/*constexpr*/ explicit Vector4(float scalar) noexcept : xyzw(simd::set4(scalar)) {}
 	/*constexpr*/ Vector4(float x, float y, float z, float w) noexcept : xyzw(simd::set4(x, y, z, w)) {}
 	/*constexpr*/ Vector4(Vector2<float>::ConstArg v) noexcept : xyzw(simd::insert2(v, UNIT_W)) {}
-	/*constexpr*/ Vector4(Vector2<float>::ConstArg v, float z, float w) noexcept : xyzw(simd::combine2(v, simd::set2(z, w))) {}
-	/*constexpr*/ Vector4(Vector2<float>::ConstArg xy, Vector2<float>::ConstArg zw) noexcept : xyzw(simd::combine2(xy, zw)) {}
+	/*constexpr*/ Vector4(Vector2<float>::ConstArg v, float z, float w) noexcept : xyzw(simd::pack2x2(v, simd::set2(z, w))) {}
+	/*constexpr*/ Vector4(Vector2<float>::ConstArg xy, Vector2<float>::ConstArg zw) noexcept : xyzw(simd::pack2x2(xy, zw)) {}
 	/*constexpr*/ Vector4(Vector3<float>::ConstArg v) noexcept : xyzw(simd::insert3(v, UNIT_W)) {}
 	/*constexpr*/ Vector4(Vector3<float>::ConstArg v, float w) noexcept : xyzw(simd::insert<simd::W>(w, v)) {}
 	template<typename U> explicit Vector4(const IntVector4<U>& v) noexcept;
