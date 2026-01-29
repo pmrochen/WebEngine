@@ -43,7 +43,7 @@ struct Matrix2
 	const Vector2<T>& operator[](int i) const noexcept { return reinterpret_cast<const Vector2<T>*>(&m00)[i]; }
 
 	Matrix2 operator+() const noexcept { return *this; }
-	Matrix2 operator-() const noexcept;
+	Matrix2 operator-() const noexcept { return Matrix2(-m00, -m01, -m10, -m11); }
 	Matrix2& operator+=(const Matrix2& m) noexcept;
 	Matrix2& operator-=(const Matrix2& m) noexcept;
 	Matrix2& operator*=(T f) noexcept;
@@ -58,7 +58,7 @@ struct Matrix2
 	bool operator==(const Matrix2& m) const noexcept { return (m00 == m.m00) && (m01 == m.m01) && (m10 == m.m10) && (m11 == m.m11); }
 	bool operator!=(const Matrix2& m) const noexcept { return !(*this == m); }
 	friend std::istream& operator>>(std::istream& s, Matrix2& m);
-	friend std::ostream& operator<<(std::ostream& s, const Matrix2& m) { return s << m.m00 << ' ' << m.m01 << ' ' << m.m10 << ' ' << m.m11; }
+	friend std::ostream& operator<<(std::ostream& s, const Matrix2& m);
 
 	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m10 & m11; }
 
@@ -133,13 +133,14 @@ struct Matrix2<float>
 
 	//static constexpr int NUM_COMPONENTS = 4;
 
-	constexpr Matrix2() noexcept : row0(simd::zero<simd::float4>()), row1(simd::zero<simd::float4>()) {}
+	/*constexpr*/ Matrix2() noexcept : row0(simd::zero<simd::float4>()), row1(simd::zero<simd::float4>()) {}
 	explicit Matrix2(Uninitialized) noexcept {}
 	//explicit Matrix2(Identity) noexcept {}
-	constexpr Matrix2(float m00, float m01, float m10, float m11) noexcept;
-	constexpr Matrix2(const Vector2<float>& row0, const Vector2<float>& row1) noexcept : row0(row0), row1(row1) {}
+	/*constexpr*/ Matrix2(float m00, float m01, float m10, float m11) noexcept;
+	/*constexpr*/ Matrix2(const Vector2<float>& row0, const Vector2<float>& row1) noexcept : row0(row0), row1(row1) {}
 	explicit Matrix2(const float* m) noexcept;
 	explicit Matrix2(const simd::float4* m) noexcept : row0(m[0]), row1(m[1]) {}
+	Matrix2(simd::float4 row0, simd::float4 row1) noexcept : row0(row0), row1(row1) {}
 	Matrix2(const Matrix2& m) noexcept : row0(m.row0), row1(m.row1) {}
 	Matrix2& operator=(const Matrix2& m) noexcept { row0 = m.row0; row1 = m.row1; return *this; }
 
@@ -166,7 +167,7 @@ struct Matrix2<float>
 	bool operator==(const Matrix2& m) const noexcept;
 	bool operator!=(const Matrix2& m) const noexcept { return !(*this == m); }
 	friend std::istream& operator>>(std::istream& s, Matrix2& m);
-	friend std::ostream& operator<<(std::ostream& s, const Matrix2& m) { return s << m.m00 << ' ' << m.m01 << ' ' << m.m10 << ' ' << m.m11; }
+	friend std::ostream& operator<<(std::ostream& s, const Matrix2& m);
 
 	// #FIXME use simd::set()
 	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m10 & m11; }
@@ -242,11 +243,80 @@ const Matrix2<float> Matrix2<float>::IDENTITY{ 1.f, 0.f, 0.f, 1.f };
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<typename T>
+inline Matrix2<T>& Matrix2<T>::operator+=(const Matrix2<T>& m)
+{
+	m00 += m.m00; m01 += m.m01;
+	m10 += m.m10; m11 += m.m11;
+	return *this;
+}
 
-#if SIMD_HAS_FLOAT4
+template<typename T>
+inline Matrix2<T>& Matrix2<T>::operator-=(const Matrix2<T>& m)
+{
+	m00 -= m.m00; m01 -= m.m01;
+	m10 -= m.m10; m11 -= m.m11;
+	return *this;
+}
 
-#endif /* SIMD_HAS_FLOAT4 */
+template<typename T>
+inline Matrix2<T>& Matrix2<T>::operator*=(T f)
+{
+	m00 *= f; m01 *= f;
+	m10 *= f; m11 *= f;
+	return *this;
+}
 
+template<typename T>
+inline Matrix2<T>& Matrix2<T>::operator*=(const Matrix2<T>& m)
+{
+	set(m00*m.m00 + m01*m.m10, m00*m.m01 + m01*m.m11,
+		m10*m.m00 + m11*m.m10, m10*m.m01 + m11*m.m11);
+	return *this;
+}
+
+template<typename T>
+inline Matrix2<T> operator+(const Matrix2<T>& m1, const Matrix2<T>& m2)
+{
+	return Matrix2<T>(m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m10 + m2.m10, m1.m11 + m2.m11);
+}
+
+template<typename T>
+inline Matrix2<T> operator-(const Matrix2<T>& m1, const Matrix2<T>& m2)
+{
+	return Matrix2<T>(m1.m00 - m2.m00, m1.m01 - m2.m01, m1.m10 - m2.m10, m1.m11 - m2.m11);
+}
+
+template<typename T>
+inline Matrix2<T> operator*(T f, const Matrix2<T>& m)
+{
+	return Matrix2<T>(f*m.m00, f*m.m01, f*m.m10, f*m.m11);
+}
+
+template<typename T>
+inline Matrix2<T> operator*(const Matrix2<T>& m, T f)
+{
+	return Matrix2<T>(m.m00*f, m.m01*f, m.m10*f, m.m11*f);
+}
+
+template<typename T>
+inline Matrix2<T> operator*(const Matrix2<T>& m1, const Matrix2<T>& m2)
+{
+	return Matrix2<T>(m1.m00*m2.m00 + m1.m01*m2.m10, m1.m00*m2.m01 + m1.m01*m2.m11,
+		m1.m10*m2.m00 + m1.m11*m2.m10, m1.m10*m2.m01 + m1.m11*m2.m11);
+}
+
+template<typename T>
+inline std::istream& operator>>(std::istream& s, Matrix2<T>& m)
+{
+	return s >> m.m00 >> std::skipws >> m.m01 >> std::skipws >> m.m10 >> std::skipws >> m.m11;
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& s, const Matrix2<T>& m)
+{
+	return s << m.m00 << ' ' << m.m01 << ' ' << m.m10 << ' ' << m.m11;
+}
 
 #if SIMD_HAS_FLOAT4
 
@@ -273,9 +343,114 @@ inline Matrix2<float>::Matrix2(const float* m)
 }
 #endif
 
+inline Matrix2<float> Matrix2<float>::operator-() const
+{
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	return Matrix2<float>(simd::neg4(row0), simd::neg4(row1));
+#else
+	return Matrix2<float>(simd::neg2(row0), simd::neg2(row1));
+#endif
+}
+
+inline Matrix2<float>& Matrix2<float>::operator+=(const Matrix2<float>& m)
+{
+	row0 = simd::add4(row0, m.row0);
+	row1 = simd::add4(row1, m.row1);
+	return *this;
+}
+
+inline Matrix2<float>& Matrix2<float>::operator-=(const Matrix2<float>& m)
+{
+	row0 = simd::sub4(row0, m.row0);
+	row1 = simd::sub4(row1, m.row1);
+	return *this;
+}
+
+inline Matrix2<float>& Matrix2<float>::operator*=(float f)
+{
+	auto t = simd::set4(f);
+	row0 = simd::mul4(row0, t);
+	row1 = simd::mul4(row1, t);
+	return *this;
+}
+
+inline Matrix2<float>& Matrix2<float>::operator*=(const Matrix2<float>& m)
+{
+	auto a = simd::pack2x2(row0, row1);
+	auto b = simd::pack2x2(m.row0, m.row1);
+	auto a1 = simd::swizzle<0, 0, 2, 2>(a);
+	auto b1 = simd::swizzle<0, 1, 0, 1>(b);
+	auto a2 = simd::swizzle<1, 1, 3, 3>(a);
+	auto b2 = simd::swizzle<2, 3, 2, 3>(b);
+	auto result = simd::add4(simd::mul4(a1, b1), simd::mul4(a2, b2));
+	simd::unpack2x2(result, row0, row1);
+	return *this;
+}
+
+template<>
+inline Matrix2<float> operator+(const Matrix2<float>& m1, const Matrix2<float>& m2)
+{
+	return Matrix2<float>(simd::add4(m1.row0, m2.row0),
+		simd::add4(m1.row1, m2.row1));
+}
+
+template<>
+inline Matrix2<float> operator-(const Matrix2<float>& m1, const Matrix2<float>& m2)
+{
+	return Matrix2<float>(simd::sub4(m1.row0, m2.row0),
+		simd::sub4(m1.row1, m2.row1));
+}
+
+template<>
+inline Matrix2<float> operator*(float f, const Matrix2<float>& m)
+{
+	auto t = simd::set4(f);
+	return Matrix2<float>(simd::mul4(t, m.row0),
+		simd::mul4(t, m.row1));
+}
+
+template<>
+inline Matrix2<float> operator*(const Matrix2<float>& m, float f)
+{
+	auto t = simd::set4(f);
+	return Matrix2<float>(simd::mul4(m.row0, t),
+		simd::mul4(m.row1, t));
+}
+
+template<>
+inline Matrix2<float> operator*(const Matrix2<float>& m1, const Matrix2<float>& m2)
+{
+	auto a = simd::pack2x2(m1.row0, m1.row1);
+	auto b = simd::pack2x2(m2.row0, m2.row1);
+	auto a1 = simd::swizzle<0, 0, 2, 2>(a);
+	auto b1 = simd::swizzle<0, 1, 0, 1>(b);
+	auto a2 = simd::swizzle<1, 1, 3, 3>(a);
+	auto b2 = simd::swizzle<2, 3, 2, 3>(b);
+	auto result = simd::add4(simd::mul4(a1, b1), simd::mul4(a2, b2));
+	Matrix2<float> m(Uninitialized());
+	simd::unpack2x2(result, m.row0, m.row1);
+	return m;
+}
+
 inline bool Matrix2<float>::operator==(const Matrix2<float>& m) const
-{ 
+{
 	return simd::all4(simd::equal(simd::pack2x2(row0, row1), simd::pack2x2(m.row0, m.row1)));
+}
+
+template<>
+inline std::istream& operator>>(std::istream& s, Matrix2<float>& m)
+{
+	float m00, m01;
+	float m10, m11;
+	s >> m00 >> std::skipws >> m01 >> std::skipws >> m10 >> std::skipws >> m11;
+	m.set(m00, m01, m10, m11);
+	return s;
+}
+
+template<>
+inline std::ostream& operator<<(std::ostream& s, const Matrix2<float>& m)
+{
+	return s << m.m00 << ' ' << m.m01 << ' ' << m.m10 << ' ' << m.m11;
 }
 
 inline Matrix2<float>& Matrix2<float>::set(float m00, float m01, float m10, float m11)
@@ -288,6 +463,54 @@ inline Matrix2<float>& Matrix2<float>::set(float m00, float m01, float m10, floa
 	row1 = simd::set2(m10, m11);
 #endif
 	return *this;
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+template<typename T>
+inline Matrix2<T> concatenate(const Matrix2<T>& m1, const Matrix2<T>& m2) noexcept
+{
+	return m1*m2;
+}
+
+template<typename T>
+inline Matrix2<T> concatenate(const Matrix2<T>& m1, const Matrix2<T>& m2, const Matrix2<T>& m3) noexcept
+{
+	return concatenate(concatenate(m1, m2), m3);
+}
+
+template<typename T>
+inline Matrix2<T> concatenate(const Matrix2<T>& m1, const Matrix2<T>& m2, const Matrix2<T>& m3, const Matrix2<T>& m4) noexcept
+{
+	return concatenate(concatenate(concatenate(m1, m2), m3), m4);
+}
+
+template<typename T>
+inline Matrix2<T> transpose(const Matrix2<T>& m) noexcept
+{
+	return Matrix2<T>(m.m00, m.m10, m.m01, m.m11);
+}
+
+template<typename T>
+inline Matrix2<T> inverse(const Matrix2<T>& m) noexcept
+{
+	return Matrix2<T>(Uninitialized()).setInverse(m);
+}
+
+template<typename T>
+inline Matrix2<T> adjoint(const Matrix2<T>& m) noexcept
+{
+	return Matrix2<T>(m.m11, -m.m10, -m.m01, m.m00);
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<>
+inline Matrix2<float> transpose(const Matrix2<float>& m) noexcept
+{
+	Matrix2<float> n(m);
+	simd::transpose2x2(n.row0, n.row1);
+	return n;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

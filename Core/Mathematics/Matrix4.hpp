@@ -205,16 +205,17 @@ struct Matrix4<float>
 
 	//static constexpr int NUM_COMPONENTS = 16;
 
-	constexpr Matrix4() noexcept;
+	/*constexpr*/ Matrix4() noexcept;
 	explicit Matrix4(Uninitialized) noexcept {}
 	//explicit Matrix4(Identity) noexcept {}
-	constexpr Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) noexcept;
-	constexpr Matrix4(const Vector4<float>& row0, const Vector4<float>& row1, const Vector4<float>& row2, const Vector4<float>& row3) noexcept;
-	constexpr Matrix4(const Matrix2<float>& m) noexcept;
-	constexpr Matrix4(const Matrix3<float>& m) noexcept;
-	constexpr Matrix4(const Affinefloatransform<float>& m) noexcept;
+	/*constexpr*/ Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) noexcept;
+	/*constexpr*/ Matrix4(const Vector4<float>& row0, const Vector4<float>& row1, const Vector4<float>& row2, const Vector4<float>& row3) noexcept;
+	/*constexpr*/ Matrix4(const Matrix2<float>& m) noexcept;
+	/*constexpr*/ Matrix4(const Matrix3<float>& m) noexcept;
+	/*constexpr*/ Matrix4(const Affinefloatransform<float>& m) noexcept;
 	explicit Matrix4(const float* m) noexcept;
 	explicit Matrix4(const simd::float4* m) noexcept : row0(m[0]), row1(m[1]), row2(m[2]), row3(m[3]) {}
+	Matrix4(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) noexcept;
 	Matrix4(const Matrix4& m) noexcept : row0(m.row0), row1(m.row1), row2(m.row2), row3(m.row3) {}
 	Matrix4& operator=(const Matrix4& m) noexcept { row0 = m.row0; row1 = m.row1; row2 = m.row2; row3 = m.row3; return *this; }
 
@@ -388,7 +389,8 @@ inline Matrix4<T>::Matrix4(const Vector4<T>& row0, const Vector4<T>& row1, const
 
 template<typename T>
 inline Matrix4<T>::Matrix4(const Matrix2<T>& m) : 
-	m00(m.m00), m01(m.m01), m02(), m03(), m10(m.m10), m11(m.m11), m12(), m13(), m20(), m21(), m22(1), m23(), m30(), m31(), m32(), m33(1) 
+	m00(m.m00), m01(m.m01), m02(), m03(), m10(m.m10), m11(m.m11), m12(), m13(), m20(), m21(), m22(1), m23(), 
+	m30(), m31(), m32(), m33(1) 
 {
 }
 
@@ -404,6 +406,158 @@ inline Matrix4<T>::Matrix4(const AffineTransform<T>& m) :
 	m00(m.m00), m01(m.m01), m02(m.m02), m03(), m10(m.m10), m11(m.m11), m12(m.m12), m13(),
 	m20(m.m20), m21(m.m21), m22(m.m22), m23(), m30(m.x), m31(m.y), m32(m.z), m33(1) 
 {
+}
+
+template<typename T>
+inline Matrix4<T>::Matrix4(const T* m) :
+	m00(m[0]), m01(m[1]), m02(m[2]), m03(m[3]), m10(m[4]), m11(m[5]), m12(m[6]), m13(m[7]), 
+	m20(m[8]), m21(m[9]), m22(m[10]), m23(m[11]), m30(m[12]), m31(m[13]), m32(m[14]), m33(m[15])
+{
+}
+
+template<typename T>
+inline Matrix4<T> Matrix4<T>::operator-() const
+{
+	return Matrix4<T>(-m00, -m01, -m02, -m03,
+		-m10, -m11, -m12, -m13,
+		-m20, -m21, -m22, -m23,
+		-m30, -m31, -m32, -m33);
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::operator+=(const Matrix4<T>& m)
+{
+	m00 += m.m00; m01 += m.m01; m02 += m.m02; m03 += m.m03;
+	m10 += m.m10; m11 += m.m11; m12 += m.m12; m13 += m.m13;
+	m20 += m.m20; m21 += m.m21; m22 += m.m22; m23 += m.m23;
+	m30 += m.m30; m31 += m.m31; m32 += m.m32; m33 += m.m33;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::operator-=(const Matrix4<T>& m)
+{
+	m00 -= m.m00; m01 -= m.m01; m02 -= m.m02; m03 -= m.m03;
+	m10 -= m.m10; m11 -= m.m11; m12 -= m.m12; m13 -= m.m13;
+	m20 -= m.m20; m21 -= m.m21; m22 -= m.m22; m23 -= m.m23;
+	m30 -= m.m30; m31 -= m.m31; m32 -= m.m32; m33 -= m.m33;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::operator*=(T f)
+{
+	m00 *= f; m01 *= f; m02 *= f; m03 *= f;
+	m10 *= f; m11 *= f; m12 *= f; m13 *= f;
+	m20 *= f; m21 *= f; m22 *= f; m23 *= f;
+	m30 *= f; m31 *= f; m32 *= f; m33 *= f;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::operator*=(const Matrix4<T>& m)
+{
+	set(m00*m.m00 + m01*m.m10 + m02*m.m20 + m03*m.m30,
+		m00*m.m01 + m01*m.m11 + m02*m.m21 + m03*m.m31,
+		m00*m.m02 + m01*m.m12 + m02*m.m22 + m03*m.m32,
+		m00*m.m03 + m01*m.m13 + m02*m.m23 + m03*m.m33,
+		m10*m.m00 + m11*m.m10 + m12*m.m20 + m13*m.m30,
+		m10*m.m01 + m11*m.m11 + m12*m.m21 + m13*m.m31,
+		m10*m.m02 + m11*m.m12 + m12*m.m22 + m13*m.m32,
+		m10*m.m03 + m11*m.m13 + m12*m.m23 + m13*m.m33,
+		m20*m.m00 + m21*m.m10 + m22*m.m20 + m23*m.m30,
+		m20*m.m01 + m21*m.m11 + m22*m.m21 + m23*m.m31,
+		m20*m.m02 + m21*m.m12 + m22*m.m22 + m23*m.m32,
+		m20*m.m03 + m21*m.m13 + m22*m.m23 + m23*m.m33,
+		m30*m.m00 + m31*m.m10 + m32*m.m20 + m33*m.m30,
+		m30*m.m01 + m31*m.m11 + m32*m.m21 + m33*m.m31,
+		m30*m.m02 + m31*m.m12 + m32*m.m22 + m33*m.m32,
+		m30*m.m03 + m31*m.m13 + m32*m.m23 + m33*m.m33);
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T> operator+(const Matrix4<T>& m1, const Matrix4<T>& m2)
+{
+	return Matrix4<T>(m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m02 + m2.m02, m1.m03 + m2.m03,
+		m1.m10 + m2.m10, m1.m11 + m2.m11, m1.m12 + m2.m12, m1.m13 + m2.m13,
+		m1.m20 + m2.m20, m1.m21 + m2.m21, m1.m22 + m2.m22, m1.m23 + m2.m23,
+		m1.m30 + m2.m30, m1.m31 + m2.m31, m1.m32 + m2.m32, m1.m33 + m2.m33);
+}
+
+template<typename T>
+inline Matrix4<T> operator-(const Matrix4<T>& m1, const Matrix4<T>& m2)
+{
+	return Matrix4<T>(m1.m00 - m2.m00, m1.m01 - m2.m01, m1.m02 - m2.m02, m1.m03 - m2.m03,
+		m1.m10 - m2.m10, m1.m11 - m2.m11, m1.m12 - m2.m12, m1.m13 - m2.m13,
+		m1.m20 - m2.m20, m1.m21 - m2.m21, m1.m22 - m2.m22, m1.m23 - m2.m23,
+		m1.m30 - m2.m30, m1.m31 - m2.m31, m1.m32 - m2.m32, m1.m33 - m2.m33);
+}
+
+template<typename T>
+inline Matrix4<T> operator*(T f, const Matrix4<T>& m)
+{
+	return Matrix4<T>(f*m.m00, f*m.m01, f*m.m02, f*m.m03,
+		f*m.m10, f*m.m11, f*m.m12, f*m.m13,
+		f*m.m20, f*m.m21, f*m.m22, f*m.m23,
+		f*m.m30, f*m.m31, f*m.m32, f*m.m33);
+}
+
+template<typename T>
+inline Matrix4<T> operator*(const Matrix4<T>& m, T f)
+{
+	return Matrix4<T>(m.m00*f, m.m01*f, m.m02*f, m.m03*f,
+		m.m10*f, m.m11*f, m.m12*f, m.m13*f,
+		m.m20*f, m.m21*f, m.m22*f, m.m23*f,
+		m.m30*f, m.m31*f, m.m32*f, m.m33*f);
+}
+
+template<typename T>
+inline Matrix4<T> operator*(const Matrix4<T>& m1, const Matrix4<T>& m2)
+{
+	return Matrix4<T>(m1.m00*m2.m00 + m1.m01*m2.m10 + m1.m02*m2.m20 + m1.m03*m2.m30,
+		m1.m00*m2.m01 + m1.m01*m2.m11 + m1.m02*m2.m21 + m1.m03*m2.m31,
+		m1.m00*m2.m02 + m1.m01*m2.m12 + m1.m02*m2.m22 + m1.m03*m2.m32,
+		m1.m00*m2.m03 + m1.m01*m2.m13 + m1.m02*m2.m23 + m1.m03*m2.m33,
+		m1.m10*m2.m00 + m1.m11*m2.m10 + m1.m12*m2.m20 + m1.m13*m2.m30,
+		m1.m10*m2.m01 + m1.m11*m2.m11 + m1.m12*m2.m21 + m1.m13*m2.m31,
+		m1.m10*m2.m02 + m1.m11*m2.m12 + m1.m12*m2.m22 + m1.m13*m2.m32,
+		m1.m10*m2.m03 + m1.m11*m2.m13 + m1.m12*m2.m23 + m1.m13*m2.m33,
+		m1.m20*m2.m00 + m1.m21*m2.m10 + m1.m22*m2.m20 + m1.m23*m2.m30,
+		m1.m20*m2.m01 + m1.m21*m2.m11 + m1.m22*m2.m21 + m1.m23*m2.m31,
+		m1.m20*m2.m02 + m1.m21*m2.m12 + m1.m22*m2.m22 + m1.m23*m2.m32,
+		m1.m20*m2.m03 + m1.m21*m2.m13 + m1.m22*m2.m23 + m1.m23*m2.m33,
+		m1.m30*m2.m00 + m1.m31*m2.m10 + m1.m32*m2.m20 + m1.m33*m2.m30,
+		m1.m30*m2.m01 + m1.m31*m2.m11 + m1.m32*m2.m21 + m1.m33*m2.m31,
+		m1.m30*m2.m02 + m1.m31*m2.m12 + m1.m32*m2.m22 + m1.m33*m2.m32,
+		m1.m30*m2.m03 + m1.m31*m2.m13 + m1.m32*m2.m23 + m1.m33*m2.m33);
+}
+
+template<typename T>
+inline bool Matrix4<T>::operator==(const Matrix4<T>& m) const
+{
+	return (m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m03 == m.m03) &&
+		(m10 == m.m10) && (m11 == m.m11) && (m12 == m.m12) && (m13 == m.m13) &&
+		(m20 == m.m20) && (m21 == m.m21) && (m22 == m.m22) && (m23 == m.m23) &&
+		(m30 == m.m30) && (m31 == m.m31) && (m32 == m.m32) && (m33 == m.m33);
+}
+
+template<typename T>
+inline std::istream& operator>>(std::istream& s, Matrix4<T>& m)
+{
+	return s >> m.m00 >> std::skipws >> m.m01 >> std::skipws >> m.m02 >> std::skipws >> m.m03 >> std::skipws >>
+		m.m10 >> std::skipws >> m.m11 >> std::skipws >> m.m12 >> std::skipws >> m.m13 >> std::skipws >>
+		m.m20 >> std::skipws >> m.m21 >> std::skipws >> m.m22 >> std::skipws >> m.m23 >> std::skipws >>
+		m.m30 >> std::skipws >> m.m31 >> std::skipws >> m.m32 >> std::skipws >> m.m33;
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& s, const Matrix4<T>& m)
+{
+	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' << m.m03 << ' ' <<
+		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' << m.m13 << ' ' <<
+		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' << m.m23 << ' ' <<
+		m.m30 << ' ' << m.m31 << ' ' << m.m32 << ' ' << m.m33;
 }
 
 template<typename T>
@@ -459,10 +613,10 @@ inline Matrix4<float>::Matrix4() :
 
 inline Matrix4<float>::Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) :
-	row0(m00, m01, m02, m03),
-	row1(m10, m11, m12, m13),
-	row2(m20, m21, m22, m23),
-	row3(m30, m31, m32, m33)
+	row0(simd::set4(m00, m01, m02, m03)),
+	row1(simd::set4(m10, m11, m12, m13)),
+	row2(simd::set4(m20, m21, m22, m23)),
+	row3(simd::set4(m30, m31, m32, m33))
 {
 }
 
@@ -507,12 +661,159 @@ inline Matrix4<float>::Matrix4(const float* m) :
 {
 }
 
+inline Matrix4<float>::Matrix4(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) :
+	row0(row0), row1(row1), row2(row2), row3(row3) 
+{
+}
+
+inline Matrix4<float> Matrix4<float>::operator-() const
+{
+	return Matrix4<float>(simd::neg4(row0), simd::neg4(row1), simd::neg4(row2), simd::neg4(row3));
+}
+
+inline Matrix4<float>& Matrix4<float>::operator+=(const Matrix4<float>& m)
+{
+	row0 = simd::add4(row0, m.row0);
+	row1 = simd::add4(row1, m.row1);
+	row2 = simd::add4(row2, m.row2);
+	row3 = simd::add4(row3, m.row3);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::operator-=(const Matrix4<float>& m)
+{
+	row0 = simd::sub4(row0, m.row0);
+	row1 = simd::sub4(row1, m.row1);
+	row2 = simd::sub4(row2, m.row2);
+	row3 = simd::sub4(row3, m.row3);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::operator*=(float f)
+{
+	auto t = simd::set4(f);
+	row0 = simd::mul4(row0, t);
+	row1 = simd::mul4(row1, t);
+	row2 = simd::mul4(row2, t);
+	row3 = simd::mul4(row3, t);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::operator*=(const Matrix4<float>& m)
+{
+	auto result0 = simd::mul4(simd::broadcast<0>(row0), m.row0);
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(row0), m.row1));
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<2>(row0), m.row2));
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<3>(row0), m.row3));
+	auto result1 = simd::mul4(simd::broadcast<0>(row1), m.row0);
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<1>(row1), m.row1));
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<2>(row1), m.row2));
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<3>(row1), m.row3));
+	auto result2 = simd::mul4(simd::broadcast<0>(row2), m.row0);
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<1>(row2), m.row1));
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<2>(row2), m.row2));
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<3>(row2), m.row3));
+	auto result3 = simd::mul4(simd::broadcast<0>(row3), m.row0);
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<1>(row3), m.row1));
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<2>(row3), m.row2));
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<3>(row3), m.row3));
+	row0 = result0;
+	row1 = result1;
+	row2 = result2;
+	row3 = result3;
+	return *this;
+}
+
+template<>
+inline Matrix4<float> operator+(const Matrix4<float>& m1, const Matrix4<float>& m2)
+{
+	return Matrix4<float>(simd::add4(m1.row0, m2.row0),
+		simd::add4(m1.row1, m2.row1),
+		simd::add4(m1.row2, m2.row2),
+		simd::add4(m1.row3, m2.row3));
+}
+
+template<>
+inline Matrix4<float> operator-(const Matrix4<float>& m1, const Matrix4<float>& m2)
+{
+	return Matrix4<float>(simd::sub4(m1.row0, m2.row0),
+		simd::sub4(m1.row1, m2.row1),
+		simd::sub4(m1.row2, m2.row2),
+		simd::sub4(m1.row3, m2.row3));
+}
+
+template<>
+inline Matrix4<float> operator*(float f, const Matrix4<float>& m)
+{
+	auto t = simd::set4(f);
+	return Matrix4<float>(simd::mul4(t, m.row0),
+		simd::mul4(t, m.row1),
+		simd::mul4(t, m.row2),
+		simd::mul4(t, m.row3));
+}
+
+template<>
+inline Matrix4<float> operator*(const Matrix4<float>& m, float f)
+{
+	auto t = simd::set4(f);
+	return Matrix4<float>(simd::mul4(m.row0, t),
+		simd::mul4(m.row1, t),
+		simd::mul4(m.row2, t),
+		simd::mul4(m.row3, t));
+}
+
+template<>
+inline Matrix4<float> operator*(const Matrix4<float>& m1, const Matrix4<float>& m2)
+{
+	auto result0 = simd::mul4(simd::broadcast<0>(m1.row0), m2.row0);
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(m1.row0), m2.row1));
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<2>(m1.row0), m2.row2));
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<3>(m1.row0), m2.row3));
+	auto result1 = simd::mul4(simd::broadcast<0>(m1.row1), m2.row0);
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<1>(m1.row1), m2.row1));
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<2>(m1.row1), m2.row2));
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<3>(m1.row1), m2.row3));
+	auto result2 = simd::mul4(simd::broadcast<0>(m1.row2), m2.row0);
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<1>(m1.row2), m2.row1));
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<2>(m1.row2), m2.row2));
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<3>(m1.row2), m2.row3));
+	auto result3 = simd::mul4(simd::broadcast<0>(m1.row3), m2.row0);
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<1>(m1.row3), m2.row1));
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<2>(m1.row3), m2.row2));
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<3>(m1.row3), m2.row3));
+	return Matrix4<float>(result0, result1, result2, result3);
+}
+
 inline bool Matrix4<float>::operator==(const Matrix4<float>& m) const
 {
-	return simd::all4(simd::equal(row0, m.row0)) && 
-		simd::all4(simd::equal(row1, m.row1)) && 
+	return simd::all4(simd::equal(row0, m.row0)) &&
+		simd::all4(simd::equal(row1, m.row1)) &&
 		simd::all4(simd::equal(row2, m.row2)) &&
 		simd::all4(simd::equal(row3, m.row3));
+}
+
+template<>
+inline std::istream& operator>>(std::istream& s, Matrix4<float>& m)
+{
+	float m00, m01, m02, m03;
+	float m10, m11, m12, m13;
+	float m20, m21, m22, m23;
+	float m30, m31, m32, m33;
+	s >> m00 >> std::skipws >> m01 >> std::skipws >> m02 >> std::skipws >> m03 >> std::skipws >>
+		m10 >> std::skipws >> m11 >> std::skipws >> m12 >> std::skipws >> m13 >> std::skipws >>
+		m20 >> std::skipws >> m21 >> std::skipws >> m22 >> std::skipws >> m23 >> std::skipws >>
+		m30 >> std::skipws >> m31 >> std::skipws >> m32 >> std::skipws >> m33;
+	m.set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
+	return s;
+}
+
+template<>
+inline std::ostream& operator<<(std::ostream& s, const Matrix4<float>& m)
+{
+	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' << m.m03 << ' ' <<
+		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' << m.m13 << ' ' <<
+		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' << m.m23 << ' ' <<
+		m.m30 << ' ' << m.m31 << ' ' << m.m32 << ' ' << m.m33;
 }
 
 inline bool Matrix4<float>::isZero() const
@@ -571,18 +872,77 @@ inline Matrix4<float>& Matrix4<float>::set(const Vector4<float>& row0, const Vec
 inline Matrix4<float>& Matrix4<float>::set(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)
 {
-#if MATHEMATICS_SIMD_EXPAND_LAST
-	row0 = 
-	row1 = 
-	row2 = 
-	row3 = 
-#else
-	row0 =
-	row1 =
-	row2 =
-	row3 =
-#endif
+	row0 = simd::set4(m00, m01, m02, m03);
+	row1 = simd::set4(m10, m11, m12, m13);
+	row2 = simd::set4(m20, m21, m22, m23);
+	row3 = simd::set4(m30, m31, m32, m33);
 	return *this;
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+template<typename T>
+inline Matrix4<T> concatenate(const Matrix4<T>& m1, const Matrix4<T>& m2) noexcept
+{
+	return m1*m2;
+}
+
+template<typename T>
+inline Matrix4<T> concatenate(const Matrix4<T>& m1, const Matrix4<T>& m2, const Matrix4<T>& m3) noexcept
+{
+	return concatenate(concatenate(m1, m2), m3);
+}
+
+template<typename T>
+inline Matrix4<T> concatenate(const Matrix4<T>& m1, const Matrix4<T>& m2, const Matrix4<T>& m3, const Matrix4<T>& m4) noexcept
+{
+	return concatenate(concatenate(concatenate(m1, m2), m3), m4);
+}
+
+template<typename T>
+inline Matrix4<T> transpose(const Matrix4<T>& m) noexcept
+{
+	return Matrix4<T>(m.m00, m.m10, m.m20, m.m30,
+		m.m01, m.m11, m.m21, m.m31,
+		m.m02, m.m12, m.m22, m.m32,
+		m.m03, m.m13, m.m23, m.m33);
+}
+
+template<typename T>
+inline Matrix4<T> inverse(const Matrix4<T>& m) noexcept
+{
+	return Matrix4<T>(Uninitialized()).setInverse(m);
+}
+
+template<typename T>
+inline Matrix4<T> adjoint(const Matrix4<T>& m) noexcept
+{
+	return Matrix4<T>(Matrix3<T>(m.m11, m.m21, m.m31, m.m12, m.m22, m.m32, m.m13, m.m23, m.m33).getDeterminant(),
+		-(Matrix3<T>(m.m01, m.m21, m.m31, m.m02, m.m22, m.m32, m.m03, m.m23, m.m33).getDeterminant()),
+		Matrix3<T>(m.m01, m.m11, m.m31, m.m02, m.m12, m.m32, m.m03, m.m13, m.m33).getDeterminant(),
+		-(Matrix3<T>(m.m01, m.m11, m.m21, m.m02, m.m12, m.m22, m.m03, m.m13, m.m23).getDeterminant()),
+		-(Matrix3<T>(m.m10, m.m20, m.m30, m.m12, m.m22, m.m32, m.m13, m.m23, m.m33).getDeterminant()),
+		Matrix3<T>(m.m00, m.m20, m.m30, m.m02, m.m22, m.m32, m.m03, m.m23, m.m33).getDeterminant(),
+		-(Matrix3<T>(m.m00, m.m10, m.m30, m.m02, m.m12, m.m32, m.m03, m.m13, m.m33).getDeterminant()),
+		Matrix3<T>(m.m00, m.m10, m.m20, m.m02, m.m12, m.m22, m.m03, m.m13, m.m23).getDeterminant(),
+		Matrix3<T>(m.m10, m.m20, m.m30, m.m11, m.m21, m.m31, m.m13, m.m23, m.m33).getDeterminant(),
+		-(Matrix3<T>(m.m00, m.m20, m.m30, m.m01, m.m21, m.m31, m.m03, m.m23, m.m33).getDeterminant()),
+		Matrix3<T>(m.m00, m.m10, m.m30, m.m01, m.m11, m.m31, m.m03, m.m13, m.m33).getDeterminant(),
+		-(Matrix3<T>(m.m00, m.m10, m.m20, m.m01, m.m11, m.m21, m.m03, m.m13, m.m23).getDeterminant()),
+		-(Matrix3<T>(m.m10, m.m20, m.m30, m.m11, m.m21, m.m31, m.m12, m.m22, m.m32).getDeterminant()),
+		Matrix3<T>(m.m00, m.m20, m.m30, m.m01, m.m21, m.m31, m.m02, m.m22, m.m32).getDeterminant(),
+		-(Matrix3<T>(m.m00, m.m10, m.m30, m.m01, m.m11, m.m31, m.m02, m.m12, m.m32).getDeterminant()),
+		Matrix3<T>(m.m00, m.m10, m.m20, m.m01, m.m11, m.m21, m.m02, m.m12, m.m22).getDeterminant());
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<>
+inline Matrix4<float> transpose(const Matrix4<float>& m) noexcept
+{
+	Matrix4<float> n(m);
+	simd::transpose4x4(n.row0, n.row1, n.row2, n.row3);
+	return n;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

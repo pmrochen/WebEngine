@@ -152,8 +152,8 @@ struct AffineTransform
 	AffineTransform& setShearing(T xy, T xz, T yx, T yz, T zx, T zy) noexcept;
 	AffineTransform& setReflection(const Plane<T>& plane) noexcept;
 	AffineTransform& setInverse/*inverseOf*/(const AffineTransform& m) noexcept;
-	template<typename U = void> AffineTransform& setInverse/*inverseOf*/(const AffineTransform& m) noexcept;
-	//template<> AffineTransform& setInverse<Orthogonal>/*inverseOfOrthogonal*/(const AffineTransform& m) noexcept;
+	AffineTransform& setInverseOrthogonal/*inverseOfOrthogonal*/(const AffineTransform& m) noexcept;
+	//template<typename U = void> AffineTransform& setInverse(const AffineTransform& m) noexcept;
 	AffineTransform& preConcatenate(const AffineTransform& m) noexcept;
 	AffineTransform& concatenate(const AffineTransform& m) noexcept;
 	AffineTransform& translate(const Vector3<T>& v) noexcept { m30 += v.x; m31 += v.y; m32 += v.z; return *this; }
@@ -168,8 +168,8 @@ struct AffineTransform
 	AffineTransform& rotate(const Quaternion<T>& q) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(q)); return *this; }
 	AffineTransform& shear(T xy, T xz, T yx, T yz, T zx, T zy) noexcept { concatenate(AffineTransform(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
 	AffineTransform& invert() noexcept;
-	template<typename U = void> AffineTransform& invert() noexcept;
-	//template<> AffineTransform& invert<Orthogonal>/*invertOrthogonal*/() noexcept;
+	AffineTransform& invertOrthogonal() noexcept;
+	//template<typename U = void> AffineTransform& invert() noexcept;
 	AffineTransform& orthonormalize() noexcept { reinterpret_cast<Matrix3<T>&>(*this).orthonormalize(); return *this; }
 
 	//static const AffineTransform& getZero() noexcept { return ZERO; }
@@ -210,18 +210,19 @@ struct AffineTransform<float>
 
 	//static constexpr int NUM_COMPONENTS = 12;
 
-	constexpr AffineTransform() noexcept;
+	/*constexpr*/ AffineTransform() noexcept;
 	explicit AffineTransform(Uninitialized) noexcept {}
 	//explicit AffineTransform(Identity) noexcept {}
-	constexpr AffineTransform(float m00, float m01, float m02, float m10, float m11, float m12, float m20, float m21, float m22, float m30, float m31, float m32) noexcept;
-	constexpr AffineTransform(const Vector3<float>& row0, const Vector3<float>& row1, const Vector3<float>& row2, const Vector3<float>& row3) noexcept;
-	constexpr AffineTransform(const Matrix2<float>& m) noexcept;
-	constexpr AffineTransform(const Matrix3<float>& m) noexcept;
-	constexpr AffineTransform(const Matrix3<float>& r, const Vector3<float>& t) noexcept;
+	/*constexpr*/ AffineTransform(float m00, float m01, float m02, float m10, float m11, float m12, float m20, float m21, float m22, float m30, float m31, float m32) noexcept;
+	/*constexpr*/ AffineTransform(const Vector3<float>& row0, const Vector3<float>& row1, const Vector3<float>& row2, const Vector3<float>& row3) noexcept;
+	/*constexpr*/ AffineTransform(const Matrix2<float>& m) noexcept;
+	/*constexpr*/ AffineTransform(const Matrix3<float>& m) noexcept;
+	/*constexpr*/ AffineTransform(const Matrix3<float>& r, const Vector3<float>& t) noexcept;
 	AffineTransform(const Vector3<float>& forward, const Vector3<float>& origin) noexcept;
 	AffineTransform(const Vector3<float>& up, const Vector3<float>& forward, const Vector3<float>& origin) noexcept;
 	explicit AffineTransform(const float* m) noexcept;
 	explicit AffineTransform(const simd::float4* m) noexcept : row0(m[0]), row1(m[1]), row2(m[2]), row3(m[3]) {}
+	AffineTransform(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) noexcept;
 	AffineTransform(const AffineTransform& m) noexcept : row0(m.row0), row1(m.row1), row2(m.row2), row3(m.row3) {}
 	AffineTransform& operator=(const AffineTransform& m) noexcept { row0 = m.row0; row1 = m.row1; row2 = m.row2; row3 = m.row3; return *this; }
 
@@ -405,8 +406,90 @@ inline AffineTransform<T>::AffineTransform(const Matrix3<T>& m) :
 
 template<typename T>
 inline AffineTransform<T>::AffineTransform(const Matrix3<T>& r, const Vector3<T>& t) :
-	m00(r.m00), m01(r.m01), m02(r.m02), m10(r.m10), m11(r.m11), m12(r.m12), m20(r.m20), m21(r.m21), m22(r.m22), m30(t.x), m31(t.y), m32(t.z)
+	m00(r.m00), m01(r.m01), m02(r.m02), m10(r.m10), m11(r.m11), m12(r.m12), m20(r.m20), m21(r.m21), m22(r.m22), 
+	m30(t.x), m31(t.y), m32(t.z)
 {
+}
+
+template<typename T>
+inline AffineTransform<T>::AffineTransform(const Vector3<T>& forward, const Vector3<T>& origin) /*:
+	AffineTransform<T>(Matrix3<T>(forward), origin)*/
+{
+	T m = forward.getMagnitude();
+	if (m > T(0))
+	{
+		Vector3<T> at(forward/m);
+		if ((T(1) - std::fabs(at.y)) >= Constants<T>::TOLERANCE)
+		{
+			Vector3<T> right(at.z, T(0), -at.x);
+			right.normalize();
+			Vector3<T> up(cross(at, right));
+			set(right, up, at, origin);
+		}
+		else
+		{
+			Vector3<T> up((at.y > T(0)) ? -Vector3<T>::UNIT_Z : Vector3<T>::UNIT_Z);
+			Vector3<T> right(cross(up, at));
+			right.normalize();
+			up = cross(at, right);
+			set(right, up, at, origin);
+		}
+	}
+	else
+	{
+		set(Matrix3<T>::IDENTITY, origin);
+	}
+}
+
+template<typename T>
+inline AffineTransform<T>::AffineTransform(const Vector3<T>& up, const Vector3<T>& forward, const Vector3<T>& origin) /*:
+	AffineTransform<T>(Matrix3<T>(up, forward), origin)*/
+{
+	T m = forward.getMagnitude();
+	if ((m > T(0)) && (up.getMagnitude() > T(0)))
+	{
+		Vector3<T> at(forward/m);
+		Vector3<T> right(cross(up, at));
+		right.normalize();
+		set(right, cross(at, right), at, origin);
+	}
+	else
+	{
+		set(Matrix3<T>::IDENTITY, origin);
+	}
+}
+
+template<typename T>
+inline AffineTransform<T>::AffineTransform(const T* m) :
+	m00(m[0]), m01(m[1]), m02(m[2]), m10(m[3]), m11(m[4]), m12(m[5]), m20(m[6]), m21(m[7]), m22(m[8]), m30(m[9]), m31(m[10]), m32(m[11])
+{
+}
+
+template<typename T>
+inline bool AffineTransform<T>::operator==(const AffineTransform<T>& m) const
+{
+	return (m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) &&
+		(m10 == m.m10) && (m11 == m.m11) && (m12 == m.m12) &&
+		(m20 == m.m20) && (m21 == m.m21) && (m22 == m.m22) &&
+		(m30 == m.m30) && (m31 == m.m31) && (m32 == m.m32);
+}
+
+template<typename T>
+inline std::istream& operator>>(std::istream& s, AffineTransform<T>& m)
+{
+	return s >> m.m00 >> std::skipws >> m.m01 >> std::skipws >> m.m02 >> std::skipws >>
+		m.m10 >> std::skipws >> m.m11 >> std::skipws >> m.m12 >> std::skipws >>
+		m.m20 >> std::skipws >> m.m21 >> std::skipws >> m.m22 >> std::skipws >>
+		m.m30 >> std::skipws >> m.m31 >> std::skipws >> m.m32;
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& s, const AffineTransform<T>& m)
+{
+	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' <<
+		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' <<
+		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' <<
+		m.m30 << ' ' << m.m31 << ' ' << m.m32;
 }
 
 template<typename T>
@@ -519,6 +602,52 @@ inline AffineTransform<float>::AffineTransform(const Matrix3<float>& r, const Ve
 {
 }
 
+inline AffineTransform<float>::AffineTransform(const Vector3<float>& forward, const Vector3<float>& origin) /*:
+	AffineTransform<float>(Matrix3<float>(forward), origin)*/
+{
+	float m = forward.getMagnitude();
+	if (m > 0.f)
+	{
+		Vector3<float> at(forward/m);
+		if ((1.f - std::fabs(at.y)) >= Constants<float>::TOLERANCE)
+		{
+			Vector3<float> right(at.z, 0.f, -at.x);
+			right.normalize();
+			Vector3<float> up(cross(at, right));
+			set(right, up, at, origin);
+		}
+		else
+		{
+			Vector3<float> up((at.y > 0.f) ? -Vector3<float>::UNIT_Z : Vector3<float>::UNIT_Z);
+			Vector3<float> right(cross(up, at));
+			right.normalize();
+			up = cross(at, right);
+			set(right, up, at, origin);
+		}
+	}
+	else
+	{
+		set(Matrix3<float>::IDENTITY, origin);
+	}
+}
+
+inline AffineTransform<float>::AffineTransform(const Vector3<float>& up, const Vector3<float>& forward, const Vector3<float>& origin) /*:
+	AffineTransform<float>(Matrix3<float>(up, forward), origin)*/
+{
+	float m = forward.getMagnitude();
+	if ((m > 0.f) && (up.getMagnitude() > 0.f))
+	{
+		Vector3<float> at(forward/m);
+		Vector3<float> right(cross(up, at));
+		right.normalize();
+		set(right, cross(at, right), at, origin);
+	}
+	else
+	{
+		set(Matrix3<float>::IDENTITY, origin);
+	}
+}
+
 #if MATHEMATICS_SIMD_EXPAND_LAST
 inline AffineTransform<float>::AffineTransform(const float* m) :
 	AffineTransform(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11])
@@ -531,12 +660,41 @@ inline AffineTransform<float>::AffineTransform(const float* m)
 }
 #endif
 
+inline AffineTransform<float>::AffineTransform(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) : 
+	row0(row0), row1(row1), row2(row2), row3(row3) 
+{
+}
+
 inline bool AffineTransform<float>::operator==(const AffineTransform<float>& m) const
 {
 	return simd::all3(simd::equal(row0, m.row0)) && 
 		simd::all3(simd::equal(row1, m.row1)) && 
 		simd::all3(simd::equal(row2, m.row2)) &&
 		simd::all3(simd::equal(row3, m.row3));
+}
+
+template<>
+inline std::istream& operator>>(std::istream& s, AffineTransform<float>& m)
+{
+	float m00, m01, m02;
+	float m10, m11, m12;
+	float m20, m21, m22;
+	float m30, m31, m32;
+	s >> m00 >> std::skipws >> m01 >> std::skipws >> m02 >> std::skipws >>
+		m10 >> std::skipws >> m11 >> std::skipws >> m12 >> std::skipws >>
+		m20 >> std::skipws >> m21 >> std::skipws >> m22 >> std::skipws >>
+		m30 >> std::skipws >> m31 >> std::skipws >> m32;
+	m.set(m00, m01, m02, m10, m11, m12, m20, m21, m22, m30, m31, m32);
+	return s;
+}
+
+template<>
+inline std::ostream& operator<<(std::ostream& s, const AffineTransform<float>& m)
+{
+	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' <<
+		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' <<
+		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' <<
+		m.m30 << ' ' << m.m31 << ' ' << m.m32;
 }
 
 inline bool AffineTransform<float>::isZero() const
@@ -619,6 +777,48 @@ inline AffineTransform<float>& AffineTransform<float>::set(float m00, float m01,
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
+
+template<typename T>
+inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2) noexcept
+{
+	// #TODO
+}
+
+template<typename T>
+inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2, const AffineTransform<T>& m3) noexcept
+{
+	return concatenate(concatenate(m1, m2), m3);
+}
+
+template<typename T>
+inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2, const AffineTransform<T>& m3, 
+	const AffineTransform<T>& m4) noexcept
+{
+	return concatenate(concatenate(concatenate(m1, m2), m3), m4);
+}
+
+template<typename T>
+inline AffineTransform<T> inverse(const AffineTransform<T>& m) noexcept
+{
+	return Matrix4<T>(Uninitialized()).setInverse(m);
+}
+
+template<typename T>
+inline AffineTransform<T> inverseOrthogonal(const AffineTransform<T>& m) noexcept
+{
+	AffineTransform<T> n(Uninitialized());
+	n.m00 = m.m00; n.m01 = m.m10; n.m02 = m.m20;
+	n.m10 = m.m01; n.m11 = m.m11; n.m12 = m.m21;
+	n.m20 = m.m02; n.m21 = m.m12; n.m22 = m.m22;
+	n[3] = -(m[3]*n.getBasis());
+	return n;
+}
+
+//template<typename U = void, typename T>
+//inline AffineTransform<T> inverse(const AffineTransform<T>& m) noexcept
+//{
+//	return Matrix4<T>(Uninitialized()).setInverse<U>(m);
+//}
 
 } // namespace templates
 
