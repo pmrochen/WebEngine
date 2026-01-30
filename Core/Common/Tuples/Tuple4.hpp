@@ -6,11 +6,14 @@
 #pragma once
 
 #include <type_traits>
+#include <initializer_list>
 #include <tuple>
 #include <cstddef>
 
-namespace core::tuples {
-namespace templates {
+namespace core::tuples 
+{
+namespace templates 
+{
 
 template<typename T>
 struct Tuple4
@@ -20,12 +23,14 @@ struct Tuple4
 	constexpr Tuple4() = default; //: x(), y(), z(), w() {}
 	constexpr explicit Tuple4(const T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
 	constexpr Tuple4(const T x, const T y, const T z, const T w) noexcept : x(x), y(y), z(z), w(w) {}
+	explicit Tuple4(const std::initializer_list<T>& t) noexcept : x(t.data()[0]), y(t.data()[1]), z(t.data()[2]), w(t.data()[3]) {}
+	template<typename U> explicit Tuple4(const std::initializer_list<U>& t) noexcept : x(T(t.data()[0])), y(T(t.data()[1])), z(T(t.data()[2])), w(T(t.data()[3])) {}
 	explicit Tuple4(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
 	template<typename U> explicit Tuple4(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
 	explicit Tuple4(const T* const v) noexcept : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
 
-	explicit operator std::tuple<T, T, T, T>() noexcept { return std::tuple<T, T, T, T>(x, y, z, w); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator std::tuple<T, T, T, T>() noexcept { return std::tuple<T, T, T, T>(x, y, z, w); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() noexcept { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 
@@ -150,9 +155,10 @@ using Half4 = templates::Tuple4<half_float::half>;
 } // namespace core::tuples
 
 #ifdef HALF_HALF_HPP
-namespace ::core::serialization { 
+namespace core::serialization 
+{ 
 template<class A> 
-inline void serialize(A& ar, core::tuples::templates::Tuple4<half_float::half>& t, const unsigned int version) 
+inline void serialize(A& ar, ::core::tuples::templates::Tuple4<half_float::half>& t, const unsigned int version) 
 { 
     ar & reinterpret_cast<short&>(t.x) & reinterpret_cast<short&>(t.y) & 
         reinterpret_cast<short&>(t.z) & reinterpret_cast<short&>(t.w); 
@@ -166,18 +172,35 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::tuples::templates::Tuple4<T>>
+struct tuple_element<I, ::core::tuples::templates::Tuple4<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple4<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::tuples::templates::Tuple4<T>> : integral_constant<size_t, 4> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::tuples::templates::Tuple4<T>>
+{
+	std::size_t operator()(const ::core::tuples::templates::Tuple4<T>& v) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(v.x) + 0x9e3779b9;
+		seed ^= hasher(v.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(v.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(v.w) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std

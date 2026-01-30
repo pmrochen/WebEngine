@@ -6,11 +6,14 @@
 #pragma once
 
 #include <type_traits>
+#include <initializer_list>
 #include <tuple>
 #include <cstddef>
 
-namespace core::tuples {
-namespace templates {
+namespace core::tuples 
+{
+namespace templates 
+{
 
 template<typename T>
 struct Tuple3
@@ -20,12 +23,14 @@ struct Tuple3
 	constexpr Tuple3() = default; //: x(), y(), z() {}
 	constexpr explicit Tuple3(const T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
 	constexpr Tuple3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
+	explicit Tuple3(const std::initializer_list<T>& t) noexcept : x(t.data()[0]), y(t.data()[1]), z(t.data()[2]) {}
+	template<typename U> explicit Tuple3(const std::initializer_list<U>& t) noexcept : x(T(t.data()[0])), y(T(t.data()[1])), z(T(t.data()[2])) {}
 	explicit Tuple3(const std::tuple<T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)) {}
 	template<typename U> explicit Tuple3(const std::tuple<U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))) {}
 	explicit Tuple3(const T* const v) noexcept : x(v[0]), y(v[1]), z(v[2]) {}
 
-	explicit operator std::tuple<T, T, T>() noexcept { return std::tuple<T, T, T>(x, y, z); }
-	template<typename U> explicit operator std::tuple<U, U, U>() noexcept { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
+	//explicit operator std::tuple<T, T, T>() noexcept { return std::tuple<T, T, T>(x, y, z); }
+	//template<typename U> explicit operator std::tuple<U, U, U>() noexcept { return std::tuple<U, U, U>(U(x), U(y), U(z)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 
@@ -137,18 +142,34 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::tuples::templates::Tuple3<T>>
+struct tuple_element<I, ::core::tuples::templates::Tuple3<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::tuples::templates::Tuple3<T>> : integral_constant<size_t, 3> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::tuples::templates::Tuple3<T>> : integral_constant<size_t, 3> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::tuples::templates::Tuple3<T>>
+{
+	std::size_t operator()(const ::core::tuples::templates::Tuple3<T>& v) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(v.x) + 0x9e3779b9;
+		seed ^= hasher(v.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(v.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std
