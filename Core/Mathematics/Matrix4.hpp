@@ -22,8 +22,10 @@
 #include "Matrix3.hpp"
 #include "AffineTransform.hpp"
 
-namespace core::mathematics {
-namespace templates {
+namespace core::mathematics 
+{
+namespace templates 
+{
 
 template<typename T>
 struct YawPitchRoll;
@@ -41,6 +43,7 @@ template<typename T>
 struct Matrix4
 {
 	using Real = T;
+	using ComponentType = T;
 	using ConstArg = const Matrix4&;
 	using ConstResult = const Matrix4&;
 
@@ -68,16 +71,8 @@ struct Matrix4
 	Matrix4& operator*=(T f) noexcept;
 	Matrix4& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	Matrix4& operator*=(const Matrix4& m) noexcept;
-	friend Matrix4 operator+(const Matrix4& m1, const Matrix4& m2) noexcept;
-	friend Matrix4 operator-(const Matrix4& m1, const Matrix4& m2) noexcept;
-	friend Matrix4 operator*(T f, const Matrix4& m) noexcept;
-	friend Matrix4 operator*(const Matrix4& m, T f) noexcept;
-	friend Matrix4 operator/(const Matrix4& m, T f) noexcept { return operator*(m, T(1)/f); }
-	friend Matrix4 operator*(const Matrix4& m1, const Matrix4& m2) noexcept;
 	bool operator==(const Matrix4& m) const noexcept;
 	bool operator!=(const Matrix4& m) const noexcept { return !(*this == m); }
-	friend std::istream& operator>>(std::istream& s, Matrix4& m);
-	friend std::ostream& operator<<(std::ostream& s, const Matrix4& m);
 
 	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m02 & m03 & m10 & m11 & m12 & m13 & m20 & m21 & m22 & m23 & m30 & m31 & m32 & m33; }
 
@@ -200,6 +195,7 @@ template<>
 struct Matrix4<float>
 {
 	using Real = float;
+	using ComponentType = float;
 	using ConstArg = const Matrix4;
 	using ConstResult = const Matrix4;
 
@@ -233,16 +229,8 @@ struct Matrix4<float>
 	Matrix4& operator*=(float f) noexcept;
 	Matrix4& operator/=(float f) noexcept { return operator*=(1.f/f); }
 	Matrix4& operator*=(const Matrix4& m) noexcept;
-	friend Matrix4 operator+(const Matrix4& m1, const Matrix4& m2) noexcept;
-	friend Matrix4 operator-(const Matrix4& m1, const Matrix4& m2) noexcept;
-	friend Matrix4 operator*(float f, const Matrix4& m) noexcept;
-	friend Matrix4 operator*(const Matrix4& m, float f) noexcept;
-	friend Matrix4 operator/(const Matrix4& m, float f) noexcept { return operator*(m, 1.f/f); }
-	friend Matrix4 operator*(const Matrix4& m1, const Matrix4& m2) noexcept;
 	bool operator==(const Matrix4& m) const noexcept;
 	bool operator!=(const Matrix4& m) const noexcept { return !(*this == m); }
-	friend std::istream& operator>>(std::istream& s, Matrix4& m);
-	friend std::ostream& operator<<(std::ostream& s, const Matrix4& m);
 
 	// #FIXME use simd::set()
 	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m02 & m03 & m10 & m11 & m12 & m13 & m20 & m21 & m22 & m23 & m30 & m31 & m32 & m33; }
@@ -477,7 +465,7 @@ inline Matrix4<T>& Matrix4<T>::operator*=(const Matrix4<T>& m)
 }
 
 template<typename T>
-inline Matrix4<T> operator+(const Matrix4<T>& m1, const Matrix4<T>& m2)
+inline Matrix4<T> operator+(const Matrix4<T>& m1, const Matrix4<T>& m2) noexcept
 {
 	return Matrix4<T>(m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m02 + m2.m02, m1.m03 + m2.m03,
 		m1.m10 + m2.m10, m1.m11 + m2.m11, m1.m12 + m2.m12, m1.m13 + m2.m13,
@@ -486,7 +474,7 @@ inline Matrix4<T> operator+(const Matrix4<T>& m1, const Matrix4<T>& m2)
 }
 
 template<typename T>
-inline Matrix4<T> operator-(const Matrix4<T>& m1, const Matrix4<T>& m2)
+inline Matrix4<T> operator-(const Matrix4<T>& m1, const Matrix4<T>& m2) noexcept
 {
 	return Matrix4<T>(m1.m00 - m2.m00, m1.m01 - m2.m01, m1.m02 - m2.m02, m1.m03 - m2.m03,
 		m1.m10 - m2.m10, m1.m11 - m2.m11, m1.m12 - m2.m12, m1.m13 - m2.m13,
@@ -495,7 +483,7 @@ inline Matrix4<T> operator-(const Matrix4<T>& m1, const Matrix4<T>& m2)
 }
 
 template<typename T>
-inline Matrix4<T> operator*(T f, const Matrix4<T>& m)
+inline Matrix4<T> operator*(T f, const Matrix4<T>& m) noexcept
 {
 	return Matrix4<T>(f*m.m00, f*m.m01, f*m.m02, f*m.m03,
 		f*m.m10, f*m.m11, f*m.m12, f*m.m13,
@@ -504,7 +492,7 @@ inline Matrix4<T> operator*(T f, const Matrix4<T>& m)
 }
 
 template<typename T>
-inline Matrix4<T> operator*(const Matrix4<T>& m, T f)
+inline Matrix4<T> operator*(const Matrix4<T>& m, T f) noexcept
 {
 	return Matrix4<T>(m.m00*f, m.m01*f, m.m02*f, m.m03*f,
 		m.m10*f, m.m11*f, m.m12*f, m.m13*f,
@@ -513,7 +501,7 @@ inline Matrix4<T> operator*(const Matrix4<T>& m, T f)
 }
 
 template<typename T>
-inline Matrix4<T> operator*(const Matrix4<T>& m1, const Matrix4<T>& m2)
+inline Matrix4<T> operator*(const Matrix4<T>& m1, const Matrix4<T>& m2) noexcept
 {
 	return Matrix4<T>(m1.m00*m2.m00 + m1.m01*m2.m10 + m1.m02*m2.m20 + m1.m03*m2.m30,
 		m1.m00*m2.m01 + m1.m01*m2.m11 + m1.m02*m2.m21 + m1.m03*m2.m31,
@@ -534,6 +522,12 @@ inline Matrix4<T> operator*(const Matrix4<T>& m1, const Matrix4<T>& m2)
 }
 
 template<typename T>
+inline Matrix4<T> operator/(const Matrix4<T>& m, T f) noexcept 
+{ 
+	return operator*(m, T(1)/f); 
+}
+
+template<typename T>
 inline bool Matrix4<T>::operator==(const Matrix4<T>& m) const
 {
 	return (m00 == m.m00) && (m01 == m.m01) && (m02 == m.m02) && (m03 == m.m03) &&
@@ -542,22 +536,23 @@ inline bool Matrix4<T>::operator==(const Matrix4<T>& m) const
 		(m30 == m.m30) && (m31 == m.m31) && (m32 == m.m32) && (m33 == m.m33);
 }
 
-template<typename T>
-inline std::istream& operator>>(std::istream& s, Matrix4<T>& m)
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Matrix4<U>& m)
 {
-	return s >> m.m00 >> std::skipws >> m.m01 >> std::skipws >> m.m02 >> std::skipws >> m.m03 >> std::skipws >>
-		m.m10 >> std::skipws >> m.m11 >> std::skipws >> m.m12 >> std::skipws >> m.m13 >> std::skipws >>
-		m.m20 >> std::skipws >> m.m21 >> std::skipws >> m.m22 >> std::skipws >> m.m23 >> std::skipws >>
-		m.m30 >> std::skipws >> m.m31 >> std::skipws >> m.m32 >> std::skipws >> m.m33;
+	return s >> m.m00 >> std::ws >> m.m01 >> std::ws >> m.m02 >> std::ws >> m.m03 >> std::ws >>
+		m.m10 >> std::ws >> m.m11 >> std::ws >> m.m12 >> std::ws >> m.m13 >> std::ws >>
+		m.m20 >> std::ws >> m.m21 >> std::ws >> m.m22 >> std::ws >> m.m23 >> std::ws >>
+		m.m30 >> std::ws >> m.m31 >> std::ws >> m.m32 >> std::ws >> m.m33;
 }
 
-template<typename T>
-inline std::ostream& operator<<(std::ostream& s, const Matrix4<T>& m)
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Matrix4<U>& m)
 {
-	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' << m.m03 << ' ' <<
-		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' << m.m13 << ' ' <<
-		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' << m.m23 << ' ' <<
-		m.m30 << ' ' << m.m31 << ' ' << m.m32 << ' ' << m.m33;
+	constexpr C WS(0x20);
+	return s << m.m00 << WS << m.m01 << WS << m.m02 << WS << m.m03 << WS <<
+		m.m10 << WS << m.m11 << WS << m.m12 << WS << m.m13 << WS <<
+		m.m20 << WS << m.m21 << WS << m.m22 << WS << m.m23 << WS <<
+		m.m30 << WS << m.m31 << WS << m.m32 << WS << m.m33;
 }
 
 template<typename T>
@@ -725,7 +720,7 @@ inline Matrix4<float>& Matrix4<float>::operator*=(const Matrix4<float>& m)
 }
 
 template<>
-inline Matrix4<float> operator+(const Matrix4<float>& m1, const Matrix4<float>& m2)
+inline Matrix4<float> operator+(const Matrix4<float>& m1, const Matrix4<float>& m2) noexcept
 {
 	return Matrix4<float>(simd::add4(m1.row0, m2.row0),
 		simd::add4(m1.row1, m2.row1),
@@ -734,7 +729,7 @@ inline Matrix4<float> operator+(const Matrix4<float>& m1, const Matrix4<float>& 
 }
 
 template<>
-inline Matrix4<float> operator-(const Matrix4<float>& m1, const Matrix4<float>& m2)
+inline Matrix4<float> operator-(const Matrix4<float>& m1, const Matrix4<float>& m2) noexcept
 {
 	return Matrix4<float>(simd::sub4(m1.row0, m2.row0),
 		simd::sub4(m1.row1, m2.row1),
@@ -743,7 +738,7 @@ inline Matrix4<float> operator-(const Matrix4<float>& m1, const Matrix4<float>& 
 }
 
 template<>
-inline Matrix4<float> operator*(float f, const Matrix4<float>& m)
+inline Matrix4<float> operator*(float f, const Matrix4<float>& m) noexcept
 {
 	auto t = simd::set4(f);
 	return Matrix4<float>(simd::mul4(t, m.row0),
@@ -753,7 +748,7 @@ inline Matrix4<float> operator*(float f, const Matrix4<float>& m)
 }
 
 template<>
-inline Matrix4<float> operator*(const Matrix4<float>& m, float f)
+inline Matrix4<float> operator*(const Matrix4<float>& m, float f) noexcept
 {
 	auto t = simd::set4(f);
 	return Matrix4<float>(simd::mul4(m.row0, t),
@@ -763,7 +758,7 @@ inline Matrix4<float> operator*(const Matrix4<float>& m, float f)
 }
 
 template<>
-inline Matrix4<float> operator*(const Matrix4<float>& m1, const Matrix4<float>& m2)
+inline Matrix4<float> operator*(const Matrix4<float>& m1, const Matrix4<float>& m2) noexcept
 {
 	auto result0 = simd::mul4(simd::broadcast<0>(m1.row0), m2.row0);
 	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(m1.row0), m2.row1));
@@ -784,6 +779,12 @@ inline Matrix4<float> operator*(const Matrix4<float>& m1, const Matrix4<float>& 
 	return Matrix4<float>(result0, result1, result2, result3);
 }
 
+template<>
+inline Matrix4<float> operator/(const Matrix4<float>& m, float f) noexcept 
+{ 
+	return operator*(m, 1.f/f); 
+}
+
 inline bool Matrix4<float>::operator==(const Matrix4<float>& m) const
 {
 	return simd::all4(simd::equal(row0, m.row0)) &&
@@ -792,28 +793,19 @@ inline bool Matrix4<float>::operator==(const Matrix4<float>& m) const
 		simd::all4(simd::equal(row3, m.row3));
 }
 
-template<>
-inline std::istream& operator>>(std::istream& s, Matrix4<float>& m)
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Matrix4<float>& m)
 {
 	float m00, m01, m02, m03;
 	float m10, m11, m12, m13;
 	float m20, m21, m22, m23;
 	float m30, m31, m32, m33;
-	s >> m00 >> std::skipws >> m01 >> std::skipws >> m02 >> std::skipws >> m03 >> std::skipws >>
-		m10 >> std::skipws >> m11 >> std::skipws >> m12 >> std::skipws >> m13 >> std::skipws >>
-		m20 >> std::skipws >> m21 >> std::skipws >> m22 >> std::skipws >> m23 >> std::skipws >>
-		m30 >> std::skipws >> m31 >> std::skipws >> m32 >> std::skipws >> m33;
+	s >> m00 >> std::ws >> m01 >> std::ws >> m02 >> std::ws >> m03 >> std::ws >>
+		m10 >> std::ws >> m11 >> std::ws >> m12 >> std::ws >> m13 >> std::ws >>
+		m20 >> std::ws >> m21 >> std::ws >> m22 >> std::ws >> m23 >> std::ws >>
+		m30 >> std::ws >> m31 >> std::ws >> m32 >> std::ws >> m33;
 	m.set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
 	return s;
-}
-
-template<>
-inline std::ostream& operator<<(std::ostream& s, const Matrix4<float>& m)
-{
-	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' << m.m03 << ' ' <<
-		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' << m.m13 << ' ' <<
-		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' << m.m23 << ' ' <<
-		m.m30 << ' ' << m.m31 << ' ' << m.m32 << ' ' << m.m33;
 }
 
 inline bool Matrix4<float>::isZero() const
@@ -969,7 +961,8 @@ using Matrix4Result = templates::Matrix4<float>::ConstResult;
 #include "Quaternion.hpp"
 #include "Plane.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 #if SIMD_HAS_FLOAT4
 

@@ -10,6 +10,7 @@
 #include <limits>
 #include <type_traits>
 #include <algorithm>
+#include <utility>
 #include <tuple>
 #include <cstddef>
 #include <cmath>
@@ -19,8 +20,10 @@
 #include "Vector3.hpp"
 #include "Quaternion.hpp"
 
-namespace core::mathematics {
-namespace templates {
+namespace core::mathematics 
+{
+namespace templates 
+{
 
 template<typename T>
 struct Euler;
@@ -56,16 +59,8 @@ struct YawPitchRoll
 	YawPitchRoll& operator-=(const YawPitchRoll& r) noexcept { yaw -= r.yaw; pitch -= r.pitch; roll -= r.roll; return *this; }
 	YawPitchRoll& operator*=(T f) noexcept { yaw *= f; pitch *= f; roll *= f; return *this; }
 	YawPitchRoll& operator/=(T f) noexcept { return operator*=(T(1)/f); }
-	friend YawPitchRoll operator+(const YawPitchRoll& r1, const YawPitchRoll& r2) noexcept;
-	friend YawPitchRoll operator-(const YawPitchRoll& r1, const YawPitchRoll& r2) noexcept;
-	friend YawPitchRoll operator*(T f, const YawPitchRoll& r) noexcept { return YawPitchRoll(f*r.yaw, f*r.pitch, f*r.roll); }
-	friend YawPitchRoll operator*(const YawPitchRoll& r, T f) noexcept { return YawPitchRoll(r.yaw*f, r.pitch*f, r.roll*f); }
-	friend YawPitchRoll operator/(T f, const YawPitchRoll& r) noexcept { return YawPitchRoll(f/r.yaw, f/r.pitch, f/r.roll); }
-	friend YawPitchRoll operator/(const YawPitchRoll& r, T f) noexcept { return operator*(r, T(1)/f); }
 	bool operator==(const YawPitchRoll& r) const noexcept { return (yaw == r.yaw) && (pitch == r.pitch) && (roll == r.roll); }
 	bool operator!=(const YawPitchRoll& r) const noexcept { return !(*this == r); }
-	friend std::istream& operator>>(std::istream& s, YawPitchRoll& r);
-	friend std::ostream& operator<<(std::ostream& s, const YawPitchRoll& r) { return s << r.yaw << ' ' << r.pitch << ' ' << r.roll; }
 
 	template<class A> void serialize(A& ar, unsigned int version) { ar & yaw & pitch & roll; }
 
@@ -143,21 +138,52 @@ inline const T&& get(const YawPitchRoll<T>&& r) noexcept
 }
 
 template<typename T>
-inline YawPitchRoll<T> operator+(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2)
+inline YawPitchRoll<T> operator+(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2) noexcept
 {
 	return YawPitchRoll<T>(r1.yaw + r2.yaw, r1.pitch + r2.pitch, r1.roll + r2.roll);
 }
 
 template<typename T>
-inline YawPitchRoll<T> operator-(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2)
+inline YawPitchRoll<T> operator-(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2) noexcept
 {
 	return YawPitchRoll<T>(r1.yaw - r2.yaw, r1.pitch - r2.pitch, r1.roll - r2.roll);
 }
 
 template<typename T>
-inline std::istream& operator>>(std::istream& s, YawPitchRoll<T>& r) 
+inline YawPitchRoll<T> operator*(T f, const YawPitchRoll<T>& r) noexcept 
 { 
-	return s >> r.yaw >> std::skipws >> r.pitch >> std::skipws >> r.roll; 
+	return YawPitchRoll(f*r.yaw, f*r.pitch, f*r.roll); 
+}
+
+template<typename T>
+inline YawPitchRoll<T> operator*(const YawPitchRoll<T>& r, T f) noexcept 
+{ 
+	return YawPitchRoll(r.yaw*f, r.pitch*f, r.roll*f); 
+}
+
+template<typename T>
+inline YawPitchRoll<T> operator/(T f, const YawPitchRoll<T>& r) noexcept 
+{ 
+	return YawPitchRoll(f/r.yaw, f/r.pitch, f/r.roll); 
+}
+
+template<typename T>
+inline YawPitchRoll<T> operator/(const YawPitchRoll<T>& r, T f) noexcept 
+{ 
+	return operator*(r, T(1)/f); 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, YawPitchRoll<U>& r)
+{ 
+	return s >> r.yaw >> std::ws >> r.pitch >> std::ws >> r.roll; 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const YawPitchRoll<U>& r)
+{ 
+	constexpr C WS(0x20);
+	return s << r.yaw << WS << r.pitch << WS << r.roll;
 }
 
 template<typename T>
@@ -264,18 +290,34 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::YawPitchRoll<T>>
+struct tuple_element<I, ::core::mathematics::templates::YawPitchRoll<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::YawPitchRoll<T>> : integral_constant<size_t, 3> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::mathematics::templates::YawPitchRoll<T>> : integral_constant<size_t, 3> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::mathematics::templates::YawPitchRoll<T>>
+{
+	std::size_t operator()(const ::core::mathematics::templates::YawPitchRoll<T>& r) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(r.yaw) + 0x9e3779b9;
+		seed ^= hasher(r.pitch) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(r.roll) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std
@@ -283,7 +325,8 @@ struct tuple_size<core::mathematics::templates::YawPitchRoll<T>> : integral_cons
 #include "Euler.hpp"
 #include "Matrix3.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 template<typename T>
 inline YawPitchRoll<T>::YawPitchRoll(const Euler<T>& e)

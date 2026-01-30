@@ -21,13 +21,15 @@
 #include "Matrix2.hpp"
 #include "Matrix3.hpp"
 
-namespace core::mathematics {
+namespace core::mathematics 
+{
 
 struct Orthogonal
 {
 };
 
-namespace templates {
+namespace templates 
+{
 
 template<typename T>
 struct YawPitchRoll;
@@ -45,6 +47,7 @@ template<typename T>
 struct AffineTransform
 {
 	using Real = T;
+	using ComponentType = T;
 	using ConstArg = const AffineTransform&;
 	using ConstResult = const AffineTransform&;
 
@@ -69,8 +72,6 @@ struct AffineTransform
 
 	bool operator==(const AffineTransform& m) const noexcept;
 	bool operator!=(const AffineTransform& m) const noexcept { return !(*this == m); }
-	friend std::istream& operator>>(std::istream& s, AffineTransform& m);
-	friend std::ostream& operator<<(std::ostream& s, const AffineTransform& m);
 
 	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m02 & m10 & m11 & m12 & m20 & m21 & m22 & m30 & m31 & m32; }
 
@@ -205,6 +206,7 @@ template<>
 struct AffineTransform<float>
 {
 	using Real = float;
+	using ComponentType = float;
 	using ConstArg = const AffineTransform;
 	using ConstResult = const AffineTransform;
 
@@ -235,8 +237,6 @@ struct AffineTransform<float>
 
 	bool operator==(const AffineTransform& m) const noexcept;
 	bool operator!=(const AffineTransform& m) const noexcept { return !(*this == m); }
-	friend std::istream& operator>>(std::istream& s, AffineTransform& m);
-	friend std::ostream& operator<<(std::ostream& s, const AffineTransform& m);
 
 	// #FIXME use simd::set()
 	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m02 & m10 & m11 & m12 & m20 & m21 & m22 & m30 & m31 & m32; }
@@ -474,22 +474,23 @@ inline bool AffineTransform<T>::operator==(const AffineTransform<T>& m) const
 		(m30 == m.m30) && (m31 == m.m31) && (m32 == m.m32);
 }
 
-template<typename T>
-inline std::istream& operator>>(std::istream& s, AffineTransform<T>& m)
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, AffineTransform<U>& m)
 {
-	return s >> m.m00 >> std::skipws >> m.m01 >> std::skipws >> m.m02 >> std::skipws >>
-		m.m10 >> std::skipws >> m.m11 >> std::skipws >> m.m12 >> std::skipws >>
-		m.m20 >> std::skipws >> m.m21 >> std::skipws >> m.m22 >> std::skipws >>
-		m.m30 >> std::skipws >> m.m31 >> std::skipws >> m.m32;
+	return s >> m.m00 >> std::ws >> m.m01 >> std::ws >> m.m02 >> std::ws >>
+		m.m10 >> std::ws >> m.m11 >> std::ws >> m.m12 >> std::ws >>
+		m.m20 >> std::ws >> m.m21 >> std::ws >> m.m22 >> std::ws >>
+		m.m30 >> std::ws >> m.m31 >> std::ws >> m.m32;
 }
 
-template<typename T>
-inline std::ostream& operator<<(std::ostream& s, const AffineTransform<T>& m)
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const AffineTransform<U>& m)
 {
-	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' <<
-		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' <<
-		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' <<
-		m.m30 << ' ' << m.m31 << ' ' << m.m32;
+	constexpr C WS(0x20);
+	return s << m.m00 << WS << m.m01 << WS << m.m02 << WS <<
+		m.m10 << WS << m.m11 << WS << m.m12 << WS <<
+		m.m20 << WS << m.m21 << WS << m.m22 << WS <<
+		m.m30 << WS << m.m31 << WS << m.m32;
 }
 
 template<typename T>
@@ -673,28 +674,19 @@ inline bool AffineTransform<float>::operator==(const AffineTransform<float>& m) 
 		simd::all3(simd::equal(row3, m.row3));
 }
 
-template<>
-inline std::istream& operator>>(std::istream& s, AffineTransform<float>& m)
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, AffineTransform<float>& m)
 {
 	float m00, m01, m02;
 	float m10, m11, m12;
 	float m20, m21, m22;
 	float m30, m31, m32;
-	s >> m00 >> std::skipws >> m01 >> std::skipws >> m02 >> std::skipws >>
-		m10 >> std::skipws >> m11 >> std::skipws >> m12 >> std::skipws >>
-		m20 >> std::skipws >> m21 >> std::skipws >> m22 >> std::skipws >>
-		m30 >> std::skipws >> m31 >> std::skipws >> m32;
+	s >> m00 >> std::ws >> m01 >> std::ws >> m02 >> std::ws >>
+		m10 >> std::ws >> m11 >> std::ws >> m12 >> std::ws >>
+		m20 >> std::ws >> m21 >> std::ws >> m22 >> std::ws >>
+		m30 >> std::ws >> m31 >> std::ws >> m32;
 	m.set(m00, m01, m02, m10, m11, m12, m20, m21, m22, m30, m31, m32);
 	return s;
-}
-
-template<>
-inline std::ostream& operator<<(std::ostream& s, const AffineTransform<float>& m)
-{
-	return s << m.m00 << ' ' << m.m01 << ' ' << m.m02 << ' ' <<
-		m.m10 << ' ' << m.m11 << ' ' << m.m12 << ' ' <<
-		m.m20 << ' ' << m.m21 << ' ' << m.m22 << ' ' <<
-		m.m30 << ' ' << m.m31 << ' ' << m.m32;
 }
 
 inline bool AffineTransform<float>::isZero() const
@@ -842,7 +834,8 @@ using AffineTransformResult = templates::AffineTransform<float>::ConstResult;
 #include "Quaternion.hpp"
 #include "Plane.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 #if SIMD_HAS_FLOAT4
 

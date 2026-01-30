@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <utility>
 #include <tuple>
 #include <cstddef>
 #include <cmath>
@@ -18,8 +19,10 @@
 #include "Scalar.hpp"
 #include "Vector3.hpp"
 
-namespace core::mathematics {
-namespace templates {
+namespace core::mathematics 
+{
+namespace templates 
+{
 
 template<typename T>
 struct Matrix3;
@@ -34,6 +37,7 @@ template<typename T>
 struct Quaternion
 {
 	using Real = T;
+	using ComponentType = T;
 	using ConstArg = const Quaternion&;
 	using ConstResult = const Quaternion&;
 
@@ -57,8 +61,8 @@ struct Quaternion
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
-	explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(x, y, z, w); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(x, y, z, w); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -66,27 +70,15 @@ struct Quaternion
 
 	Quaternion operator+() const noexcept { return *this; }
 	Quaternion operator-() const noexcept { return Quaternion(-x, -y, -z, -w); }
-	Quaternion& operator+=(ConstArg q) noexcept { x += q.x; y += q.y; z += q.z; w += q.w; return *this; }
-	Quaternion& operator-=(ConstArg q) noexcept { x -= q.x; y -= q.y; z -= q.z; w -= q.w; return *this; }
-	Quaternion& operator*=(ConstArg q) noexcept;
-	Quaternion& operator*=(Vector3<T>::ConstArg v) noexcept;
+	Quaternion& operator+=(const Quaternion& q) noexcept { x += q.x; y += q.y; z += q.z; w += q.w; return *this; }
+	Quaternion& operator-=(const Quaternion& q) noexcept { x -= q.x; y -= q.y; z -= q.z; w -= q.w; return *this; }
+	Quaternion& operator*=(const Quaternion& q) noexcept;
+	Quaternion& operator*=(const Vector3<T>& v) noexcept;
 	Quaternion& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
-	//Quaternion& operator/=(ConstArg q) noexcept { *this = *this/q; return *this; }
+	//Quaternion& operator/=(const Quaternion& q) noexcept { *this = *this/q; return *this; }
 	Quaternion& operator/=(T f) noexcept { return operator*=(T(1)/f); }
-	friend Quaternion operator+(ConstArg q1, ConstArg q2) noexcept { return Quaternion(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w); }
-	friend Quaternion operator-(ConstArg q1, ConstArg q2) noexcept { return Quaternion(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w); }
-	friend Quaternion operator*(ConstArg q1, ConstArg q2) noexcept;
-	friend Quaternion operator*(Vector3<T>::ConstArg v, ConstArg q) noexcept;
-	friend Quaternion operator*(ConstArg q, Vector3<T>::ConstArg v) noexcept;
-	friend Quaternion operator*(T f, ConstArg q) noexcept { return Quaternion(f*q.x, f*q.y, f*q.z, f*q.w); }
-	friend Quaternion operator*(ConstArg q, T f) noexcept { return Quaternion(q.x*f, q.y*f, q.z*f, q.w*f); }
-	//friend Quaternion operator/(ConstArg q1, ConstArg q2) noexcept { return q1*(Quaternion(-q2.x, -q2.y, -q2.z, q2.w)/q2.getNorm()); }
-	friend Quaternion operator/(T f, ConstArg q) noexcept { return f*(Quaternion(-q.x, -q.y, -q.z, q.w)/q.getNorm()); }
-	friend Quaternion operator/(ConstArg q, T f) noexcept { return operator*(q, T(1)/f); }
 	bool operator==(const Quaternion& q) const noexcept { return (x == q.x) && (y == q.y) && (z == q.z) && (w == q.w); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
-	friend std::istream& operator>>(std::istream& s, Quaternion& q);
-	friend std::ostream& operator<<(std::ostream& s, const Quaternion& q) { return s << q.x << ' ' << q.y << ' ' << q.z << ' ' << q.w; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
@@ -155,6 +147,7 @@ template<>
 struct Quaternion<float>
 {
 	using Real = float;
+	using ComponentType = float;
 	using ConstArg = const Quaternion;
 	using ConstResult = const Quaternion;
 
@@ -182,8 +175,8 @@ struct Quaternion<float>
 	operator simd::float4() const noexcept { return xyzw; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
-	explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(x, y, z, w); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(x, y, z, w); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator float* () noexcept { return &x; }
 	explicit operator const float* () const noexcept { return &x; }
 	float& operator[](int i) noexcept { return (&x)[i]; }
@@ -191,27 +184,15 @@ struct Quaternion<float>
 
 	Quaternion operator+() const noexcept { return *this; }
 	Quaternion operator-() const noexcept { return Quaternion(simd::neg4(xyzw)); }
-	Quaternion& operator+=(ConstArg q) noexcept { xyzw = simd::add4(xyzw, q); return *this; }
-	Quaternion& operator-=(ConstArg q) noexcept { xyzw = simd::sub4(xyzw, q); return *this; }
-	Quaternion& operator*=(ConstArg q) noexcept;
-	Quaternion& operator*=(Vector3<float>::ConstArg v) noexcept;
+	Quaternion& operator+=(const Quaternion& q) noexcept { xyzw = simd::add4(xyzw, q); return *this; }
+	Quaternion& operator-=(const Quaternion& q) noexcept { xyzw = simd::sub4(xyzw, q); return *this; }
+	Quaternion& operator*=(const Quaternion& q) noexcept;
+	Quaternion& operator*=(const Vector3<float>& v) noexcept;
 	Quaternion& operator*=(float f) noexcept { xyzw = simd::mul4(xyzw, simd::set4(f)); return *this; }
-	//Quaternion& operator/=(ConstArg q) noexcept { *this = *this/q; return *this; }
+	//Quaternion& operator/=(const Quaternion& q) noexcept { *this = *this/q; return *this; }
 	Quaternion& operator/=(float f) noexcept { xyzw = simd::div4(xyzw, simd::set4(f)); return *this; }
-	friend Quaternion operator+(ConstArg q1, ConstArg q2) noexcept { return Quaternion(simd::add4(q1, q2)); }
-	friend Quaternion operator-(ConstArg q1, ConstArg q2) noexcept { return Quaternion(simd::sub4(q1, q2)); }
-	friend Quaternion operator*(ConstArg q1, ConstArg q2) noexcept;
-	friend Quaternion operator*(Vector3<float>::ConstArg v, ConstArg q) noexcept;
-	friend Quaternion operator*(ConstArg q, Vector3<float>::ConstArg v) noexcept;
-	friend Quaternion operator*(float f, ConstArg q) noexcept { return Quaternion(simd::mul4(simd::set4(f), q)); }
-	friend Quaternion operator*(ConstArg q, float f) noexcept { return Quaternion(simd::mul4(q, simd::set4(f))); }
-	//friend Quaternion operator/(ConstArg q1, ConstArg q2) noexcept { return q1*(Quaternion(simd::neg3(q2))/q2.getNorm()); }
-	friend Quaternion operator/(float f, ConstArg q) noexcept { return f*(Quaternion(simd::neg3(q))/q.getNorm()); }
-	friend Quaternion operator/(ConstArg q, float f) noexcept { return Quaternion(simd::div4(q, simd::set4(f))); }
 	bool operator==(const Quaternion& q) const noexcept { return simd::all4(simd::equal(xyzw, q)); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
-	friend std::istream& operator>>(std::istream& s, Quaternion& q);
-	friend std::ostream& operator<<(std::ostream& s, const Quaternion& q) { return s << q.x << ' ' << q.y << ' ' << q.z << ' ' << q.w; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
 
@@ -478,7 +459,7 @@ inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline Quaternion<T>& Quaternion<T>::operator*=(Quaternion<T>::ConstArg q)
+inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& q)
 {
 	set(w*q.x + x*q.w + y*q.z - z*q.y, w*q.y - x*q.z + y*q.w + z*q.x,
 		w*q.z + x*q.y - y*q.x + z*q.w, w*q.w - x*q.x - y*q.y - z*q.z);
@@ -486,37 +467,86 @@ inline Quaternion<T>& Quaternion<T>::operator*=(Quaternion<T>::ConstArg q)
 }
 
 template<typename T>
-inline Quaternion<T>& Quaternion<T>::operator*=(Vector3<T>::ConstArg v)
+inline Quaternion<T>& Quaternion<T>::operator*=(const Vector3<T>& v)
 {
 	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
 	return *this;
 }
 
 template<typename T>
-inline Quaternion<T> operator*(Quaternion<T>::ConstArg q1, Quaternion<T>::ConstArg q2) noexcept
+inline Quaternion<T> operator+(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
+{ 
+	return Quaternion<T>(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w);
+}
+
+template<typename T>
+inline Quaternion<T> operator-(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
+{ 
+	return Quaternion<T>(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w);
+}
+
+template<typename T>
+inline Quaternion<T> operator*(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return Quaternion<T>(q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y, q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
 		q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w, q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z);
 }
 
 template<typename T>
-inline Quaternion<T> operator*(Vector3<T>::ConstArg v, Quaternion<T>::ConstArg q) noexcept
+inline Quaternion<T> operator*(const Vector3<T>& v, const Quaternion<T>& q) noexcept
 {
 	return Quaternion<T>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
 		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<typename T>
-inline Quaternion<T> operator*(Quaternion<T>::ConstArg q, Vector3<T>::ConstArg v) noexcept
+inline Quaternion<T> operator*(const Quaternion<T>& q, const Vector3<T>& v) noexcept
 {
 	return Quaternion<T>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
 		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<typename T>
-inline std::istream& operator>>(std::istream& s, Quaternion<T>& q) 
+inline Quaternion<T> operator*(T f, const Quaternion<T>& q) noexcept 
 { 
-	return s >> q.x >> std::skipws >> q.y >> std::skipws >> q.z >> std::skipws >> q.w; 
+	return Quaternion<T>(f*q.x, f*q.y, f*q.z, f*q.w); 
+}
+
+template<typename T>
+inline Quaternion<T> operator*(const Quaternion<T>& q, T f) noexcept 
+{ 
+	return Quaternion<T>(q.x*f, q.y*f, q.z*f, q.w*f); 
+}
+
+//template<typename T>
+//inline Quaternion<T> operator/(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
+//{ 
+//	return q1*(Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w)/q2.getNorm()); 
+//}
+
+template<typename T>
+inline Quaternion<T> operator/(T f, const Quaternion<T>& q) noexcept 
+{ 
+	return f*(Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm()); 
+}
+
+template<typename T>
+inline Quaternion<T> operator/(const Quaternion<T>& q, T f) noexcept 
+{ 
+	return operator*(q, T(1)/f); 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<U>& q)
+{ 
+	return s >> q.x >> std::ws >> q.y >> std::ws >> q.z >> std::ws >> q.w; 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Quaternion<U>& q)
+{ 
+	constexpr C WS(0x20);
+	return s << q.x << WS << q.y << WS << q.z << WS << q.w;
 }
 
 template<typename T>
@@ -661,7 +691,7 @@ inline Quaternion<T>& Quaternion<T>::normalize()
 
 #if SIMD_HAS_FLOAT4
 
-inline Quaternion<float>& Quaternion<float>::operator*=(Quaternion<float>::ConstArg q)
+inline Quaternion<float>& Quaternion<float>::operator*=(const Quaternion<float>& q)
 {
 	auto t0 = simd::broadcast<3>(xyzw);
 	auto t1 = simd::swizzle<1, 0, 3, 2>(q.xyzw);
@@ -684,14 +714,26 @@ inline Quaternion<float>& Quaternion<float>::operator*=(Quaternion<float>::Const
 	return *this;
 }
 
-inline Quaternion<float>& Quaternion<float>::operator*=(Vector3<float>::ConstArg v) // #TODO SIMD
+inline Quaternion<float>& Quaternion<float>::operator*=(const Vector3<float>& v) // #TODO SIMD
 {
 	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
 	return *this;
 }
 
 template<>
-inline Quaternion<float> operator*(Quaternion<float>::ConstArg q1, Quaternion<float>::ConstArg q2) noexcept
+inline Quaternion<float> operator+(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
+{ 
+	return Quaternion<float>(simd::add4(q1, q2)); 
+}
+
+template<>
+inline Quaternion<float> operator-(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
+{ 
+	return Quaternion<float>(simd::sub4(q1, q2)); 
+}
+
+template<>
+inline Quaternion<float> operator*(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
 {
 	auto t0 = simd::broadcast<3>(q1.xyzw);
 	auto t1 = simd::swizzle<1, 0, 3, 2>(q2.xyzw);
@@ -714,24 +756,54 @@ inline Quaternion<float> operator*(Quaternion<float>::ConstArg q1, Quaternion<fl
 }
 
 template<>
-inline Quaternion<float> operator*(Vector3<float>::ConstArg v, Quaternion<float>::ConstArg q) noexcept // #TODO SIMD
+inline Quaternion<float> operator*(const Vector3<float>& v, const Quaternion<float>& q) noexcept // #TODO SIMD
 {
 	return Quaternion<float>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
 		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<>
-inline Quaternion<float> operator*(Quaternion<float>::ConstArg q, Vector3<float>::ConstArg v) noexcept // #TODO SIMD
+inline Quaternion<float> operator*(const Quaternion<float>& q, const Vector3<float>& v) noexcept // #TODO SIMD
 {
 	return Quaternion<float>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
 		-(q.x*v.x + q.y*v.y + q.z*v.z));
 }
 
 template<>
-inline std::istream& operator>>(std::istream& s, Quaternion<float>& q)
+inline Quaternion<float> operator*(float f, const Quaternion<float>& q) noexcept 
+{ 
+	return Quaternion<float>(simd::mul4(simd::set4(f), q)); 
+}
+
+template<>
+inline Quaternion<float> operator*(const Quaternion<float>& q, float f) noexcept 
+{ 
+	return Quaternion<float>(simd::mul4(q, simd::set4(f))); 
+}
+
+//template<>
+//inline Quaternion<float> operator/(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
+//{
+//	return q1*(Quaternion<float>(simd::neg3(q2))/q2.getNorm());
+//}
+
+template<>
+inline Quaternion<float> operator/(float f, const Quaternion<float>& q) noexcept 
+{ 
+	return f*(Quaternion<float>(simd::neg3(q))/q.getNorm());
+}
+
+template<>
+inline Quaternion<float> operator/(const Quaternion<float>& q, float f) noexcept 
+{ 
+	return Quaternion<float>(simd::div4(q, simd::set4(f)));
+}
+
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<float>& q)
 {
 	float x, y, z, w;
-	s >> x >> std::skipws >> y >> std::skipws >> z >> std::skipws >> w;
+	s >> x >> std::ws >> y >> std::ws >> z >> std::ws >> w;
 	q.set(x, y, z, w);
 	return s;
 }
@@ -939,18 +1011,35 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::Quaternion<T>>
+struct tuple_element<I, ::core::mathematics::templates::Quaternion<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::Quaternion<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::mathematics::templates::Quaternion<T>> : integral_constant<size_t, 4> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::mathematics::templates::Quaternion<T>>
+{
+	std::size_t operator()(const ::core::mathematics::templates::Quaternion<T>& q) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(q.x) + 0x9e3779b9;
+		seed ^= hasher(q.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(q.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(q.w) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std

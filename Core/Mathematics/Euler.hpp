@@ -13,6 +13,7 @@
 #include <tuple>
 #include <string>
 #include <algorithm>
+#include <utility>
 #include <cstddef>
 #include <cctype>
 #include <cmath>
@@ -23,7 +24,8 @@
 #include "Quaternion.hpp"
 #include "YawPitchRoll.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 template<typename T>
 struct Euler;
@@ -36,30 +38,32 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::Euler<T>>
+struct tuple_element<I, ::core::mathematics::templates::Euler<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_element<3, core::mathematics::templates::Euler<T>>
+struct tuple_element<3, ::core::mathematics::templates::Euler<T>>
 {
 	using type = EulerOrder;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::Euler<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::mathematics::templates::Euler<T>> : integral_constant<size_t, 4> 
 {
 };
 
 } // namespace std
 
-namespace core::mathematics {
-namespace templates {
+namespace core::mathematics 
+{
+namespace templates 
+{
 
 template<typename T>
 struct Matrix3;
@@ -94,16 +98,8 @@ struct Euler
 	Euler& operator-=(const Euler& e); // throw (std::invalid_argument);
 	Euler& operator*=(T f) noexcept { x *= f; y *= f; z *= f; return *this; }
 	Euler& operator/=(T f) noexcept { return operator*=(T(1)/f); }
-	friend Euler operator+(const Euler& e1, const Euler& e2); // throw (std::invalid_argument);
-	friend Euler operator-(const Euler& e1, const Euler& e2); // throw (std::invalid_argument);
-	friend Euler operator*(T f, const Euler& e) noexcept { return Euler(f*e.x, f*e.y, f*e.z, e.order); }
-	friend Euler operator*(const Euler& e, T f) noexcept { return Euler(e.x*f, e.y*f, e.z*f, e.order); }
-	friend Euler operator/(T f, const Euler& e) noexcept { return Euler(f/e.x, f/e.y, f/e.z, e.order); }
-	friend Euler operator/(const Euler& e, T f) noexcept { return operator*(e, T(1)/f); }
 	bool operator==(const Euler& e) const noexcept { return (order == e.order) && (x == e.x) && (y == e.y) && (z == e.z); }
 	bool operator!=(const Euler& e) const noexcept { return !(*this == e); }
-	friend std::istream& operator>>(std::istream& s, Euler& e);
-	friend std::ostream& operator<<(std::ostream& s, const Euler& e);
 
 	template<class A> void serialize(A& ar, unsigned int version) { ar & x & y & z & order; }
 
@@ -230,7 +226,7 @@ inline Euler<T>& Euler<T>::operator-=(const Euler<T>& e)
 }
 
 template<typename T>
-inline Euler<T> operator+(const Euler<T>& e1, const Euler<T>& e2)
+inline Euler<T> operator+(const Euler<T>& e1, const Euler<T>& e2) // throw (std::invalid_argument);
 {
 	if (e1.order != e2.order)
 		throw std::invalid_argument("operator+(const Euler<T>&, const Euler<T>&) : order");
@@ -238,7 +234,7 @@ inline Euler<T> operator+(const Euler<T>& e1, const Euler<T>& e2)
 }
 
 template<typename T>
-inline Euler<T> operator-(const Euler<T>& e1, const Euler<T>& e2)
+inline Euler<T> operator-(const Euler<T>& e1, const Euler<T>& e2) // throw (std::invalid_argument);
 {
 	if (e1.order != e2.order) 
 		throw std::invalid_argument("operator-(const Euler<T>&, const Euler<T>&) : order");
@@ -246,11 +242,34 @@ inline Euler<T> operator-(const Euler<T>& e1, const Euler<T>& e2)
 }
 
 template<typename T>
-inline std::istream& operator>>(std::istream& s, Euler<T>& e)
-{
-	std::string order;
-	s >> e.x >> std::skipws >> e.y >> std::skipws >> e.z >> std::skipws >> order;
+inline Euler<T> operator*(T f, const Euler<T>& e) noexcept 
+{ 
+	return Euler(f*e.x, f*e.y, f*e.z, e.order); 
+}
 
+template<typename T>
+inline Euler<T> operator*(const Euler<T>& e, T f) noexcept 
+{ 
+	return Euler(e.x*f, e.y*f, e.z*f, e.order); 
+}
+
+template<typename T>
+inline Euler<T> operator/(T f, const Euler<T>& e) noexcept 
+{ 
+	return Euler(f/e.x, f/e.y, f/e.z, e.order); 
+}
+
+template<typename T>
+inline Euler<T> operator/(const Euler<T>& e, T f) noexcept 
+{ 
+	return operator*(e, T(1)/f); 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Euler<U>& e)
+{
+	std::basic_string<C, T> order;
+	s >> e.x >> std::ws >> e.y >> std::ws >> e.z >> std::ws >> order;
 	if (order == "XYZ")
 		e.order = EulerOrder::XYZ;
 	else if (order == "XZY")
@@ -263,18 +282,17 @@ inline std::istream& operator>>(std::istream& s, Euler<T>& e)
 		e.order = EulerOrder::ZXY;
 	else if (order == "ZYX")
 		e.order = EulerOrder::ZYX;
-	else if (std::all_of(order.begin(), order.end(), [](const auto& c) { return std::isdigit(c) || (c == '-'); }))
+	else if (std::all_of(order.begin(), order.end(), [](const auto& c) { return std::isdigit(c) || (c == C('-')); }))
 		e.order = (EulerOrder)std::stoi(order);
     else
         e.order = EulerOrder::UNSPECIFIED;
-	
 	return s;
 }
 
-template<typename T>
-inline std::ostream& operator<<(std::ostream& s, const Euler<T>& e)
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Euler<U>& e)
 {
-	const char* order = "Unspecified";
+	const C* order = "Unspecified";
 	switch (e.order)
 	{
 		case EulerOrder::XYZ: 
@@ -296,8 +314,8 @@ inline std::ostream& operator<<(std::ostream& s, const Euler<T>& e)
 			order = "ZYX"; 
 			break;
 	}
-
-	return s << e.x << ' ' << e.y << ' ' << e.z << ' ' << order;
+	constexpr C WS(0x20);
+	return s << e.x << WS << e.y << WS << e.z << WS << order;
 }
 
 template<typename T>
@@ -370,9 +388,32 @@ using Euler = templates::Euler<float>;
 
 } // namespace core::mathematics
 
+namespace std
+{
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::mathematics::templates::Euler<T>>
+{
+	std::size_t operator()(const ::core::mathematics::templates::Euler<T>& e) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(e.x) + 0x9e3779b9;
+		seed ^= hasher(e.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(e.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<int/*EulerOrder*/>()((int)e.order) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
+};
+
+} // namespace std
+
 #include "Matrix3.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 template<typename T>
 inline Euler<T>::Euler(const Quaternion<T>& q, EulerOrder order) : Euler<T>(Matrix3<T>::makeRotation(q), order)

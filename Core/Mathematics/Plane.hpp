@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <utility>
 #include <tuple>
 #include <optional>
 #include <algorithm>
@@ -25,8 +26,10 @@
 #include "Segment3.hpp"
 #include "HalfSpace.hpp"
 
-namespace core::mathematics {
-namespace templates {
+namespace core::mathematics 
+{
+namespace templates 
+{
 
 template<typename T>
 struct Plane
@@ -55,8 +58,6 @@ struct Plane
 
 	bool operator==(const Plane& p) const noexcept { return (a == p.a) && (b == p.b) && (c == p.c) && (d == p.d); }
 	bool operator!=(const Plane& p) const noexcept { return !(*this == p); }
-	friend std::istream& operator>>(std::istream& s, Plane& p);
-	friend std::ostream& operator<<(std::ostream& s, const Plane& p) { return s << p.a << ' ' << p.b << ' ' << p.c << ' ' << p.d; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
 
@@ -153,8 +154,6 @@ struct Plane<float>
 
 	bool operator==(const Plane& p) const noexcept { return simd::all4(simd::equal(abcd, p)); }
 	bool operator!=(const Plane& p) const noexcept { return !(*this == p); }
-	friend std::istream& operator>>(std::istream& s, Plane& p);
-	friend std::ostream& operator<<(std::ostream& s, const Plane& p) { return s << p.a << ' ' << p.b << ' ' << p.c << ' ' << p.d; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
 
@@ -293,10 +292,17 @@ inline Plane<T>::Plane<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vect
 	set(normal, -dot(normal, p0));
 }
 
-template<typename T>
-inline std::istream& operator>>(std::istream& s, Plane<T>& p) 
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Plane<U>& p)
 { 
-	return s >> p.a >> std::skipws >> p.b >> std::skipws >> p.c >> std::skipws >> p.d; 
+	return s >> p.a >> std::ws >> p.b >> std::ws >> p.c >> std::ws >> p.d; 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Plane<U>& p) 
+{ 
+	constexpr C WS(0x20);
+	return s << p.a << WS << p.b << WS << p.c << WS << p.d;
 }
 
 template<typename T>
@@ -530,11 +536,11 @@ inline Plane<float>::Plane<float>(Vector3<float>::ConstArg p0, Vector3<float>::C
 	set(normal, -dot(normal, p0));
 }
 
-template<>
-inline std::istream& operator>>(std::istream& s, Plane<float>& p)
+template<typename C, typename T>
+inline std::basic_istream& operator>>(std::basic_istream& s, Plane<float>& p)
 { 
 	float a, b, c, d;
-	s >> a >> std::skipws >> b >> std::skipws >> c >> std::skipws >> d;
+	s >> a >> std::ws >> b >> std::ws >> c >> std::ws >> d;
 	p.set(a, b, c, d);
 	return s; 
 }
@@ -739,18 +745,35 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::Plane<T>>
+struct tuple_element<I, ::core::mathematics::templates::Plane<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::Plane<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::mathematics::templates::Plane<T>> : integral_constant<size_t, 4> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::mathematics::templates::Plane<T>>
+{
+	std::size_t operator()(const ::core::mathematics::templates::Plane<T>& p) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(p.a) + 0x9e3779b9;
+		seed ^= hasher(p.b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(p.c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(p.d) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std

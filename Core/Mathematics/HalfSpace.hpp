@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <utility>
 #include <tuple>
 #include <algorithm>
 #include <cstddef>
@@ -22,13 +23,15 @@
 #include "Segment3.hpp"
 #include "Triangle3.hpp"
 
-namespace core::mathematics {
+namespace core::mathematics 
+{
 
 struct Normalized
 {
 };
 
-namespace templates {
+namespace templates 
+{
 
 template<typename T>
 struct Plane;
@@ -60,8 +63,6 @@ struct HalfSpace
 
 	bool operator==(const HalfSpace& h) const noexcept { return (a == h.a) && (b == h.b) && (c == h.c) && (d == h.d); }
 	bool operator!=(const HalfSpace& h) const noexcept { return !(*this == h); }
-	friend std::istream& operator>>(std::istream& s, HalfSpace& h);
-	friend std::ostream& operator<<(std::ostream& s, const HalfSpace& h) { return s << h.a << ' ' << h.b << ' ' << h.c << ' ' << h.d; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
 
@@ -143,8 +144,6 @@ struct HalfSpace<float>
 
 	bool operator==(const HalfSpace& h) const noexcept { return simd::all4(simd::equal(abcd, h)); }
 	bool operator!=(const HalfSpace& h) const noexcept { return !(*this == h); }
-	friend std::istream& operator>>(std::istream& s, HalfSpace& h);
-	friend std::ostream& operator<<(std::ostream& s, const HalfSpace& h) { return s << h.a << ' ' << h.b << ' ' << h.c << ' ' << h.d; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
 
@@ -271,10 +270,17 @@ inline HalfSpace<T>::HalfSpace<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg 
 	set(normal, -dot(normal, p0));
 }
 
-template<typename T>
-inline std::istream& operator>>(std::istream& s, HalfSpace<T>& h) 
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, HalfSpace<U>& h)
 { 
-	return s >> h.a >> std::skipws >> h.b >> std::skipws >> h.c >> std::skipws >> h.d; 
+	return s >> h.a >> std::ws >> h.b >> std::ws >> h.c >> std::ws >> h.d; 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const HalfSpace<U>& h) 
+{ 
+	constexpr C WS(0x20);
+	return s << h.a << WS << h.b << WS << h.c << WS << h.d;
 }
 
 template<typename T>
@@ -432,11 +438,11 @@ inline HalfSpace<float>::HalfSpace<float>(Vector3<float>::ConstArg p0, Vector3<f
 	set(normal, -dot(normal, p0));
 }
 
-template<>
-inline std::istream& operator>>(std::istream& s, HalfSpace<float>& h)
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, HalfSpace<float>& h)
 { 
 	float a, b, c, d; 
-	s >> a >> std::skipws >> b >> std::skipws >> c >> std::skipws >> d;
+	s >> a >> std::ws >> b >> std::ws >> c >> std::ws >> d;
 	h.set(a, b, c, d);
 	return s; 
 }
@@ -574,25 +580,43 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::HalfSpace<T>>
+struct tuple_element<I, ::core::mathematics::templates::HalfSpace<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::HalfSpace<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::mathematics::templates::HalfSpace<T>> : integral_constant<size_t, 4> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::mathematics::templates::HalfSpace<T>>
+{
+	std::size_t operator()(const ::core::mathematics::templates::HalfSpace<T>& h) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(h.a) + 0x9e3779b9;
+		seed ^= hasher(h.b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(h.c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(h.d) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std
 
 #include "Plane.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 template<typename T>
 inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.d)

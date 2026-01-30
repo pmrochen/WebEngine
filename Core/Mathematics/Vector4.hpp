@@ -10,6 +10,7 @@
 #include <limits>
 #include <type_traits>
 #include <algorithm>
+#include <utility>
 #include <tuple>
 #include <cstddef>
 #include <cmath>
@@ -21,8 +22,10 @@
 #include "Vector2.hpp"
 #include "Vector3.hpp"
 
-namespace core::mathematics {
-namespace templates {
+namespace core::mathematics 
+{
+namespace templates 
+{
 
 template<typename T>
 struct IntVector4;
@@ -34,6 +37,7 @@ template<typename T>
 struct Vector4
 {
 	using Real = T;
+	using ComponentType = T;
 	using ConstArg = const Vector4&;
 	using ConstResult = const Vector4&;
 
@@ -58,8 +62,8 @@ struct Vector4
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
-	explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(x, y, z, w); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(x, y, z, w); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
 	explicit operator const T*() const noexcept { return &x; }
 	T& operator[](int i) noexcept { return (&x)[i]; }
@@ -67,27 +71,15 @@ struct Vector4
 
 	Vector4 operator+() const noexcept { return *this; }
 	Vector4 operator-() const noexcept { return Vector4(-x, -y, -z, -w); }
-	Vector4& operator+=(ConstArg v) noexcept { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
-	Vector4& operator-=(ConstArg v) noexcept { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
-	Vector4& operator*=(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
+	Vector4& operator+=(const Vector4& v) noexcept { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
+	Vector4& operator-=(const Vector4& v) noexcept { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
+	Vector4& operator*=(const Vector4& v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 	Vector4& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
-	Vector4& operator/=(ConstArg v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
-	Vector4& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
-	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); }
-	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); }
-	friend Vector4 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z, v1.w*v2.w); }
-	friend Vector4 operator*(T f, ConstArg v) noexcept { return Vector4(f*v.x, f*v.y, f*v.z, f*v.w); }
-	friend Vector4 operator*(ConstArg v, T f) noexcept { return Vector4(v.x*f, v.y*f, v.z*f, v.w*f); }
-	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); }
-	friend Vector4 operator/(T f, ConstArg v) noexcept { return Vector4(f/v.x, f/v.y, f/v.z, f/v.w); }
-	friend Vector4 operator/(ConstArg v, T f) noexcept { return operator*(v, T(1)/f); }
-	friend Vector4 operator*(ConstArg v, const Matrix4<T>& m) noexcept; // #TODO
-	//friend Vector4 operator*(const Matrix4<T>& m, ConstArg v) noexcept; // valid for column vectors only
+	Vector4& operator/=(const Vector4& v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
+	Vector4& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	bool operator==(const Vector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator!=(const Vector4& v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, Vector4& v);
-	friend std::ostream& operator<<(std::ostream& s, const Vector4& v) { return s << v.x << ' ' << v.y << ' ' << v.z << ' ' << v.w; }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
 
@@ -166,6 +158,7 @@ template<>
 struct Vector4<float>
 {
 	using Real = float;
+	using ComponentType = float;
 	using ConstArg = const Vector4;
 	using ConstResult = const Vector4;
 
@@ -194,8 +187,8 @@ struct Vector4<float>
 	operator simd::float4() const noexcept { return xyzw; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
-	explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(x, y, z, w); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(x, y, z, w); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator float* () noexcept { return &x; }
 	explicit operator const float* () const noexcept { return &x; }
 	float& operator[](int i) noexcept { return (&x)[i]; }
@@ -203,27 +196,15 @@ struct Vector4<float>
 
 	Vector4 operator+() const noexcept { return *this; }
 	Vector4 operator-() const noexcept { return Vector4(simd::neg4(xyzw)); }
-	Vector4& operator+=(ConstArg v) noexcept { xyzw = simd::add4(xyzw, v); return *this; }
-	Vector4& operator-=(ConstArg v) noexcept { xyzw = simd::sub4(xyzw, v); return *this; }
-	Vector4& operator*=(ConstArg v) noexcept { xyzw = simd::mul4(xyzw, v); return *this; }
+	Vector4& operator+=(const Vector4& v) noexcept { xyzw = simd::add4(xyzw, v); return *this; }
+	Vector4& operator-=(const Vector4& v) noexcept { xyzw = simd::sub4(xyzw, v); return *this; }
+	Vector4& operator*=(const Vector4& v) noexcept { xyzw = simd::mul4(xyzw, v); return *this; }
 	Vector4& operator*=(float f) noexcept { xyzw = simd::mul4(xyzw, simd::set4(f)); return *this; }
-	Vector4& operator/=(ConstArg v) noexcept { xyzw = simd::div4(xyzw, v); return *this; }
-	Vector4& operator/=(float f) noexcept { xyzw = simd::div4(xyzw, simd::set4(f)); return *this; }
 	Vector4& operator*=(const Matrix4<float>& m) noexcept; // #TODO
-	friend Vector4 operator+(ConstArg v1, ConstArg v2) noexcept { return Vector4(simd::add4(v1, v2)); }
-	friend Vector4 operator-(ConstArg v1, ConstArg v2) noexcept { return Vector4(simd::sub4(v1, v2)); }
-	friend Vector4 operator*(ConstArg v1, ConstArg v2) noexcept { return Vector4(simd::mul4(v1, v2)); }
-	friend Vector4 operator*(float f, ConstArg v) noexcept { return Vector4(simd::mul4(simd::set4(f), v)); }
-	friend Vector4 operator*(ConstArg v, float f) noexcept { return Vector4(simd::mul4(v, simd::set4(f))); }
-	friend Vector4 operator/(ConstArg v1, ConstArg v2) noexcept { return Vector4(simd::div4(v1, v2)); }
-	friend Vector4 operator/(float f, ConstArg v) noexcept { return Vector4(simd::div4(simd::set4(f), v)); }
-	friend Vector4 operator/(ConstArg v, float f) noexcept { return Vector4(simd::div4(v, simd::set4(f))); }
-	friend Vector4 operator*(ConstArg v, const Matrix4<float>& m) noexcept; // #TODO
-	//friend Vector4 operator*(const Matrix4<float>& m, ConstArg v) noexcept; // valid for column vectors only
+	Vector4& operator/=(const Vector4& v) noexcept { xyzw = simd::div4(xyzw, v); return *this; }
+	Vector4& operator/=(float f) noexcept { xyzw = simd::div4(xyzw, simd::set4(f)); return *this; }
 	bool operator==(const Vector4& v) const noexcept { return simd::all4(simd::equal(xyzw, v)); }
 	bool operator!=(const Vector4& v) const noexcept { return !(*this == v); }
-	friend std::istream& operator>>(std::istream& s, Vector4& v);
-	friend std::ostream& operator<<(std::ostream& s, const Vector4& v) { return s << v.x << ' ' << v.y << ' ' << v.z << ' ' << v.w; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
 
@@ -496,9 +477,73 @@ inline Vector4<float> maximum(const Vector4<float>& v1, const Vector4<float>& v2
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline std::istream& operator>>(std::istream& s, Vector4<T>& v) 
+inline Vector4<T> operator+(const Vector4<T>& v1, const Vector4<T>& v2) noexcept 
 { 
-	return s >> v.x >> std::skipws >> v.y >> std::skipws >> v.z >> std::skipws >> v.w; 
+	return Vector4<T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w); 
+}
+
+template<typename T>
+inline Vector4<T> operator-(const Vector4<T>& v1, const Vector4<T>& v2) noexcept 
+{ 
+	return Vector4<T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w); 
+}
+
+template<typename T>
+inline Vector4<T> operator*(const Vector4<T>& v1, const Vector4<T>& v2) noexcept 
+{ 
+	return Vector4<T>(v1.x*v2.x, v1.y*v2.y, v1.z*v2.z, v1.w*v2.w); 
+}
+
+template<typename T>
+inline Vector4<T> operator*(T f, const Vector4<T>& v) noexcept 
+{ 
+	return Vector4<T>(f*v.x, f*v.y, f*v.z, f*v.w); 
+}
+
+template<typename T>
+inline Vector4<T> operator*(const Vector4<T>& v, T f) noexcept 
+{ 
+	return Vector4<T>(v.x*f, v.y*f, v.z*f, v.w*f); 
+}
+
+template<typename T>
+inline Vector4<T> operator*(const Vector4<T>& v, const Matrix4<T>& m) noexcept
+{
+	// #TODO
+}
+
+//template<typename T>
+//inline Vector4<T> operator*(const Matrix4<T>& m, const Vector4<T>& v) noexcept; // valid for column vectors only
+
+template<typename T>
+inline Vector4<T> operator/(const Vector4<T>& v1, const Vector4<T>& v2) noexcept 
+{ 
+	return Vector4<T>(v1.x/v2.x, v1.y/v2.y, v1.z/v2.z, v1.w/v2.w); 
+}
+
+template<typename T>
+inline Vector4<T> operator/(T f, const Vector4<T>& v) noexcept 
+{ 
+	return Vector4<T>(f/v.x, f/v.y, f/v.z, f/v.w); 
+}
+
+template<typename T>
+inline Vector4<T> operator/(const Vector4<T>& v, T f) noexcept 
+{ 
+	return operator*(v, T(1)/f); 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Vector4<U>& v)
+{ 
+	return s >> v.x >> std::ws >> v.y >> std::ws >> v.z >> std::ws >> v.w; 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Vector4<U>& v)
+{ 
+	constexpr C WS(0x20);
+	return s << v.x << WS << v.y << WS << v.z << WS << v.w;
 }
 
 template<typename T>
@@ -603,10 +648,67 @@ inline Vector4<T>& Vector4<T>::normalize()
 #if SIMD_HAS_FLOAT4
 
 template<>
-inline std::istream& operator>>(std::istream& s, Vector4<float>& v)
+inline Vector4<float> operator+(const Vector4<float>& v1, const Vector4<float>& v2) noexcept 
+{ 
+	return Vector4<float>(simd::add4(v1, v2)); 
+}
+
+template<>
+inline Vector4<float> operator-(const Vector4<float>& v1, const Vector4<float>& v2) noexcept 
+{ 
+	return Vector4<float>(simd::sub4(v1, v2));
+}
+
+template<>
+inline Vector4<float> operator*(const Vector4<float>& v1, const Vector4<float>& v2) noexcept 
+{ 
+	return Vector4<float>(simd::mul4(v1, v2)); 
+}
+
+template<>
+inline Vector4<float> operator*(float f, const Vector4<float>& v) noexcept 
+{ 
+	return Vector4<float>(simd::mul4(simd::set4(f), v)); 
+}
+
+template<>
+inline Vector4<float> operator*(const Vector4<float>& v, float f) noexcept 
+{ 
+	return Vector4<float>(simd::mul4(v, simd::set4(f))); 
+}
+
+template<>
+inline Vector4<float> operator*(const Vector4<float>& v, const Matrix4<float>& m) noexcept
+{
+	// #TODO
+}
+
+//template<>
+//inline Vector4<float> operator*(const Matrix4<float>& m, const Vector4<float>& v) noexcept; // valid for column vectors only
+
+template<>
+inline Vector4<float> operator/(const Vector4<float>& v1, const Vector4<float>& v2) noexcept 
+{ 
+	return Vector4<float>(simd::div4(v1, v2)); 
+}
+
+template<>
+inline Vector4<float> operator/(float f, const Vector4<float>& v) noexcept 
+{ 
+	return Vector4<float>(simd::div4(simd::set4(f), v)); 
+}
+
+template<>
+inline Vector4<float> operator/(const Vector4<float>& v, float f) noexcept 
+{ 
+	return Vector4<float>(simd::div4(v, simd::set4(f))); 
+}
+
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Vector4<float>& v)
 { 
 	float x, y, z, w; 
-	s >> x >> std::skipws >> y >> std::skipws >> z >> std::skipws >> w; 
+	s >> x >> std::ws >> y >> std::ws >> z >> std::ws >> w; 
 	v.set(x, y, z, w); 
 	return s; 
 }
@@ -718,25 +820,43 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::mathematics::templates::Vector4<T>>
+struct tuple_element<I, ::core::mathematics::templates::Vector4<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::mathematics::templates::Vector4<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::mathematics::templates::Vector4<T>> : integral_constant<size_t, 4> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::mathematics::templates::Vector4<T>>
+{
+	std::size_t operator()(const ::core::mathematics::templates::Vector4<T>& v) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(v.x) + 0x9e3779b9;
+		seed ^= hasher(v.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(v.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(v.w) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std
 
 #include "IntVector4.hpp"
 
-namespace core::mathematics::templates {
+namespace core::mathematics::templates 
+{
 
 template<typename T>
 template<typename U> 

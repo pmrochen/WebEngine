@@ -10,6 +10,7 @@
 #include <limits>
 #include <type_traits>
 #include <algorithm>
+#include <utility>
 #include <tuple>
 #include <cstddef>
 #include <cmath>
@@ -19,8 +20,10 @@
 #include "PixelTypes.hpp"
 #include "Color3.hpp"
 
-namespace core::imaging {
-namespace templates {
+namespace core::imaging 
+{
+namespace templates 
+{
 
 //template<typename T>
 //struct IntColor4;
@@ -50,8 +53,8 @@ struct Color4
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
-	explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(r, g, b, a); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
+	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(r, g, b, a); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
 	explicit operator T*() noexcept { return &r; }
 	explicit operator const T*() const noexcept { return &r; }
 	T& operator[](int i) noexcept { return (&r)[i]; }
@@ -59,24 +62,14 @@ struct Color4
 
 	Color4 operator+() const noexcept { return *this; }
 	Color4 operator-() const noexcept { return Color4(-r, -g, -b, -a); }
-	Color4& operator+=(ConstArg c) noexcept { r += c.r; g += c.g; b += c.b; a += c.a; return *this; }
-	Color4& operator-=(ConstArg c) noexcept { r -= c.r; g -= c.g; b -= c.b; a -= c.a; return *this; }
-	Color4& operator*=(ConstArg c) noexcept { r *= c.r; g *= c.g; b *= c.b; a *= c.a; return *this; }
+	Color4& operator+=(const Color4& c) noexcept { r += c.r; g += c.g; b += c.b; a += c.a; return *this; }
+	Color4& operator-=(const Color4& c) noexcept { r -= c.r; g -= c.g; b -= c.b; a -= c.a; return *this; }
+	Color4& operator*=(const Color4& c) noexcept { r *= c.r; g *= c.g; b *= c.b; a *= c.a; return *this; }
 	Color4& operator*=(T f) noexcept { r *= f; g *= f; b *= f; a *= f; return *this; }
-	Color4& operator/=(ConstArg c) noexcept { r /= c.r; g /= c.g; b /= c.b; a /= c.a; return *this; }
+	Color4& operator/=(const Color4& c) noexcept { r /= c.r; g /= c.g; b /= c.b; a /= c.a; return *this; }
 	Color4& operator/=(T f) noexcept { return operator*=(T(1)/f); }
-	friend Color4 operator+(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b, c1.a + c2.a); }
-	friend Color4 operator-(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b, c1.a - c2.a); }
-	friend Color4 operator*(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b, c1.a*c2.a); }
-	friend Color4 operator*(T f, ConstArg c) noexcept { return Color4(f*c.r, f*c.g, f*c.b, f*c.a); }
-	friend Color4 operator*(ConstArg c, T f) noexcept { return Color4(c.r*f, c.g*f, c.b*f, c.a*f); }
-	friend Color4 operator/(ConstArg c1, ConstArg c2) noexcept { return Color4(c1.r/c2.r, c1.g/c2.g, c1.b/c2.b, c1.a/c2.a); }
-	friend Color4 operator/(T f, ConstArg c) noexcept { return Color4(f/c.r, f/c.g, f/c.b, f/c.a); }
-	friend Color4 operator/(ConstArg c, T f) noexcept { return operator*(c, T(1)/f); }
 	bool operator==(const Color4& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b) && (a == c.a); }
 	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
-	friend std::istream& operator>>(std::istream& s, Color4& c);
-	friend std::ostream& operator<<(std::ostream& s, const Color4& c) { return s << c.r << ' ' << c.g << ' ' << c.b << ' ' << c.a; }
 	
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; }
 
@@ -189,8 +182,8 @@ struct Color4<float>
 	operator simd::float4() const noexcept { return rgba; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
-	explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(r, g, b, a); }
-	template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
+	//explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(r, g, b, a); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
 	explicit operator float* () noexcept { return &r; }
 	explicit operator const float* () const noexcept { return &r; }
 	float& operator[](int i) noexcept { return (&r)[i]; }
@@ -198,24 +191,14 @@ struct Color4<float>
 
 	Color4 operator+() const noexcept { return *this; }
 	Color4 operator-() const noexcept { return Color4(simd::neg4(rgba)); }
-	Color4& operator+=(ConstArg c) noexcept { rgba = simd::add4(rgba, c); return *this; }
-	Color4& operator-=(ConstArg c) noexcept { rgba = simd::sub4(rgba, c); return *this; }
-	Color4& operator*=(ConstArg c) noexcept { rgba = simd::mul4(rgba, c); return *this; }
+	Color4& operator+=(const Color4& c) noexcept { rgba = simd::add4(rgba, c); return *this; }
+	Color4& operator-=(const Color4& c) noexcept { rgba = simd::sub4(rgba, c); return *this; }
+	Color4& operator*=(const Color4& c) noexcept { rgba = simd::mul4(rgba, c); return *this; }
 	Color4& operator*=(float f) noexcept { rgba = simd::mul4(rgba, simd::set4(f)); return *this; }
-	Color4& operator/=(ConstArg c) noexcept { rgba = simd::div4(rgba, c); return *this; }
+	Color4& operator/=(const Color4& c) noexcept { rgba = simd::div4(rgba, c); return *this; }
 	Color4& operator/=(float f) noexcept { rgba = simd::div4(rgba, simd::set4(f)); return *this; }
-	friend Color4 operator+(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::add4(c1, c2)); }
-	friend Color4 operator-(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::sub4(c1, c2)); }
-	friend Color4 operator*(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::mul4(c1, c2)); }
-	friend Color4 operator*(float f, ConstArg c) noexcept { return Color4(simd::mul4(simd::set4(f), c)); }
-	friend Color4 operator*(ConstArg c, float f) noexcept { return Color4(simd::mul4(c, simd::set4(f))); }
-	friend Color4 operator/(ConstArg c1, ConstArg c2) noexcept { return Color4(simd::div4(c1, c2)); }
-	friend Color4 operator/(float f, ConstArg c) noexcept { return Color4(simd::div4(simd::set4(f), c)); }
-	friend Color4 operator/(ConstArg c, float f) noexcept { return Color4(simd::div4(c, simd::set4(f))); }
 	bool operator==(const Color4& c) const noexcept { return simd::all4(simd::equal(rgba, c)); }
 	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
-	friend std::istream& operator>>(std::istream& s, Color4& c);
-	friend std::ostream& operator<<(std::ostream& s, const Color4& c) { return s << c.r << ' ' << c.g << ' ' << c.b << ' ' << c.a; }
 
 	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; } // #FIXME use simd::set(r, g, b, a)
 
@@ -464,9 +447,64 @@ inline Color4<float> lerp(const Color4<float>& c1, const Color4<float>& c2, floa
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline std::istream& operator>>(std::istream& s, Color4<T>& c) 
+inline Color4<T> operator+(const Color4<T>& c1, const Color4<T>& c2) noexcept 
 { 
-	return s >> c.r >> std::skipws >> c.g >> std::skipws >> c.b >> std::skipws >> c.a; 
+	return Color4<T>(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b, c1.a + c2.a); 
+}
+
+template<typename T>
+inline Color4<T> operator-(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+{ 
+	return Color4<T>(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b, c1.a - c2.a);
+}
+
+template<typename T>
+inline Color4<T> operator*(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+{ 
+	return Color4<T>(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b, c1.a*c2.a); 
+}
+
+template<typename T>
+inline Color4<T> operator*(T f, const Color4<T>& c) noexcept 
+{ 
+	return Color4<T>(f*c.r, f*c.g, f*c.b, f*c.a);
+}
+
+template<typename T>
+inline Color4<T> operator*(const Color4<T>& c, T f) noexcept 
+{ 
+	return Color4<T>(c.r*f, c.g*f, c.b*f, c.a*f); 
+}
+
+template<typename T>
+inline Color4<T> operator/(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+{ 
+	return Color4<T>(c1.r/c2.r, c1.g/c2.g, c1.b/c2.b, c1.a/c2.a);
+}
+
+template<typename T>
+inline Color4<T> operator/(T f, const Color4<T>& c) noexcept 
+{ 
+	return Color4<T>(f/c.r, f/c.g, f/c.b, f/c.a); 
+}
+
+template<typename T>
+inline Color4<T> operator/(const Color4<T>& c, T f) noexcept 
+{ 
+	return operator*(c, T(1)/f); 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Color4<U>& c)
+{ 
+	return s >> c.r >> std::ws >> c.g >> std::ws >> c.b >> std::ws >> c.a; 
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Color4<U>& c)
+{ 
+	constexpr C WS(0x20);
+	return s << c.r << WS << c.g << WS << c.b << WS << c.a;
 }
 
 template<typename T>
@@ -609,10 +647,58 @@ inline Color4<T>& Color4<T>::makeSrgb()
 #if SIMD_HAS_FLOAT4
 
 template<>
-inline std::istream& operator>>(std::istream& s, Color4<float>& c) 
+inline Color4<float> operator+(const Color4<float>& c1, const Color4<float>& c2) noexcept 
+{ 
+	return Color4<float>(simd::add4(c1, c2)); 
+}
+
+template<>
+inline Color4<float> operator-(const Color4<float>& c1, const Color4<float>& c2) noexcept 
+{ 
+	return Color4<float>(simd::sub4(c1, c2)); 
+}
+
+template<>
+inline Color4<float> operator*(const Color4<float>& c1, const Color4<float>& c2) noexcept 
+{ 
+	return Color4<float>(simd::mul4(c1, c2)); 
+}
+
+template<>
+inline Color4<float> operator*(float f, const Color4<float>& c) noexcept 
+{ 
+	return Color4<float>(simd::mul4(simd::set4(f), c)); 
+}
+
+template<>
+inline Color4<float> operator*(const Color4<float>& c, float f) noexcept 
+{ 
+	return Color4<float>(simd::mul4(c, simd::set4(f))); 
+}
+
+template<>
+inline Color4<float> operator/(const Color4<float>& c1, const Color4<float>& c2) noexcept 
+{ 
+	return Color4<float>(simd::div4(c1, c2)); 
+}
+
+template<>
+inline Color4<float> operator/(float f, const Color4<float>& c) noexcept 
+{ 
+	return Color4<float>(simd::div4(simd::set4(f), c)); 
+}
+
+template<>
+inline Color4<float> operator/(const Color4<float>& c, float f) noexcept 
+{ 
+	return Color4<float>(simd::div4(c, simd::set4(f))); 
+}
+
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Color4<float>& c)
 { 
 	float r, g, b, a; 
-	s >> r >> std::skipws >> g >> std::skipws >> b >> std::skipws >> a; 
+	s >> r >> std::ws >> g >> std::ws >> b >> std::ws >> a; 
 	c.set(r, g, b, a); 
 	return s;
 }
@@ -695,18 +781,35 @@ namespace std
 template<size_t I, typename T>
 struct tuple_element;
 
-template<typename T>
-struct tuple_size;
-
 template<size_t I, typename T>
-struct tuple_element<I, core::imaging::templates::Color4<T>>
+struct tuple_element<I, ::core::imaging::templates::Color4<T>>
 {
 	using type = T;
 };
 
 template<typename T>
-struct tuple_size<core::imaging::templates::Color4<T>> : integral_constant<size_t, 4> 
+struct tuple_size;
+
+template<typename T>
+struct tuple_size<::core::imaging::templates::Color4<T>> : integral_constant<size_t, 4> 
 {
+};
+
+template<typename T>
+struct hash;
+
+template<typename T>
+struct hash<::core::imaging::templates::Color4<T>>
+{
+	std::size_t operator()(const ::core::imaging::templates::Color4<T>& c) const noexcept
+	{
+		std::hash<T> hasher;
+		std::size_t seed = hasher(c.r) + 0x9e3779b9;
+		seed ^= hasher(c.g) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(c.b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hasher(c.a) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		return seed;
+	}
 };
 
 } // namespace std
