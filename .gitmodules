@@ -1,0 +1,3 @@
+[submodule "Core/Common/half"]
+	path = Core/Common/half
+	url = https://github.com/pmrochen/half.git
