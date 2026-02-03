@@ -28,3 +28,9 @@
 [submodule "Core/Imaging/Formats/libpng"]
 	path = Core/Imaging/Formats/libpng
 	url = https://github.com/pnggroup/libpng.git
+[submodule "Core/Imaging/Formats/openexr"]
+	path = Core/Imaging/Formats/openexr
+	url = https://github.com/AcademySoftwareFoundation/openexr.git
+[submodule "Core/Imaging/Formats/Imath"]
+	path = Core/Imaging/Formats/Imath
+	url = https://github.com/AcademySoftwareFoundation/Imath.git
