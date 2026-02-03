@@ -34,3 +34,6 @@
 [submodule "Core/Imaging/Formats/Imath"]
 	path = Core/Imaging/Formats/Imath
 	url = https://github.com/AcademySoftwareFoundation/Imath.git
+[submodule "Core/Imaging/Formats/libjpeg-turbo"]
+	path = Core/Imaging/Formats/libjpeg-turbo
+	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
