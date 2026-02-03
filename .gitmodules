@@ -7,3 +7,9 @@
 [submodule "Core/Physics/bullet3"]
 	path = Core/Physics/bullet3
 	url = https://github.com/pmrochen/bullet3.git
+[submodule "Core/Filesystem/zlib-ng"]
+	path = Core/Filesystem/zlib-ng
+	url = https://github.com/zlib-ng/zlib-ng.git
+[submodule "Core/Filesystem/minizip-ng"]
+	path = Core/Filesystem/minizip-ng
+	url = https://github.com/zlib-ng/minizip-ng
