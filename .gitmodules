@@ -13,15 +13,6 @@
 [submodule "Core/Filesystem/minizip-ng"]
 	path = Core/Filesystem/minizip-ng
 	url = https://github.com/zlib-ng/minizip-ng
-[submodule "Core/Filesystem/serialization"]
-	path = Core/Filesystem/serialization
-	url = https://github.com/boostorg/serialization.git
-[submodule "Core/Common/smart_ptr"]
-	path = Core/Common/smart_ptr
-	url = https://github.com/boostorg/smart_ptr.git
-[submodule "Core/Common/signals2"]
-	path = Core/Common/signals2
-	url = https://github.com/boostorg/signals2.git
 [submodule "Core/Imaging/RectangleBinPack"]
 	path = Core/Imaging/RectangleBinPack
 	url = https://github.com/juj/RectangleBinPack.git
