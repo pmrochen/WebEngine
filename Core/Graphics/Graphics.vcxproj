@@ -187,6 +187,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Graphics.hpp" />
+    <ClInclude Include="MikkTSpace\mikktspace.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MikkTSpace\mikktspace.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
