@@ -83,8 +83,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;Win32;Formats\libpng;Compression\libsquish;..\Filesystem;..\Filesystem\Win32;..\Filesystem\zlib-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;SQUISH_USE_SSE=2;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -104,12 +104,15 @@
     <Lib>
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
+    <PreBuildEvent>
+      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Win32\pnglibconf.h"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;Win32;Formats\libpng;Compression\libsquish;..\Filesystem;..\Filesystem\Win32;..\Filesystem\zlib-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>CPUExtensionRequirementsARMv87</EnableEnhancedInstructionSet>
@@ -128,13 +131,16 @@
     <Lib>
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
+    <PreBuildEvent>
+      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Win32\pnglibconf.h"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>.;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;Win32;Formats\libpng;Compression\libsquish;..\Filesystem;..\Filesystem\Win32;..\Filesystem\zlib-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;SQUISH_USE_SSE=2;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -156,13 +162,16 @@
     <Lib>
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
+    <PreBuildEvent>
+      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Win32\pnglibconf.h"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>.;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;Win32;Formats\libpng;Compression\libsquish;..\Filesystem;..\Filesystem\Win32;..\Filesystem\zlib-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -184,13 +193,78 @@
     <Lib>
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
+    <PreBuildEvent>
+      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Win32\pnglibconf.h"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Color3.hpp" />
     <ClInclude Include="Color4.hpp" />
     <ClInclude Include="ColorSpaces.hpp" />
+    <ClInclude Include="Compression\libsquish\alpha.h" />
+    <ClInclude Include="Compression\libsquish\clusterfit.h" />
+    <ClInclude Include="Compression\libsquish\colourblock.h" />
+    <ClInclude Include="Compression\libsquish\colourfit.h" />
+    <ClInclude Include="Compression\libsquish\colourset.h" />
+    <ClInclude Include="Compression\libsquish\config.h" />
+    <ClInclude Include="Compression\libsquish\maths.h" />
+    <ClInclude Include="Compression\libsquish\rangefit.h" />
+    <ClInclude Include="Compression\libsquish\simd.h" />
+    <ClInclude Include="Compression\libsquish\simd_float.h" />
+    <ClInclude Include="Compression\libsquish\simd_sse.h" />
+    <ClInclude Include="Compression\libsquish\simd_ve.h" />
+    <ClInclude Include="Compression\libsquish\singlecolourfit.h" />
+    <ClInclude Include="Compression\libsquish\squish.h" />
+    <ClInclude Include="Formats\libpng\arm\check.h" />
+    <ClInclude Include="Formats\libpng\intel\check.h" />
+    <ClInclude Include="Formats\libpng\mips\check.h" />
+    <ClInclude Include="Formats\libpng\mips\msacheck.h" />
+    <ClInclude Include="Formats\libpng\png.h" />
+    <ClInclude Include="Formats\libpng\pngconf.h" />
+    <ClInclude Include="Formats\libpng\pngdebug.h" />
+    <ClInclude Include="Formats\libpng\pnginfo.h" />
+    <ClInclude Include="Formats\libpng\pngpriv.h" />
+    <ClInclude Include="Formats\libpng\pngstruct.h" />
+    <ClInclude Include="Formats\libpng\pngtarget.h" />
+    <ClInclude Include="Formats\libpng\powerpc\check.h" />
     <ClInclude Include="Imaging.hpp" />
     <ClInclude Include="PixelTypes.hpp" />
+    <ClInclude Include="RectangleBinPack\MaxRectsBinPack.h" />
+    <ClInclude Include="RectangleBinPack\Rect.h" />
+    <ClInclude Include="Win32\pnglibconf.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Compression\libsquish\alpha.cpp" />
+    <ClCompile Include="Compression\libsquish\clusterfit.cpp" />
+    <ClCompile Include="Compression\libsquish\colourblock.cpp" />
+    <ClCompile Include="Compression\libsquish\colourfit.cpp" />
+    <ClCompile Include="Compression\libsquish\colourset.cpp" />
+    <ClCompile Include="Compression\libsquish\maths.cpp" />
+    <ClCompile Include="Compression\libsquish\rangefit.cpp" />
+    <ClCompile Include="Compression\libsquish\singlecolourfit.cpp" />
+    <ClCompile Include="Compression\libsquish\squish.cpp" />
+    <ClCompile Include="Formats\libpng\png.c" />
+    <ClCompile Include="Formats\libpng\pngerror.c" />
+    <ClCompile Include="Formats\libpng\pngget.c" />
+    <ClCompile Include="Formats\libpng\pngmem.c" />
+    <ClCompile Include="Formats\libpng\pngpread.c" />
+    <ClCompile Include="Formats\libpng\pngread.c" />
+    <ClCompile Include="Formats\libpng\pngrio.c" />
+    <ClCompile Include="Formats\libpng\pngrtran.c" />
+    <ClCompile Include="Formats\libpng\pngrutil.c" />
+    <ClCompile Include="Formats\libpng\pngset.c" />
+    <ClCompile Include="Formats\libpng\pngsimd.c" />
+    <ClCompile Include="Formats\libpng\pngtest.c" />
+    <ClCompile Include="Formats\libpng\pngtrans.c" />
+    <ClCompile Include="Formats\libpng\pngwio.c" />
+    <ClCompile Include="Formats\libpng\pngwrite.c" />
+    <ClCompile Include="Formats\libpng\pngwtran.c" />
+    <ClCompile Include="Formats\libpng\pngwutil.c" />
+    <ClCompile Include="RectangleBinPack\MaxRectsBinPack.cpp" />
+    <ClCompile Include="RectangleBinPack\Rect.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Compression\libsquish\singlecolourlookup.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
