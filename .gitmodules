@@ -25,9 +25,6 @@
 [submodule "Core/Imaging/Formats/Imath"]
 	path = Core/Imaging/Formats/Imath
 	url = https://github.com/AcademySoftwareFoundation/Imath.git
-[submodule "Core/Imaging/Formats/libjpeg-turbo"]
-	path = Core/Imaging/Formats/libjpeg-turbo
-	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
 [submodule "Core/Imaging/Compression/libsquish"]
 	path = Core/Imaging/Compression/libsquish
 	url = https://github.com/svn2github/libsquish.git
