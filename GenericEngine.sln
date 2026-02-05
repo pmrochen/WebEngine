@@ -32,10 +32,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tuples", "Tuples", "{6C04E3
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imaging", "Core\Imaging\Imaging.vcxproj", "{CAA6E8BF-D4CC-4974-8E33-5648C3545E72}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F546B60C-57C0-4D6D-9B89-89E6EF5C473D} = {F546B60C-57C0-4D6D-9B89-89E6EF5C473D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Filesystem", "Core\Filesystem\Filesystem.vcxproj", "{F546B60C-57C0-4D6D-9B89-89E6EF5C473D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphics", "Core\Graphics\Graphics.vcxproj", "{DCBAEE5F-5413-430B-9A5D-709304F0FB1A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F546B60C-57C0-4D6D-9B89-89E6EF5C473D} = {F546B60C-57C0-4D6D-9B89-89E6EF5C473D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics", "Core\Physics\Physics.vcxproj", "{37EB9FC5-FF90-4B80-9626-108E79814F7F}"
 EndProject
