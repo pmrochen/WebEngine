@@ -10,10 +10,8 @@
 #include <tuple>
 #include <cstddef>
 
-namespace core::tuples 
-{
-namespace templates 
-{
+namespace core::tuples {
+namespace templates {
 
 template<typename T>
 struct Tuple4
@@ -23,8 +21,8 @@ struct Tuple4
 	constexpr Tuple4() = default; //: x(), y(), z(), w() {}
 	constexpr explicit Tuple4(const T scalar) noexcept : x(scalar), y(scalar), z(scalar), w(scalar) {}
 	constexpr Tuple4(const T x, const T y, const T z, const T w) noexcept : x(x), y(y), z(z), w(w) {}
-	explicit Tuple4(const std::initializer_list<T>& t) noexcept : x(t.data()[0]), y(t.data()[1]), z(t.data()[2]), w(t.data()[3]) {}
-	template<typename U> explicit Tuple4(const std::initializer_list<U>& t) noexcept : x(T(t.data()[0])), y(T(t.data()[1])), z(T(t.data()[2])), w(T(t.data()[3])) {}
+	explicit Tuple4(std::initializer_list<T> t) noexcept : x(t.data()[0]), y(t.data()[1]), z(t.data()[2]), w(t.data()[3]) {}
+	template<typename U> explicit Tuple4(std::initializer_list<U> t) noexcept : x(T(t.data()[0])), y(T(t.data()[1])), z(T(t.data()[2])), w(T(t.data()[3])) {}
 	explicit Tuple4(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
 	template<typename U> explicit Tuple4(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
 	explicit Tuple4(const T* const v) noexcept : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
@@ -149,25 +147,25 @@ using Float4 = templates::Tuple4<float>;
 using Double4 = templates::Tuple4<double>;
 
 #ifdef HALF_HALF_HPP
-using Half4 = templates::Tuple4<half_float::half>;
+using Half4 = templates::Tuple4<::half_float::half>;
 #endif // HALF_HALF_HPP
 
 } // namespace core::tuples
 
+namespace core::filesystem { 
+
 #ifdef HALF_HALF_HPP
-namespace core::serialization 
-{ 
 template<class A> 
-inline void serialize(A& ar, ::core::tuples::templates::Tuple4<half_float::half>& t, const unsigned int version) 
+inline void serialize(A& ar, ::core::tuples::templates::Tuple4<::half_float::half>& t, const unsigned int version) 
 { 
     ar & reinterpret_cast<short&>(t.x) & reinterpret_cast<short&>(t.y) & 
         reinterpret_cast<short&>(t.z) & reinterpret_cast<short&>(t.w); 
 }
-}
 #endif // HALF_HALF_HPP
 
-namespace std
-{
+} // namespace core::filesystem
+
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

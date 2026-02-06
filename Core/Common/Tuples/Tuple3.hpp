@@ -10,10 +10,8 @@
 #include <tuple>
 #include <cstddef>
 
-namespace core::tuples 
-{
-namespace templates 
-{
+namespace core::tuples {
+namespace templates {
 
 template<typename T>
 struct Tuple3
@@ -23,8 +21,8 @@ struct Tuple3
 	constexpr Tuple3() = default; //: x(), y(), z() {}
 	constexpr explicit Tuple3(const T scalar) noexcept : x(scalar), y(scalar), z(scalar) {}
 	constexpr Tuple3(const T x, const T y, const T z) noexcept : x(x), y(y), z(z) {}
-	explicit Tuple3(const std::initializer_list<T>& t) noexcept : x(t.data()[0]), y(t.data()[1]), z(t.data()[2]) {}
-	template<typename U> explicit Tuple3(const std::initializer_list<U>& t) noexcept : x(T(t.data()[0])), y(T(t.data()[1])), z(T(t.data()[2])) {}
+	explicit Tuple3(std::initializer_list<T> t) noexcept : x(t.data()[0]), y(t.data()[1]), z(t.data()[2]) {}
+	template<typename U> explicit Tuple3(std::initializer_list<U> t) noexcept : x(T(t.data()[0])), y(T(t.data()[1])), z(T(t.data()[2])) {}
 	explicit Tuple3(const std::tuple<T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)) {}
 	template<typename U> explicit Tuple3(const std::tuple<U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))) {}
 	explicit Tuple3(const T* const v) noexcept : x(v[0]), y(v[1]), z(v[2]) {}
@@ -136,8 +134,7 @@ using Double3 = templates::Tuple3<double>;
 
 } // namespace core::tuples
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;
