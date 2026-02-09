@@ -83,7 +83,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>Win32;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;X86_FEATURES;HAVE_CPUID_MS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -105,16 +105,16 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)Win32\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)Win32\zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)Win32\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>Win32;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;ARM_FEATURES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -135,9 +135,9 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)Win32\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)Win32\zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)Win32\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -145,7 +145,7 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>Win32;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;X86_FEATURES;HAVE_CPUID_MS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -169,9 +169,9 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)Win32\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)Win32\zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)Win32\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -179,7 +179,7 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>Win32;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;ARM_FEATURES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -203,9 +203,9 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)Win32\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)Win32\zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)Win32\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -224,16 +224,9 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
     <ClInclude Include="minizip-ng\mz_strm_zlib.h" />
     <ClInclude Include="minizip-ng\mz_zip.h" />
     <ClInclude Include="minizip-ng\mz_zip_rw.h" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\complex.hpp" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\config.hpp" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\deque.hpp" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\export.hpp" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\factory.hpp" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\force_include.hpp" />
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\forward_list.hpp" />
-    <ClInclude Include="Win32\zconf.h" />
-    <ClInclude Include="Win32\zlib.h" />
-    <ClInclude Include="Win32\zlib_name_mangling.h" />
+    <ClInclude Include="zlib-ng\zconf.h" />
+    <ClInclude Include="zlib-ng\zlib.h" />
+    <ClInclude Include="zlib-ng\zlib_name_mangling.h" />
     <ClInclude Include="zlib-ng\adler32_p.h" />
     <ClInclude Include="zlib-ng\arch\arm\acle_intrins.h" />
     <ClInclude Include="zlib-ng\arch\arm\arm_features.h" />

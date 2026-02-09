@@ -176,7 +176,7 @@
     <ClInclude Include="Formats\libpng\powerpc\check.h">
       <Filter>Formats\libpng\powerpc</Filter>
     </ClInclude>
-    <ClInclude Include="Win32\pnglibconf.h">
+    <ClInclude Include="Formats\libpng\pnglibconf.h">
       <Filter>Formats\libpng</Filter>
     </ClInclude>
   </ItemGroup>

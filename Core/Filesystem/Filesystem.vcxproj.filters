@@ -283,12 +283,6 @@
     <ClInclude Include="zlib-ng\compare256_rle.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\complex.hpp">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\config.hpp">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
     <ClInclude Include="zlib-ng\cpu_features.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
@@ -313,22 +307,7 @@
     <ClInclude Include="zlib-ng\deflate_p.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\deque.hpp">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\export.hpp">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\factory.hpp">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
     <ClInclude Include="zlib-ng\fallback_builtins.h">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\force_include.hpp">
-      <Filter>zlib-ng</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\boost\serialization\include\boost\serialization\forward_list.hpp">
       <Filter>zlib-ng</Filter>
     </ClInclude>
     <ClInclude Include="zlib-ng\functable.h">
@@ -373,16 +352,16 @@
     <ClInclude Include="zlib-ng\zbuild.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="Win32\zconf.h">
+    <ClInclude Include="zlib-ng\zconf.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
     <ClInclude Include="zlib-ng\zendian.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="Win32\zlib.h">
+    <ClInclude Include="zlib-ng\zlib.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="Win32\zlib_name_mangling.h">
+    <ClInclude Include="zlib-ng\zlib_name_mangling.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
     <ClInclude Include="zlib-ng\zmemory.h">
