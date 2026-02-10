@@ -81,15 +81,38 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PreBuildEvent>
+      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <PreBuildEvent>
+      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <PreBuildEvent>
+      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="half\include\half.hpp" />
     <ClInclude Include="NameString.hpp" />
     <ClInclude Include="PathString.hpp" />
     <ClInclude Include="Simd\AvxIntrinsics.hpp" />

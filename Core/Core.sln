@@ -4,22 +4,33 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.14.36717.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mathematics", "Mathematics\Mathematics.vcxproj", "{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B} = {E485ADC1-2C52-46F8-8D8C-3C91461A388B}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{81B81A2A-3D56-4DFA-A357-FBB324D319F0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imaging", "Imaging\Imaging.vcxproj", "{CAA6E8BF-D4CC-4974-8E33-5648C3545E72}"
 	ProjectSection(ProjectDependencies) = postProject
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B} = {E485ADC1-2C52-46F8-8D8C-3C91461A388B}
 		{F546B60C-57C0-4D6D-9B89-89E6EF5C473D} = {F546B60C-57C0-4D6D-9B89-89E6EF5C473D}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Filesystem", "Filesystem\Filesystem.vcxproj", "{F546B60C-57C0-4D6D-9B89-89E6EF5C473D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B} = {E485ADC1-2C52-46F8-8D8C-3C91461A388B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphics", "Graphics\Graphics.vcxproj", "{DCBAEE5F-5413-430B-9A5D-709304F0FB1A}"
 	ProjectSection(ProjectDependencies) = postProject
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B} = {E485ADC1-2C52-46F8-8D8C-3C91461A388B}
 		{F546B60C-57C0-4D6D-9B89-89E6EF5C473D} = {F546B60C-57C0-4D6D-9B89-89E6EF5C473D}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics", "Physics\Physics.vcxproj", "{37EB9FC5-FF90-4B80-9626-108E79814F7F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B} = {E485ADC1-2C52-46F8-8D8C-3C91461A388B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{E485ADC1-2C52-46F8-8D8C-3C91461A388B}"
 EndProject

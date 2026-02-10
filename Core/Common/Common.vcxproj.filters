@@ -29,9 +29,6 @@
     <ClInclude Include="Simd\SseIntrinsics.hpp">
       <Filter>Simd</Filter>
     </ClInclude>
-    <ClInclude Include="half\include\half.hpp">
-      <Filter>half</Filter>
-    </ClInclude>
     <ClInclude Include="NameString.hpp" />
     <ClInclude Include="PathString.hpp" />
   </ItemGroup>
@@ -44,6 +41,15 @@
     </Filter>
     <Filter Include="half">
       <UniqueIdentifier>{340ac710-3d06-4e60-bf33-a8e20bd0d48a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sigslot">
+      <UniqueIdentifier>{69f371e2-fc0a-484d-809d-a3ba6f71344b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal">
+      <UniqueIdentifier>{38b167e0-ebab-4c5e-8546-4228ed22c236}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="intrusive_shared_ptr">
+      <UniqueIdentifier>{5bbeb48d-043e-42c7-94e8-9254ac244f86}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
