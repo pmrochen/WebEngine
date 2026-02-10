@@ -84,7 +84,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;Formats\libpng;Compression\libsquish;..\Filesystem;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;SQUISH_USE_SSE=2;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;SQUISH_USE_SSE=2;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -112,7 +112,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;Formats\libpng;Compression\libsquish;..\Filesystem;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>CPUExtensionRequirementsARMv87</EnableEnhancedInstructionSet>
@@ -140,7 +140,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>.;Formats\libpng;Compression\libsquish;..\Filesystem;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;SQUISH_USE_SSE=2;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;SQUISH_USE_SSE=2;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -171,7 +171,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>.;Formats\libpng;Compression\libsquish;..\Filesystem;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;IMAGING_HAS_LIBSQUISH;IMAGING_HAS_LIBJPEG;IMAGING_HAS_LIBPNG;IMAGING_HAS_OPENEXR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
