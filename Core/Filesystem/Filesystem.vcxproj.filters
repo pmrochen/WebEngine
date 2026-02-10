@@ -352,16 +352,16 @@
     <ClInclude Include="zlib-ng\zbuild.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="zlib-ng\zconf.h">
+    <ClInclude Include="zconf.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
     <ClInclude Include="zlib-ng\zendian.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="zlib-ng\zlib.h">
+    <ClInclude Include="zlib.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="zlib-ng\zlib_name_mangling.h">
+    <ClInclude Include="zlib_name_mangling.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
     <ClInclude Include="zlib-ng\zmemory.h">
