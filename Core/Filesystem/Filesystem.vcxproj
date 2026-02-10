@@ -105,8 +105,8 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
@@ -135,8 +135,8 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
@@ -169,8 +169,8 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
@@ -203,8 +203,8 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-xcopy /-I /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib-ng\zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib-ng\zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>

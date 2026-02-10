@@ -105,7 +105,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
+      <Command>copy /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -132,7 +132,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
+      <Command>copy /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,7 +163,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
+      <Command>copy /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -194,7 +194,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>xcopy /-I /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
+      <Command>copy /Y "$(ProjectDir)Formats\libpng\pnglibconf.h.prebuilt" "$(ProjectDir)Formats\libpng\pnglibconf.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
