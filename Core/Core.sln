@@ -5,29 +5,7 @@ VisualStudioVersion = 17.14.36717.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mathematics", "Mathematics\Mathematics.vcxproj", "{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-	ProjectSection(SolutionItems) = preProject
-		Common\Strings.hpp = Common\Strings.hpp
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{81B81A2A-3D56-4DFA-A357-FBB324D319F0}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simd", "Simd", "{8459C3E9-810E-493C-89E2-2B70D5CEBE54}"
-	ProjectSection(SolutionItems) = preProject
-		Common\Simd\AvxIntrinsics.hpp = Common\Simd\AvxIntrinsics.hpp
-		Common\Simd\Float4.hpp = Common\Simd\Float4.hpp
-		Common\Simd\Intrinsics.hpp = Common\Simd\Intrinsics.hpp
-		Common\Simd\Simd.hpp = Common\Simd\Simd.hpp
-		Common\Simd\SseIntrinsics.hpp = Common\Simd\SseIntrinsics.hpp
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tuples", "Tuples", "{6C04E3CA-9173-4A6A-A433-E14DC2BBAA88}"
-	ProjectSection(SolutionItems) = preProject
-		Common\Tuples\Tuple2.hpp = Common\Tuples\Tuple2.hpp
-		Common\Tuples\Tuple3.hpp = Common\Tuples\Tuple3.hpp
-		Common\Tuples\Tuple4.hpp = Common\Tuples\Tuple4.hpp
-		Common\Tuples\Tuples.hpp = Common\Tuples\Tuples.hpp
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imaging", "Imaging\Imaging.vcxproj", "{CAA6E8BF-D4CC-4974-8E33-5648C3545E72}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -42,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphics", "Graphics\Graphi
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics", "Physics\Physics.vcxproj", "{37EB9FC5-FF90-4B80-9626-108E79814F7F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{E485ADC1-2C52-46F8-8D8C-3C91461A388B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,19 +71,25 @@ Global
 		{37EB9FC5-FF90-4B80-9626-108E79814F7F}.Release|ARM64.Build.0 = Release|ARM64
 		{37EB9FC5-FF90-4B80-9626-108E79814F7F}.Release|x64.ActiveCfg = Release|x64
 		{37EB9FC5-FF90-4B80-9626-108E79814F7F}.Release|x64.Build.0 = Release|x64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Debug|x64.ActiveCfg = Debug|x64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Debug|x64.Build.0 = Debug|x64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Release|ARM64.Build.0 = Release|ARM64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Release|x64.ActiveCfg = Release|x64
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5B3C4942-8AEB-4612-8906-C3A7DD4F3F36} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
-		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
-		{8459C3E9-810E-493C-89E2-2B70D5CEBE54} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{6C04E3CA-9173-4A6A-A433-E14DC2BBAA88} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{CAA6E8BF-D4CC-4974-8E33-5648C3545E72} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
 		{F546B60C-57C0-4D6D-9B89-89E6EF5C473D} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
 		{DCBAEE5F-5413-430B-9A5D-709304F0FB1A} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
 		{37EB9FC5-FF90-4B80-9626-108E79814F7F} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
+		{E485ADC1-2C52-46F8-8D8C-3C91461A388B} = {81B81A2A-3D56-4DFA-A357-FBB324D319F0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6ECD0FC-F61B-4893-8157-CAE31C590939}
