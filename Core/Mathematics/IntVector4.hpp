@@ -17,10 +17,8 @@
 #include "IntVector3.hpp"
 #include "Vector4.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct IntVector4
@@ -68,7 +66,7 @@ struct IntVector4
 	bool operator==(const IntVector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator!=(const IntVector4& v) const noexcept { return !(*this == v); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
+	template<typename A> void serialize(A& ar) { ar(x, y, z, w); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -290,8 +288,7 @@ using IntVector4Result = templates::IntVector4<int>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

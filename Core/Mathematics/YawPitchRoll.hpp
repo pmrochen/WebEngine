@@ -20,10 +20,8 @@
 #include "Vector3.hpp"
 #include "Quaternion.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct Euler;
@@ -62,7 +60,7 @@ struct YawPitchRoll
 	bool operator==(const YawPitchRoll& r) const noexcept { return (yaw == r.yaw) && (pitch == r.pitch) && (roll == r.roll); }
 	bool operator!=(const YawPitchRoll& r) const noexcept { return !(*this == r); }
 
-	template<class A> void serialize(A& ar, unsigned int version) { ar & yaw & pitch & roll; }
+	template<typename A> void serialize(A& ar) { ar(yaw, pitch, roll); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -284,8 +282,7 @@ using YawPitchRoll = templates::YawPitchRoll<float>;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;
@@ -325,8 +322,7 @@ struct hash<::core::mathematics::templates::YawPitchRoll<T>>
 #include "Euler.hpp"
 #include "Matrix3.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 template<typename T>
 inline YawPitchRoll<T>::YawPitchRoll(const Euler<T>& e)

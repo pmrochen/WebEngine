@@ -19,17 +19,15 @@
 #include "ColorSpaces.hpp"
 #include "PixelTypes.hpp"
 
-namespace core::imaging 
-{
+namespace core::imaging {
 
-struct Uninitialized/*Type*/()
+struct Uninitialized
 {
 };
 
-//constexpr Uninitialized = UninitializedType();
+constexpr Uninitialized UNINITIALIZED{};
 
-namespace templates 
-{
+namespace templates {
 
 //template<typename T>
 //struct IntColor3;
@@ -75,7 +73,8 @@ struct Color3
 	bool operator==(const Color3& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b); }
 	bool operator!=(const Color3& c) const noexcept { return !(*this == c); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b; }
+	template<typename A> void load(A& ar) { ar(r, g, b); }
+	template<typename A> void save(A& ar) const { ar(r, g, b); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -223,7 +222,8 @@ struct Color3<float>
 	bool operator==(const Color3& c) const noexcept { return simd::all3(simd::equal(rgb, c)); }
 	bool operator!=(const Color3& c) const noexcept { return !(*this == c); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b; } // #FIXME use simd::set(r, g, b, b)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(r, g, b); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -732,6 +732,14 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Color3<
 	return s; 
 }
 
+template<typename A> 
+inline void Color3<float>::load(A& ar)
+{
+	float t0, t1, t2;
+	ar(t0, t1, t2);
+	set(t0, t1, t2);
+}
+
 template<std::size_t I>
 inline float& Color3<float>::get()
 {
@@ -800,8 +808,7 @@ using Color3Result = templates::Color3<float>::ConstResult;
 
 } // namespace core::imaging
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

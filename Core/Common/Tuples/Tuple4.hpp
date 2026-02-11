@@ -10,6 +10,10 @@
 #include <tuple>
 #include <cstddef>
 
+namespace half_float {
+class half;
+} // namespace half_float
+
 namespace core::tuples {
 namespace templates {
 
@@ -35,10 +39,39 @@ struct Tuple4
 	bool operator==(const Tuple4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator!=(const Tuple4& v) const noexcept { return !(*this == v); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
+	template<typename A> void serialize(A& ar)
+	{ 
+		if constexpr (std::is_same_v<T, ::half_float::half>)
+			ar(reinterpret_cast<short&>(x), reinterpret_cast<short&>(y), reinterpret_cast<short&>(z), reinterpret_cast<short&>(w));
+		else
+			ar(x, y, z, w);
+	}
 
-	template<std::size_t I> T& get() noexcept;
-	template<std::size_t I> const T& get() const noexcept;
+	template<std::size_t I> T& get() noexcept
+	{
+		if constexpr (I == 0)
+			return x;
+		else if constexpr (I == 1)
+			return y;
+		else if constexpr (I == 2)
+			return z;
+		else if constexpr (I == 3)
+			return w;
+		static_assert(false);
+	}
+
+	template<std::size_t I> const T& get() const noexcept
+	{
+		if constexpr (I == 0)
+			return x;
+		else if constexpr (I == 1)
+			return y;
+		else if constexpr (I == 2)
+			return z;
+		else if constexpr (I == 3)
+			return w;
+		static_assert(false);
+	}
 
 	T x, y, z, w;
 
@@ -105,36 +138,6 @@ inline const T&& get(const Tuple4<T>&& v) noexcept
 	static_assert(false);
 }
 
-template<typename T>
-template<std::size_t I>
-inline T& Tuple4<T>::get()
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	else if constexpr (I == 3)
-		return w;
-	static_assert(false);
-}
-
-template<typename T>
-template<std::size_t I>
-inline const T& Tuple4<T>::get() const
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	else if constexpr (I == 3)
-		return w;
-	static_assert(false);
-}
-
 } // namespace templates
 
 using UChar4/*Byte4*/ = templates::Tuple4<unsigned char>;
@@ -151,19 +154,6 @@ using Half4 = templates::Tuple4<::half_float::half>;
 #endif // HALF_HALF_HPP
 
 } // namespace core::tuples
-
-namespace core::filesystem { 
-
-#ifdef HALF_HALF_HPP
-template<class A> 
-inline void serialize(A& ar, ::core::tuples::templates::Tuple4<::half_float::half>& t, const unsigned int version) 
-{ 
-    ar & reinterpret_cast<short&>(t.x) & reinterpret_cast<short&>(t.y) & 
-        reinterpret_cast<short&>(t.z) & reinterpret_cast<short&>(t.w); 
-}
-#endif // HALF_HALF_HPP
-
-} // namespace core::filesystem
 
 namespace std {
 

@@ -19,10 +19,8 @@
 #include "Scalar.hpp"
 #include "Vector3.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct Matrix3;
@@ -80,7 +78,8 @@ struct Quaternion
 	bool operator==(const Quaternion& q) const noexcept { return (x == q.x) && (y == q.y) && (z == q.z) && (w == q.w); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
+	template<typename A> void load(A& ar) { ar(x, y, z, w); }
+	template<typename A> void save(A& ar) const { ar(x, y, z, w); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -194,7 +193,8 @@ struct Quaternion<float>
 	bool operator==(const Quaternion& q) const noexcept { return simd::all4(simd::equal(xyzw, q)); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(x, y, z, w); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -808,6 +808,14 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quatern
 	return s;
 }
 
+template<typename A>
+inline void Quaternion<float>::load(A& ar)
+{
+	float t0, t1, t2, t3;
+	ar(t0, t1, t2, t3);
+	set(t0, t1, t2, t3);
+}
+
 template<std::size_t I>
 inline float& Quaternion<float>::get()
 {
@@ -1005,8 +1013,7 @@ using QuaternionResult = templates::Quaternion<float>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

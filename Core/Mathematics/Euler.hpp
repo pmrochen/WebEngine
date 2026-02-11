@@ -24,16 +24,14 @@
 #include "Quaternion.hpp"
 #include "YawPitchRoll.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 template<typename T>
 struct Euler;
 
 } // namespace core::mathematics::templates
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;
@@ -60,10 +58,8 @@ struct tuple_size<::core::mathematics::templates::Euler<T>> : integral_constant<
 
 } // namespace std
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct Matrix3;
@@ -101,7 +97,7 @@ struct Euler
 	bool operator==(const Euler& e) const noexcept { return (order == e.order) && (x == e.x) && (y == e.y) && (z == e.z); }
 	bool operator!=(const Euler& e) const noexcept { return !(*this == e); }
 
-	template<class A> void serialize(A& ar, unsigned int version) { ar & x & y & z & order; }
+	template<typename A> void serialize(A& ar) { ar(x, y, z, order); }
 
 	template<std::size_t I> typename std::tuple_element<I, Euler>::type& get() noexcept;
 	template<std::size_t I> const typename std::tuple_element<I, Euler>::type& get() const noexcept;
@@ -388,8 +384,7 @@ using Euler = templates::Euler<float>;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<typename T>
 struct hash;
@@ -412,8 +407,7 @@ struct hash<::core::mathematics::templates::Euler<T>>
 
 #include "Matrix3.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 template<typename T>
 inline Euler<T>::Euler(const Quaternion<T>& q, EulerOrder order) : Euler<T>(Matrix3<T>::makeRotation(q), order)

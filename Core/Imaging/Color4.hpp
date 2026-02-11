@@ -20,10 +20,8 @@
 #include "PixelTypes.hpp"
 #include "Color3.hpp"
 
-namespace core::imaging 
-{
-namespace templates 
-{
+namespace core::imaging {
+namespace templates {
 
 //template<typename T>
 //struct IntColor4;
@@ -71,7 +69,8 @@ struct Color4
 	bool operator==(const Color4& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b) && (a == c.a); }
 	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; }
+	template<typename A> void load(A& ar) { ar(r, g, b, a); }
+	template<typename A> void save(A& ar) const { ar(r, g, b, a); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -200,7 +199,8 @@ struct Color4<float>
 	bool operator==(const Color4& c) const noexcept { return simd::all4(simd::equal(rgba, c)); }
 	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & r & g & b & a; } // #FIXME use simd::set(r, g, b, a)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(r, g, b, a); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -703,6 +703,14 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Color4<
 	return s;
 }
 
+template<typename A>
+inline void Color4<float>::load(A& ar)
+{
+	float t0, t1, t2, t3;
+	ar(t0, t1, t2, t3);
+	set(t0, t1, t2, t3);
+}
+
 template<std::size_t I>
 inline float& Color4<float>::get()
 {
@@ -775,8 +783,7 @@ using Color4Result = templates::Color4<float>::ConstResult;
 
 } // namespace core::imaging
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

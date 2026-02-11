@@ -15,10 +15,8 @@
 #include <Tuples/Tuple2.hpp>
 #include "Vector2.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct IntVector2
@@ -65,7 +63,7 @@ struct IntVector2
 	bool operator==(const IntVector2& v) const noexcept { return (x == v.x) && (y == v.y); }
 	bool operator!=(const IntVector2& v) const noexcept { return !(*this == v); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
+	template<typename A> void serialize(A& ar) { ar(x, y); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -255,8 +253,7 @@ using IntVector2Result = templates::IntVector2<int>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

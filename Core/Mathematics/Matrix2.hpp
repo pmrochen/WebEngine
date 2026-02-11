@@ -18,10 +18,8 @@
 #include "Scalar.hpp"
 #include "Vector2.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct Matrix2
@@ -55,7 +53,8 @@ struct Matrix2
 	bool operator==(const Matrix2& m) const noexcept { return (m00 == m.m00) && (m01 == m.m01) && (m10 == m.m10) && (m11 == m.m11); }
 	bool operator!=(const Matrix2& m) const noexcept { return !(*this == m); }
 
-	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m10 & m11; }
+	template<typename A> void load(A& ar) { ar(m00, m01, m10, m11); }
+	template<typename A> void save(A& ar) const { ar(m00, m01, m10, m11); }
 
 	// #TODO rename get...() to make...()
 	static Matrix2 getScaling(const Vector2<T>& v) noexcept { return Matrix2(Uninitialized()).setScaling(v); }
@@ -157,8 +156,8 @@ struct Matrix2<float>
 	bool operator==(const Matrix2& m) const noexcept;
 	bool operator!=(const Matrix2& m) const noexcept { return !(*this == m); }
 
-	// #FIXME use simd::set()
-	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m10 & m11; }
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(m00, m01, m10, m11); }
 
 	// #TODO rename get...() to make...()
 	static Matrix2 getScaling(const Vector2<float>& v) noexcept { return Matrix2(Uninitialized()).setScaling(v); }
@@ -446,6 +445,15 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Matrix2
 	s >> m00 >> std::ws >> m01 >> std::ws >> m10 >> std::ws >> m11;
 	m.set(m00, m01, m10, m11);
 	return s;
+}
+
+template<typename A>
+inline void Matrix2<float>::load(A& ar)
+{
+	float t00, t01;
+	float t10, t11;
+	ar(t00, t01, t10, t11);
+	set(t00, t01, t10, t11);
 }
 
 inline Matrix2<float>& Matrix2<float>::set(float m00, float m01, float m10, float m11)

@@ -10,6 +10,10 @@
 #include <tuple>
 #include <cstddef>
 
+namespace half_float {
+class half;
+} // namespace half_float
+
 namespace core::tuples {
 namespace templates {
 
@@ -35,10 +39,35 @@ struct Tuple3
 	bool operator==(const Tuple3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator!=(const Tuple3& v) const noexcept { return !(*this == v); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
+	template<typename A> void serialize(A& ar)
+	{ 
+		if constexpr (std::is_same_v<T, ::half_float::half>)
+			ar(reinterpret_cast<short&>(x), reinterpret_cast<short&>(y), reinterpret_cast<short&>(z));
+		else
+			ar(x, y, z); 
+	}
 
-	template<std::size_t I> T& get() noexcept;
-	template<std::size_t I> const T& get() const noexcept;
+	template<std::size_t I> T& get() noexcept
+	{
+		if constexpr (I == 0)
+			return x;
+		else if constexpr (I == 1)
+			return y;
+		else if constexpr (I == 2)
+			return z;
+		static_assert(false);
+	}
+
+	template<std::size_t I> const T& get() const noexcept
+	{
+		if constexpr (I == 0)
+			return x;
+		else if constexpr (I == 1)
+			return y;
+		else if constexpr (I == 2)
+			return z;
+		static_assert(false);
+	}
 
 	T x, y, z;
 
@@ -94,32 +123,6 @@ inline const T&& get(const Tuple3<T>&& v) noexcept
 		return v.y;
 	else if constexpr (I == 2)
 		return v.z;
-	static_assert(false);
-}
-
-template<typename T>
-template<std::size_t I>
-inline T& Tuple3<T>::get()
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	static_assert(false);
-}
-
-template<typename T>
-template<std::size_t I>
-inline const T& Tuple3<T>::get() const
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
 	static_assert(false);
 }
 

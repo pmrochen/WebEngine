@@ -19,10 +19,8 @@
 #include "Vector3.hpp"
 #include "Matrix2.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct YawPitchRoll;
@@ -71,7 +69,8 @@ struct Matrix3
 	bool operator==(const Matrix3& m) const noexcept;
 	bool operator!=(const Matrix3& m) const noexcept { return !(*this == m); }
 
-	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m02 & m10 & m11 & m12 & m20 & m21 & m22; }
+	template<typename A> void load(A& ar) { ar(m00, m01, m02, m10, m11, m12, m20, m21, m22); }
+	template<typename A> void save(A& ar) const { ar(m00, m01, m02, m10, m11, m12, m20, m21, m22); }
 
 	// #TODO rename get...() to make...()
 	static Matrix3 getScaling(const Vector3<T>& v) noexcept { return Matrix3(Uninitialized()).setScaling(v); }
@@ -209,8 +208,8 @@ struct Matrix3<float>
 	bool operator==(const Matrix3& m) const noexcept;
 	bool operator!=(const Matrix3& m) const noexcept { return !(*this == m); }
 
-	// #FIXME use simd::set()
-	template<class A> void serialize(A& ar, unsigned int version) { ar & m00 & m01 & m02 & m10 & m11 & m12 & m20 & m21 & m22; }
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(m00, m01, m02, m10, m11, m12, m20, m21, m22); }
 
 	// #TODO rename get...() to make...()
 	static Matrix3 getScaling(const Vector3<float>& v) noexcept { return Matrix3(Uninitialized()).setScaling(v); }
@@ -794,6 +793,16 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Matrix3
 	return s;
 }
 
+template<typename A>
+inline void Matrix3<float>::load(A& ar)
+{
+	float t00, t01, t02;
+	float t10, t11, t12;
+	float t20, t21, t22;
+	ar(t00, t01, t02, t10, t11, t12, t20, t21, t22);
+	set(t00, t01, t02, t10, t11, t12, t20, t21, t22);
+}
+
 inline bool Matrix3<float>::isZero() const
 {
 	const auto zero = simd::zero<simd::float4>();
@@ -951,8 +960,7 @@ using Matrix3Result = templates::Matrix3<float>::ConstResult;
 #include "Euler.hpp"
 #include "Quaternion.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 #if SIMD_HAS_FLOAT4
 

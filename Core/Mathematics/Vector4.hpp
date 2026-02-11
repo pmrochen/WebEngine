@@ -22,10 +22,8 @@
 #include "Vector2.hpp"
 #include "Vector3.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct IntVector4;
@@ -81,7 +79,8 @@ struct Vector4
 	bool operator==(const Vector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
 	bool operator!=(const Vector4& v) const noexcept { return !(*this == v); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; }
+	template<typename A> void load(A& ar) { ar(x, y, z, w); }
+	template<typename A> void save(A& ar) const { ar(x, y, z, w); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -206,7 +205,8 @@ struct Vector4<float>
 	bool operator==(const Vector4& v) const noexcept { return simd::all4(simd::equal(xyzw, v)); }
 	bool operator!=(const Vector4& v) const noexcept { return !(*this == v); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z & w; } // #FIXME use simd::set(x, y, z, w)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(x, y, z, w); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -713,6 +713,14 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Vector4
 	return s; 
 }
 
+template<typename A>
+inline void Vector4<float>::load(A& ar)
+{
+	float t0, t1, t2, t3;
+	ar(t0, t1, t2, t3);
+	set(t0, t1, t2, t3);
+}
+
 template<std::size_t I>
 inline float& Vector4<float>::get()
 {
@@ -814,8 +822,7 @@ using Vector4Result = templates::Vector4<float>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;
@@ -855,8 +862,7 @@ struct hash<::core::mathematics::templates::Vector4<T>>
 
 #include "IntVector4.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 template<typename T>
 template<typename U> 

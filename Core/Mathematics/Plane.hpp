@@ -26,10 +26,8 @@
 #include "Segment3.hpp"
 #include "HalfSpace.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct Plane
@@ -59,7 +57,8 @@ struct Plane
 	bool operator==(const Plane& p) const noexcept { return (a == p.a) && (b == p.b) && (c == p.c) && (d == p.d); }
 	bool operator!=(const Plane& p) const noexcept { return !(*this == p); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
+	template<typename A> void load(A& ar) { ar(a, b, c, d); }
+	template<typename A> void save(A& ar) const { ar(a, b, c, d); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -155,7 +154,8 @@ struct Plane<float>
 	bool operator==(const Plane& p) const noexcept { return simd::all4(simd::equal(abcd, p)); }
 	bool operator!=(const Plane& p) const noexcept { return !(*this == p); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(a, b, c, d); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -545,6 +545,14 @@ inline std::basic_istream& operator>>(std::basic_istream& s, Plane<float>& p)
 	return s; 
 }
 
+template<typename A>
+inline void Plane<float>::load(A& ar)
+{
+	float t0, t1, t2, t3;
+	ar(t0, t1, t2, t3);
+	set(t0, t1, t2, t3);
+}
+
 template<std::size_t I>
 inline float& Plane<float>::get()
 {
@@ -739,8 +747,7 @@ using PlaneResult = templates::Plane<float>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;

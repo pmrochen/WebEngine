@@ -21,10 +21,8 @@
 #include "Scalar.hpp"
 #include "Vector2.hpp"
 
-namespace core::mathematics 
-{
-namespace templates 
-{
+namespace core::mathematics {
+namespace templates {
 
 template<typename T>
 struct IntVector3;
@@ -83,7 +81,8 @@ struct Vector3
 	bool operator==(const Vector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
 	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
 	
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; }
+	template<typename A> void load(A& ar) { ar(x, y, z); }
+	template<typename A> void save(A& ar) const { ar(x, y, z); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -233,7 +232,8 @@ struct Vector3<float>
 	bool operator==(const Vector3& v) const noexcept { return simd::all3(simd::equal(xyz, v)); }
 	bool operator!=(const Vector3& v) const noexcept { return !(*this == v); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y & z; } // #FIXME use simd::set(x, y, z, z)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(x, y, z); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -808,6 +808,14 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Vector3
 	return s; 
 }
 
+template<typename A>
+inline void Vector3<float>::load(A& ar)
+{
+	float t0, t1, t2;
+	ar(t0, t1, t2);
+	set(t0, t1, t2);
+}
+
 template<std::size_t I>
 inline float& Vector3<float>::get()
 {
@@ -937,8 +945,7 @@ using Vector3Result = templates::Vector3<float>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;
@@ -978,8 +985,7 @@ struct hash<::core::mathematics::templates::Vector3<T>>
 #include "IntVector3.hpp"
 #include "Quaternion.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 template<typename T>
 inline Vector3<T> rotate(const Vector3<T>& v, const Quaternion<T>& q) noexcept

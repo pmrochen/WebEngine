@@ -23,15 +23,13 @@
 #include "Segment3.hpp"
 #include "Triangle3.hpp"
 
-namespace core::mathematics 
-{
+namespace core::mathematics {
 
 struct Normalized
 {
 };
 
-namespace templates 
-{
+namespace templates {
 
 template<typename T>
 struct Plane;
@@ -64,7 +62,8 @@ struct HalfSpace
 	bool operator==(const HalfSpace& h) const noexcept { return (a == h.a) && (b == h.b) && (c == h.c) && (d == h.d); }
 	bool operator!=(const HalfSpace& h) const noexcept { return !(*this == h); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; }
+	template<typename A> void load(A& ar) { ar(a, b, c, d); }
+	template<typename A> void save(A& ar) const { ar(a, b, c, d); }
 
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
@@ -145,7 +144,8 @@ struct HalfSpace<float>
 	bool operator==(const HalfSpace& h) const noexcept { return simd::all4(simd::equal(abcd, h)); }
 	bool operator!=(const HalfSpace& h) const noexcept { return !(*this == h); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & a & b & c & d; } // #FIXME use simd::set(a, b, c, d)
+	template<typename A> void load(A& ar);
+	template<typename A> void save(A& ar) const { ar(a, b, c, d); }
 
 	template<std::size_t I> float& get() noexcept;
 	template<std::size_t I> const float& get() const noexcept;
@@ -447,6 +447,14 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, HalfSpa
 	return s; 
 }
 
+template<typename A>
+inline void HalfSpace<float>::load(A& ar)
+{
+	float t0, t1, t2, t3;
+	ar(t0, t1, t2, t3);
+	set(t0, t1, t2, t3);
+}
+
 template<std::size_t I>
 inline float& HalfSpace<float>::get()
 {
@@ -574,8 +582,7 @@ using HalfSpaceResult = templates::HalfSpace<float>::ConstResult;
 
 } // namespace core::mathematics
 
-namespace std
-{
+namespace std {
 
 template<size_t I, typename T>
 struct tuple_element;
@@ -615,8 +622,7 @@ struct hash<::core::mathematics::templates::HalfSpace<T>>
 
 #include "Plane.hpp"
 
-namespace core::mathematics::templates 
-{
+namespace core::mathematics::templates {
 
 template<typename T>
 inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.d)

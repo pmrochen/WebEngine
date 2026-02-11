@@ -11,6 +11,10 @@
 #include <tuple>
 #include <cstddef>
 
+namespace half_float {
+class half;
+} // namespace half_float
+
 namespace core::tuples {
 namespace templates {
 
@@ -40,10 +44,31 @@ struct Tuple2
 	bool operator==(const Tuple2& v) const noexcept { return (x == v.x) && (y == v.y); }
 	bool operator!=(const Tuple2& v) const noexcept { return !(*this == v); }
 
-	template<class A> void serialize(A& ar, const unsigned int version) { ar & x & y; }
+	template<typename A> void serialize(A& ar)
+	{ 
+		if constexpr (std::is_same_v<T, ::half_float::half>)
+			ar(reinterpret_cast<short&>(x), reinterpret_cast<short&>(y));
+		else
+			ar(x, y);
+	}
 
-	template<std::size_t I> T& get() noexcept;
-	template<std::size_t I> const T& get() const noexcept;
+	template<std::size_t I> T& get() noexcept
+	{
+		if constexpr (I == 0)
+			return x;
+		else if constexpr (I == 1)
+			return y;
+		static_assert(false);
+	}
+
+	template<std::size_t I> const T& get() const noexcept
+	{
+		if constexpr (I == 0)
+			return x;
+		else if constexpr (I == 1)
+			return y;
+		static_assert(false);
+	}
 
 	T x, y;
 
@@ -94,28 +119,6 @@ inline const T&& get(const Tuple2<T>&& v) noexcept
 	static_assert(false);
 }
 
-template<typename T>
-template<std::size_t I>
-inline T& Tuple2<T>::get()
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	static_assert(false);
-}
-
-template<typename T>
-template<std::size_t I>
-inline const T& Tuple2<T>::get() const
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	static_assert(false);
-}
-
 } // namespace templates
 
 using UChar2/*Byte2*/ = templates::Tuple2<unsigned char>;
@@ -132,18 +135,6 @@ using Half2 = templates::Tuple2<::half_float::half>;
 #endif // HALF_HALF_HPP
 
 } // namespace core::tuples
-
-namespace core::filesystem { 
-
-#ifdef HALF_HALF_HPP
-template<class A> 
-inline void serialize(A& ar, ::core::tuples::templates::Tuple2<::half_float::half>& t, const unsigned int version) 
-{ 
-    ar & reinterpret_cast<short&>(t.x) & reinterpret_cast<short&>(t.y); 
-}
-#endif // HALF_HALF_HPP
-
-} // namespace core::filesystem
 
 namespace std {
 
