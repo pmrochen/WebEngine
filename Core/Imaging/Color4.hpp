@@ -226,7 +226,7 @@ struct Color4<float>
 #endif
 
 #if IMAGING_SIMD_EXPAND_LAST
-	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::swizzle4<simd::XYZZ>(rgba)); }
+	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::xyzz(rgba)); }
 #else
 	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::cutoff3(rgba)); }
 #endif

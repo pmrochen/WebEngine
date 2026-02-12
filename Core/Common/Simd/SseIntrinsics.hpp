@@ -192,7 +192,7 @@ struct YZW : public Mask<false, true, true, true> {};
 //constexpr int WZYX = _MM_SHUFFLE(0, 1, 2, 3);
 
 template<int/*auto*/ A, int/*auto*/ B, int/*auto*/ C, int/*auto*/ D>
-struct Swizzle 
+struct Swizzle // #OBSOLETE
 { 
 	static constexpr int X = A;
 	static constexpr int Y = B;
@@ -203,7 +203,9 @@ struct Swizzle
 	//static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D::INDEX, C::INDEX, B::INDEX, A::INDEX); 
 };
 
-struct XYYY : public Swizzle<X, Y, Y, Y> {};
+struct XYYY : public Swizzle<X, Y, Y, Y> {}; // #OBSOLETE
+//struct XYXY : public Swizzle<X, Y, X, Y> {};
+//struct XXYY : public Swizzle<X, X, Y, Y> {};
 //struct XY00 : public Swizzle<X, Y, 0, 0> {};
 struct XZZZ : public Swizzle<X, Z, Z, Z> {};
 struct XWWW : public Swizzle<X, W, W, W> {};
@@ -223,8 +225,10 @@ struct ZXYY : public Swizzle<Z, X, Y, Y> {};
 struct ZXYW : public Swizzle<Z, X, Y, W> {};
 struct ZYYY : public Swizzle<Z, Y, Y, Y> {};
 struct ZYWW : public Swizzle<Z, Y, W, W> {};
+//struct ZZWW : public Swizzle<Z, Z, W, W> {};
 struct ZWWW : public Swizzle<Z, W, W, W> {};
 struct ZWXY : public Swizzle<Z, W, X, Y> {};
+//struct ZWZW : public Swizzle<Z, W, Z, W> {};
 struct WXXX : public Swizzle<W, X, X, X> {};
 struct WYYY : public Swizzle<W, Y, Y, Y> {};
 struct WZZZ : public Swizzle<W, Z, Z, Z> {};
@@ -817,9 +821,18 @@ inline __m128 broadcast(__m128 v)
 //}
 
 template<typename S>
-inline __m128 swizzle(__m128 v)
+inline __m128 swizzle(__m128 v) // #OBSOLETE
 {
-	return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
+	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 1, 0, 0))
+		return _mm_unpacklo_ps(v, v);
+	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 3, 2, 2))
+		return _mm_unpackhi_ps(v, v);
+	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 0, 1, 0))
+		return _mm_movelh_ps(v, v);
+	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 2, 3, 2))
+		return _mm_movehl_ps(v, v);
+	else
+		return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
 }
 
 //template<int A, int B, int C, int D>
@@ -843,6 +856,14 @@ inline __m128 swizzle(__m128 v)
 		else
 			_mm_xor_ps(v, constant4i<__m128, (int)(A < 0) << 31, (int)(B < 0) << 31, (int)(C < 0) << 31, (int)(D < 0) << 31>());
 	}
+	else if constexpr ((A == 0) && (B == 0) && (C == 1) && (D == 1))
+		return _mm_unpacklo_ps(v, v);
+	else if constexpr ((A == 2) && (B == 2) && (C == 3) && (D == 3))
+		return _mm_unpackhi_ps(v, v);
+	else if constexpr ((A == 0) && (B == 1) && (C == 0) && (D == 1))
+		return _mm_movelh_ps(v, v);
+	else if constexpr ((A == 2) && (B == 3) && (C == 2) && (D == 3))
+		return _mm_movehl_ps(v, v);
 	else
 		return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
 }

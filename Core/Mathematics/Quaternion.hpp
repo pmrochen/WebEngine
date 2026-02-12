@@ -213,7 +213,7 @@ struct Quaternion<float>
 	bool isApproxEqual(const Quaternion& q, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), simd::set4(tolerance))); }
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(xyzw)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::swizzle<simd::XYZZ>(xyzw)); }
+	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::xyzz(xyzw)); }
 #else
 	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::cutoff3(xyzw)); }
 #endif
@@ -382,7 +382,7 @@ inline Quaternion<T> conjugate(const Quaternion<T>& q) noexcept
 template<typename T>
 inline Quaternion<T> inverse(const Quaternion<T>& q) noexcept
 {
-	return Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm();
+	return Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm(); // #FIXME inline
 }
 
 #if SIMD_HAS_FLOAT4
@@ -402,7 +402,7 @@ inline Quaternion<float> lerp(const Quaternion<float>& q1, const Quaternion<floa
 	if (/*shortestArc &&*/ (cosTheta < 0.f)) // If q2 is on the oposite hemisphere use -q2 instead of q2
 		t1 = -t1;
 
-	return /*normalize*/(t0*q1 + t1*q2);
+	return /*normalize*/(Quaternion<float>(simd::mulAdd4(simd::set4(t0), q1, simd::mul4(simd::set4(t1), q2))));
 }
 
 template<>
@@ -432,16 +432,16 @@ inline Quaternion<float> slerp(const Quaternion<float>& q1, const Quaternion<flo
 //		float iSinTheta = rcpSqrtApprox(1.f - cosTheta*cosTheta); // instead of 1/sin(theta)
 //#else
 		float iSinTheta = 1.f/std::sqrt(1.f - cosTheta*cosTheta); // instead of 1/sin(theta)
-		//#endif
-				//if (std::fabs(sinTheta) < Constants<float>::TOLERANCE) // If theta*2 == 180 degrees then result is undefined
-				//	return q1*0.5f + q2*0.5f;
+//#endif
+		//if (std::fabs(sinTheta) < Constants<float>::TOLERANCE) // If theta*2 == 180 degrees then result is undefined
+		//	return q1*0.5f + q2*0.5f;
 		float tTheta = t*theta;
 		t0 = std::sin(theta - tTheta)*iSinTheta;
 		t1 = std::sin(tTheta)*iSinTheta;
 	}
 
 	t1 *= signOfT1;
-	return /*normalize*/(t0*q1 + t1*q2);
+	return /*normalize*/(Quaternion<float>(simd::mulAdd4(simd::set4(t0), q1, simd::mul4(simd::set4(t1), q2))));
 }
 
 template<>
@@ -453,7 +453,7 @@ inline Quaternion<float> conjugate(const Quaternion<float>& q) noexcept
 template<>
 inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
 {
-	return Quaternion<float>(simd::neg3(q.xyzw))/q.getNorm();
+	return Quaternion<float>(simd::neg3(q.xyzw))/q.getNorm(); // #FIXME inline
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
@@ -527,7 +527,7 @@ inline Quaternion<T> operator*(const Quaternion<T>& q, T f) noexcept
 template<typename T>
 inline Quaternion<T> operator/(T f, const Quaternion<T>& q) noexcept 
 { 
-	return f*(Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm()); 
+	return f*(Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm()); // #FIXME inline
 }
 
 template<typename T>
@@ -790,7 +790,7 @@ inline Quaternion<float> operator*(const Quaternion<float>& q, float f) noexcept
 template<>
 inline Quaternion<float> operator/(float f, const Quaternion<float>& q) noexcept 
 { 
-	return f*(Quaternion<float>(simd::neg3(q))/q.getNorm());
+	return f*(Quaternion<float>(simd::neg3(q))/q.getNorm()); // #FIXME inline
 }
 
 template<>
@@ -975,7 +975,7 @@ inline Quaternion<T> arc(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
 template<>
 inline Quaternion<float> rotate(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
 {
-	return q2*q1*Quaternion<float>(simd::neg3(q2.xyzw));
+	return q2*q1*Quaternion<float>(simd::neg3(q2));
 }
 
 //template<>

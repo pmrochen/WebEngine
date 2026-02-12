@@ -162,7 +162,7 @@ struct HalfSpace<float>
 	bool isApproxEqual(const HalfSpace& h, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(abcd, h)), simd::set4(tolerance))); }
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(abcd)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::swizzle<simd::XYZZ>(abcd)); }
+	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::xyzz(abcd)); }
 #else
 	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::cutoff3(abcd)); }
 #endif

@@ -35,6 +35,8 @@ template<typename T> inline T yyyy(T v) { return broadcast<Y>(v); }
 template<typename T> inline T zzzz(T v) { return broadcast<Z>(v); }
 template<typename T> inline T wwww(T v) { return broadcast<W>(v); }
 template<typename T> inline T xyyy(T v) { return swizzle<X, Y, Y, Y>(v); }
+template<typename T> inline T xyxy(T v) { return swizzle<X, Y, X, Y>(v); }
+template<typename T> inline T xxyy(T v) { return swizzle<X, X, Y, Y>(v); }
 template<typename T> inline T xzzz(T v) { return swizzle<X, Z, Z, Z>(v); }
 template<typename T> inline T xwww(T v) { return swizzle<X, W, W, W>(v); }
 template<typename T> inline T xyzz(T v) { return swizzle<X, Y, Z, Z>(v); }
@@ -53,8 +55,10 @@ template<typename T> inline T zxyy(T v) { return swizzle<Z, X, Y, Y>(v); }
 template<typename T> inline T zxyw(T v) { return swizzle<Z, X, Y, W>(v); }
 template<typename T> inline T zyyy(T v) { return swizzle<Z, Y, Y, Y>(v); }
 template<typename T> inline T zyww(T v) { return swizzle<Z, Y, W, W>(v); }
+template<typename T> inline T zzww(T v) { return swizzle<Z, Z, W, W>(v); }
 template<typename T> inline T zwww(T v) { return swizzle<Z, W, W, W>(v); }
 template<typename T> inline T zwxy(T v) { return swizzle<Z, W, X, Y>(v); }
+template<typename T> inline T zwzw(T v) { return swizzle<Z, W, Z, W>(v); }
 template<typename T> inline T wxxx(T v) { return swizzle<W, X, X, X>(v); }
 template<typename T> inline T wyyy(T v) { return swizzle<W, Y, Y, Y>(v); }
 template<typename T> inline T wzzz(T v) { return swizzle<W, Z, Z, Z>(v); }
