@@ -75,7 +75,7 @@ struct Vector3
 	Vector3& operator-=(const Vector3& v) noexcept { x -= v.x; y -= v.y; z -= v.z; return *this; }
 	Vector3& operator*=(const Vector3& v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
 	Vector3& operator*=(T f) noexcept { x *= f; y *= f; z *= f; return *this; }
-	Vector3& operator*=(const Matrix3<T>& m) noexcept; // #TODO
+	Vector3& operator*=(const Matrix3<T>& m) noexcept;
 	Vector3& operator/=(const Vector3& v) noexcept { x /= v.x; y /= v.y; z /= v.z; return *this; }
 	Vector3& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	bool operator==(const Vector3& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z); }
@@ -122,8 +122,8 @@ struct Vector3
 	Vector3& rotate(Axis axis, T angle) noexcept;
 	Vector3& rotate(const Quaternion<T>& q) noexcept;
 	//Vector3& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; return *this; }
-	Vector3& transform(const Matrix3<T>& m) noexcept; // #TODO
-	Vector3& transform(const AffineTransform<T>& m) noexcept; // #TODO
+	Vector3& transform(const Matrix3<T>& m) noexcept;
+	Vector3& transform(const AffineTransform<T>& m) noexcept;
 
 	//static const Vector3& getZero() noexcept { return ZERO; }
 	//static const Vector3& getUnitX() noexcept { return UNIT_X; }
@@ -222,7 +222,7 @@ struct Vector3<float>
 	Vector3& operator-=(const Vector3& v) noexcept { xyz = simd::sub4(xyz, v); return *this; }
 	Vector3& operator*=(const Vector3& v) noexcept { xyz = simd::mul4(xyz, v); return *this; }
 	Vector3& operator*=(float f) noexcept { xyz = simd::mul4(xyz, simd::set4(f)); return *this; }
-	Vector3& operator*=(const Matrix3<float>& m) noexcept; // #TODO
+	Vector3& operator*=(const Matrix3<float>& m) noexcept;
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector3& operator/=(const Vector3& v) noexcept { xyz = simd::div4(xyz, v); return *this; }
 #else
@@ -243,13 +243,13 @@ struct Vector3<float>
 	template<> const simd::float4& get() const noexcept { return xyz; }
 
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XYYY>(xyz)); }
-	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XZZZ>(xyz)); }
-	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::ZYYY>(xyz)); }
+	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::xyyy(xyz)); }
+	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::xzzz(xyz)); }
+	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::zyyy(xyz)); }
 #else
 	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::cutoff2(xyz)); }
-	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XZWW>(xyz)); }
-	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::ZYWW>(xyz)); }
+	Vector2<float> xz/*getXZ*/() const noexcept { return Vector2<float>(simd::xzww(xyz)); }
+	Vector2<float> zy/*getZY*/() const noexcept { return Vector2<float>(simd::zyww(xyz)); }
 #endif
 	//void setXY(Vector2<float>::ConstArg v) noexcept { xyz = simd::insert2(v, xyz); }
 	bool isZero() const noexcept { return simd::all3(simd::equal(xyz, simd::zero<simd::float4>())); }
@@ -291,8 +291,8 @@ struct Vector3<float>
 	Vector3& rotate(Axis axis, float angle) noexcept;
 	Vector3& rotate(const Quaternion<float>& q) noexcept;
 	//Vector3& scale(ConstArg v) noexcept { xyz = simd::mul4(xyz, v); return *this; }
-	Vector3& transform(const Matrix3<float>& m) noexcept; // #TODO
-	Vector3& transform(const AffineTransform<float>& m) noexcept; // #TODO
+	Vector3& transform(const Matrix3<float>& m) noexcept;
+	Vector3& transform(const AffineTransform<float>& m) noexcept;
 
 	//static const Vector3& getZero() noexcept { return ZERO; }
 	//static const Vector3& getUnitX() noexcept { return UNIT_X; }
@@ -434,7 +434,7 @@ inline Vector3<T> maximum(const Vector3<T>& v1, const Vector3<T>& v2)
 template<typename T>
 inline Vector3<T> lerp(const Vector3<T>& v1, const Vector3<T>& v2, T t) noexcept
 {
-	// #TODO
+	return Vector3<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y), v1.z + t*(v2.z - v1.z));
 }
 
 template<typename T>
@@ -461,12 +461,6 @@ inline Vector3<T> perpendicular(const Vector3<T>& v) noexcept
 	// #TODO
 }
 
-//template<typename T>
-//inline Vector3<T> transform(const Vector3<T>& v, const Matrix3<T>& m) noexcept; // -> Matrix3
-
-//template<typename T>
-//inline Vector3<T> transform(const Vector3<T>& v, const AffineTransform<T>& m) noexcept; // -> AffineTransform
-
 #if SIMD_HAS_FLOAT4
 
 template<>
@@ -478,8 +472,8 @@ inline float dot(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
 template<>
 inline Vector3<float> cross(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
 {
-	return Vector3<float>(simd::sub4(simd::mul4(simd::swizzle<simd::YZXW>(v1), simd::swizzle<simd::ZXYW>(v2)),
-		simd::mul4(simd::swizzle<simd::ZXYW>(v1), simd::swizzle<simd::YZXW>(v2))));
+	return Vector3<float>(simd::sub4(simd::mul4(simd::yzxw(v1), simd::zxyw(v2)),
+		simd::mul4(simd::zxyw(v1), simd::yzxw(v2))));
 }
 
 template<>
@@ -520,6 +514,18 @@ inline Vector3<float> maximum(const Vector3<float>& v1, const Vector3<float>& v2
 	return Vector3<float>(simd::max4(v1, v2));
 }
 
+template<>
+inline Vector3<float> lerp(const Vector3<float>& v1, const Vector3<float>& v2, float t) noexcept
+{
+	return Vector3<float>(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
+}
+
+template<>
+inline Vector3<float> slerp(const Vector3<float>& v1, const Vector3<float>& v2, float t)
+{
+	// #TODO
+}
+
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
@@ -551,15 +557,6 @@ inline Vector3<T> operator*(const Vector3<T>& v, T f) noexcept
 { 
 	return Vector3<T>(v.x*f, v.y*f, v.z*f); 
 }
-
-template<typename T>
-inline Vector3<T> operator*(const Vector3<T>& v, const Matrix3<T>& m) noexcept
-{
-	// #TODO
-}
-
-//template<typename T>
-//inline Vector3<T> operator*(const Matrix3<T>& m, const Vector3<T>& v) noexcept; // valid for column vectors only
 
 template<typename T>
 inline Vector3<T> operator/(const Vector3<T>& v1, const Vector3<T>& v2) noexcept 
@@ -763,15 +760,6 @@ inline Vector3<float> operator*(const Vector3<float>& v, float f) noexcept
 { 
 	return Vector3<float>(simd::mul4(v, simd::set4(f))); 
 }
-
-template<>
-inline Vector3<float> operator*(const Vector3<float>& v, const Matrix3<float>& m) noexcept
-{
-	// #TODO
-}
-
-//template<>
-//inline Vector3<float> operator*(const Matrix3<float>& m, const Vector3<float>& v) noexcept; // valid for column vectors only
 
 template<>
 inline Vector3<float> operator/(const Vector3<float>& v1, const Vector3<float>& v2) noexcept 
@@ -984,8 +972,61 @@ struct hash<::core::mathematics::templates::Vector3<T>>
 
 #include "IntVector3.hpp"
 #include "Quaternion.hpp"
+#include "Matrix3.hpp"
+#include "AffineTransform.hpp"
 
 namespace core::mathematics::templates {
+
+template<typename T>
+template<typename U> 
+inline Vector3<T>::Vector3(const IntVector3<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v.z))
+{
+}
+
+template<typename T>
+inline Vector3<T>& Vector3<T>::operator*=(const Matrix3<T>& m)
+{
+	set(x*m.m00 + y*m.m10 + z*m.m20, x*m.m01 + y*m.m11 + z*m.m21, x*m.m02 + y*m.m12 + z*m.m22);
+	return *this;
+}
+
+template<typename T>
+inline Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
+{
+	T x1 = q.y*z - q.z*y;
+	T y1 = q.z*x - q.x*z;
+	T z1 = q.x*y - q.y*x;
+	T x2 = q.w*x1 + q.y*z1 - q.z*y1;
+	T y2 = q.w*y1 + q.z*x1 - q.x*z1;
+	T z2 = q.w*z1 + q.x*y1 - q.y*x1;
+	x += T(2)*x2;
+	y += T(2)*y2;
+	z += T(2)*z2;
+	return *this;
+}
+
+template<typename T>
+inline Vector3<T>& Vector3<T>::transform(const Matrix3<T>& m)
+{
+	*this *= m;
+	return *this;
+}
+
+template<typename T>
+inline Vector3<T>& Vector3<T>::transform(const AffineTransform<T>& m)
+{
+	set(x*m.m00 + y*m.m10 + z*m.m20 + m.m30, x*m.m01 + y*m.m11 + z*m.m21 + m.m31, x*m.m02 + y*m.m12 + z*m.m22 + m.m32);
+	return *this;
+}
+
+template<typename T>
+inline Vector3<T> operator*(const Vector3<T>& v, const Matrix3<T>& m) noexcept
+{
+	return Vector3<T>(v.x*m.m00 + v.y*m.m10 + v.z*m.m20, v.x*m.m01 + v.y*m.m11 + v.z*m.m21, v.x*m.m02 + v.y*m.m12 + v.z*m.m22);
+}
+
+//template<typename T>
+//inline Vector3<T> operator*(const Matrix3<T>& m, const Vector3<T>& v) noexcept; // valid for column vectors only
 
 template<typename T>
 inline Vector3<T> rotate(const Vector3<T>& v, const Quaternion<T>& q) noexcept
@@ -1000,55 +1041,90 @@ inline Vector3<T> rotate(const Vector3<T>& v, const Quaternion<T>& q) noexcept
 }
 
 template<typename T>
-template<typename U> 
-inline Vector3<T>::Vector3(const IntVector3<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v.z))
+inline Vector3<T> transform(const Vector3<T>& v, const Matrix3<T>& m) noexcept
 {
+	return v*m;
 }
 
 template<typename T>
-inline Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
+inline Vector3<T> transform(const Vector3<T>& v, const AffineTransform<T>& m) noexcept
 {
-	T x1 = q.y*z - q.z*y;
-    T y1 = q.z*x - q.x*z;
-    T z1 = q.x*y - q.y*x;
-    T x2 = q.w*x1 + q.y*z1 - q.z*y1;
-    T y2 = q.w*y1 + q.z*x1 - q.x*z1;
-    T z2 = q.w*z1 + q.x*y1 - q.y*x1;
-    x += T(2)*x2;
-    y += T(2)*y2;
-    z += T(2)*z2;
-	return *this;
+	return Vector3<T>(v.x*m.m00 + v.y*m.m10 + v.z*m.m20 + m.m30, v.x*m.m01 + v.y*m.m11 + v.z*m.m21 + m.m31, 
+		v.x*m.m02 + v.y*m.m12 + v.z*m.m22 + m.m32);
 }
 
 #if SIMD_HAS_FLOAT4
-
-template<>
-inline Vector3<float> rotate(const Vector3<float>& v, const Quaternion<float>& q) noexcept
-{
-	auto qyzx = simd::swizzle<simd::YZXX>(q);
-	auto qzxy = simd::swizzle<simd::ZXYY>(q);
-	auto t1 = simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(v)), simd::mul4(qzxy, simd::swizzle<simd::YZXX>(v)));
-	auto t2 = simd::mulAdd4(simd::broadcast<simd::W>(q), t1, simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(t1)),
-		simd::mul4(qzxy, simd::swizzle<simd::YZXX>(t1))));
-	static const simd::float4 two = simd::set3(2.0f);
-	return Vector3<float>(simd::mulAdd4(two, t2, v));
-}
 
 template<typename U> 
 inline Vector3<float>::Vector3(const IntVector3<U>& v) : Vector3((float)v.x, (float)v.y, (float)v.z)
 {
 }
 
+inline Vector3<float>& Vector3<float>::operator*=(const Matrix3<float>& m)
+{
+	auto t = simd::mulAdd4(simd::xxxx(xyz), m.row0, simd::mul4(simd::yyyy(xyz), m.row1));
+	xyz = simd::add4(t, simd::mul4(simd::zzzz(xyz), m.row2));
+	return *this;
+}
+
 inline Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 {
-	auto qyzx = simd::swizzle<simd::YZXX>(q);
-	auto qzxy = simd::swizzle<simd::ZXYY>(q);
-	auto t1 = simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(xyz)), simd::mul4(qzxy, simd::swizzle<simd::YZXX>(xyz)));
-	auto t2 = simd::mulAdd4(simd::broadcast<simd::W>(q), t1, simd::sub4(simd::mul4(qyzx, simd::swizzle<simd::ZXYY>(t1)),
-		simd::mul4(qzxy, simd::swizzle<simd::YZXX>(t1))));
+	auto qyzx = simd::yzxx(q);
+	auto qzxy = simd::zxyy(q);
+	auto t1 = simd::sub4(simd::mul4(qyzx, simd::zxyy(xyz)), simd::mul4(qzxy, simd::yzxx(xyz)));
+	auto t2 = simd::mulAdd4(simd::wwww(q), t1, simd::sub4(simd::mul4(qyzx, simd::zxyy(t1)), simd::mul4(qzxy, simd::yzxx(t1))));
 	static const simd::float4 two = simd::set3(2.0f);
 	xyz = simd::mulAdd4(two, t2, xyz);
 	return *this;
+}
+
+inline Vector3<float>& Vector3<float>::transform(const Matrix3<float>& m)
+{
+	*this *= m;
+	return *this;
+}
+
+inline Vector3<float>& Vector3<float>::transform(const AffineTransform<float>& m)
+{
+	auto t = simd::mulAdd4(simd::xxxx(xyz), m.row0, simd::mul4(simd::yyyy(xyz), m.row1));
+	t = simd::add4(t, simd::mul4(simd::zzzz(xyz), m.row2));
+	xyz = simd::add4(t, m.row3);
+	return *this;
+}
+
+template<>
+inline Vector3<float> operator*(const Vector3<float>& v, const Matrix3<float>& m) noexcept
+{
+	auto t = simd::mulAdd4(simd::xxxx(v), m.row0, simd::mul4(simd::yyyy(v), m.row1));
+	return Vector3<float>(simd::add4(t, simd::mul4(simd::zzzz(v), m.row2)));
+}
+
+//template<>
+//inline Vector3<float> operator*(const Matrix3<float>& m, const Vector3<float>& v) noexcept; // valid for column vectors only
+
+template<>
+inline Vector3<float> rotate(const Vector3<float>& v, const Quaternion<float>& q) noexcept
+{
+	auto qyzx = simd::yzxx(q);
+	auto qzxy = simd::zxyy(q);
+	auto t1 = simd::sub4(simd::mul4(qyzx, simd::zxyy(v)), simd::mul4(qzxy, simd::yzxx(v)));
+	auto t2 = simd::mulAdd4(simd::wwww(q), t1, simd::sub4(simd::mul4(qyzx, simd::zxyy(t1)), simd::mul4(qzxy, simd::yzxx(t1))));
+	static const simd::float4 two = simd::set3(2.0f);
+	return Vector3<float>(simd::mulAdd4(two, t2, v));
+}
+
+template<>
+inline Vector3<float> transform(const Vector3<float>& v, const Matrix3<float>& m) noexcept
+{
+	return v*m;
+}
+
+template<>
+inline Vector3<float> transform(const Vector3<float>& v, const AffineTransform<float>& m) noexcept
+{
+	auto t = simd::mulAdd4(simd::xxxx(v), m.row0, simd::mul4(simd::yyyy(v), m.row1));
+	t = simd::add4(t, simd::mul4(simd::zzzz(v), m.row2));
+	return Vector3<float>(simd::add4(t, m.row3));
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

@@ -73,7 +73,7 @@ struct Vector4
 	Vector4& operator-=(const Vector4& v) noexcept { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
 	Vector4& operator*=(const Vector4& v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
 	Vector4& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
-	Vector4& operator*=(const Matrix4<T>& m) noexcept; // #TODO
+	Vector4& operator*=(const Matrix4<T>& m) noexcept;
 	Vector4& operator/=(const Vector4& v) noexcept { x /= v.x; y /= v.y; z /= v.z; w /= v.w; return *this; }
 	Vector4& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	bool operator==(const Vector4& v) const noexcept { return (x == v.x) && (y == v.y) && (z == v.z) && (w == v.w); }
@@ -117,7 +117,7 @@ struct Vector4
 	Vector4& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
 	Vector4& normalize() noexcept;
 	//Vector4& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; z *= v.z; w *= v.w; return *this; }
-	Vector4& transform(const Matrix4<T>& m) noexcept; // #TODO
+	Vector4& transform(const Matrix4<T>& m) noexcept;
 
 	//static const Vector4& getZero() noexcept { return ZERO; }
 	//static const Vector4& getUnitX() noexcept { return UNIT_X; }
@@ -199,7 +199,7 @@ struct Vector4<float>
 	Vector4& operator-=(const Vector4& v) noexcept { xyzw = simd::sub4(xyzw, v); return *this; }
 	Vector4& operator*=(const Vector4& v) noexcept { xyzw = simd::mul4(xyzw, v); return *this; }
 	Vector4& operator*=(float f) noexcept { xyzw = simd::mul4(xyzw, simd::set4(f)); return *this; }
-	Vector4& operator*=(const Matrix4<float>& m) noexcept; // #TODO
+	Vector4& operator*=(const Matrix4<float>& m) noexcept;
 	Vector4& operator/=(const Vector4& v) noexcept { xyzw = simd::div4(xyzw, v); return *this; }
 	Vector4& operator/=(float f) noexcept { xyzw = simd::div4(xyzw, simd::set4(f)); return *this; }
 	bool operator==(const Vector4& v) const noexcept { return simd::all4(simd::equal(xyzw, v)); }
@@ -216,8 +216,8 @@ struct Vector4<float>
 	template<> const simd::float4& get() const noexcept { return xyzw; }
 
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::swizzle<simd::XYYY>(xyzw)); }
-	Vector3<float> xyz/*getXYZ*/() const noexcept { return Vector3<float>(simd::swizzle<simd::XYZZ>(xyzw)); }
+	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::xyyy(xyzw)); }
+	Vector3<float> xyz/*getXYZ*/() const noexcept { return Vector3<float>(simd::xyzz(xyzw)); }
 #else
 	Vector2<float> xy/*getXY*/() const noexcept { return Vector2<float>(simd::cutoff2(xyzw)); }
 	Vector3<float> xyz/*getXYZ*/() const noexcept { return Vector3<float>(simd::cutoff3(xyzw)); }
@@ -252,7 +252,7 @@ struct Vector4<float>
 	Vector4& negate() noexcept { xyzw = simd::neg4(xyzw); return *this; }
 	Vector4& normalize() noexcept;
 	//Vector4& scale(ConstArg v) noexcept { xyzw = simd::mul4(xyzw, v); return *this; }
-	Vector4& transform(const Matrix4<float>& m) noexcept; // #TODO
+	Vector4& transform(const Matrix4<float>& m) noexcept;
 
 	//static const Vector4& getZero() noexcept { return ZERO; }
 	//static const Vector4& getUnitX() noexcept { return UNIT_X; }
@@ -360,7 +360,8 @@ inline Vector4<T> cross(const Vector4<T>& v1, const Vector4<T>& v2, const Vector
 	T d4 = v2.x*v3.w - v2.w*v3.x;
 	T d5 = v2.x*v3.z - v2.z*v3.x;
 	T d6 = v2.x*v3.y - v2.y*v3.x;
-	return Vector4(-v1.y*d1 + v1.z*d2 - v1.w*d3, v1.x*d1 - v1.z*d4 + v1.w*d5, -v1.x*d2 + v1.y*d4 - v1.w*d6, v1.x*d3 - v1.y*d5 + v1.z*d6);
+	return Vector4<T>(-v1.y*d1 + v1.z*d2 - v1.w*d3, v1.x*d1 - v1.z*d4 + v1.w*d5, -v1.x*d2 + v1.y*d4 - v1.w*d6, 
+		v1.x*d3 - v1.y*d5 + v1.z*d6);
 }
 
 //template<typename T>
@@ -413,7 +414,7 @@ inline Vector4<T> maximum(const Vector4<T>& v1, const Vector4<T>& v2)
 template<typename T>
 inline Vector4<T> lerp(const Vector4<T>& v1, const Vector4<T>& v2, T t) noexcept
 {
-	// #TODO
+	return Vector4<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y), v1.z + t*(v2.z - v1.z), v1.w + t*(v2.w - v1.w));
 }
 
 template<typename T>
@@ -433,8 +434,18 @@ inline float dot(const Vector4<float>& v1, const Vector4<float>& v2) noexcept
 	return simd::toFloat(simd::dot4(v1, v2));
 }
 
-//template<>
-//inline Vector4<float> cross(const Vector4<float>& v1, const Vector4<float>& v2, const Vector4<float>& v3) noexcept; // #TODO
+template<>
+inline Vector4<float> cross(const Vector4<float>& v1, const Vector4<float>& v2, const Vector4<float>& v3) noexcept // #TODO SIMD
+{
+	float d1 = v2.z*v3.w - v2.w*v3.z;
+	float d2 = v2.y*v3.w - v2.w*v3.y;
+	float d3 = v2.y*v3.z - v2.z*v3.y;
+	float d4 = v2.x*v3.w - v2.w*v3.x;
+	float d5 = v2.x*v3.z - v2.z*v3.x;
+	float d6 = v2.x*v3.y - v2.y*v3.x;
+	return Vector4<float>(-v1.y*d1 + v1.z*d2 - v1.w*d3, v1.x*d1 - v1.z*d4 + v1.w*d5, -v1.x*d2 + v1.y*d4 - v1.w*d6, 
+		v1.x*d3 - v1.y*d5 + v1.z*d6);
+}
 
 template<>
 inline float distance(const Vector4<float>& v1, const Vector4<float>& v2) noexcept
@@ -474,6 +485,18 @@ inline Vector4<float> maximum(const Vector4<float>& v1, const Vector4<float>& v2
 	return Vector4<float>(simd::max4(v1, v2));
 }
 
+template<>
+inline Vector4<float> lerp(const Vector4<float>& v1, const Vector4<float>& v2, float t) noexcept
+{
+	return Vector4<float>(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
+}
+
+template<>
+inline Vector4<float> slerp(const Vector4<float>& v1, const Vector4<float>& v2, float t)
+{
+	// #TODO
+}
+
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
@@ -505,15 +528,6 @@ inline Vector4<T> operator*(const Vector4<T>& v, T f) noexcept
 { 
 	return Vector4<T>(v.x*f, v.y*f, v.z*f, v.w*f); 
 }
-
-template<typename T>
-inline Vector4<T> operator*(const Vector4<T>& v, const Matrix4<T>& m) noexcept
-{
-	// #TODO
-}
-
-//template<typename T>
-//inline Vector4<T> operator*(const Matrix4<T>& m, const Vector4<T>& v) noexcept; // valid for column vectors only
 
 template<typename T>
 inline Vector4<T> operator/(const Vector4<T>& v1, const Vector4<T>& v2) noexcept 
@@ -676,15 +690,6 @@ inline Vector4<float> operator*(const Vector4<float>& v, float f) noexcept
 { 
 	return Vector4<float>(simd::mul4(v, simd::set4(f))); 
 }
-
-template<>
-inline Vector4<float> operator*(const Vector4<float>& v, const Matrix4<float>& m) noexcept
-{
-	// #TODO
-}
-
-//template<>
-//inline Vector4<float> operator*(const Matrix4<float>& m, const Vector4<float>& v) noexcept; // valid for column vectors only
 
 template<>
 inline Vector4<float> operator/(const Vector4<float>& v1, const Vector4<float>& v2) noexcept 
@@ -861,6 +866,7 @@ struct hash<::core::mathematics::templates::Vector4<T>>
 } // namespace std
 
 #include "IntVector4.hpp"
+#include "Matrix4.hpp"
 
 namespace core::mathematics::templates {
 
@@ -870,11 +876,73 @@ inline Vector4<T>::Vector4(const IntVector4<U>& v) : x(T(v.x)), y(T(v.y)), z(T(v
 {
 }
 
+template<typename T>
+inline Vector4<T>& Vector4<T>::operator*=(const Matrix4<T>& m)
+{
+	set(x*m.m00 + y*m.m10 + z*m.m20 + w*m.m30, x*m.m01 + y*m.m11 + z*m.m21 + w*m.m31, 
+		x*m.m02 + y*m.m12 + z*m.m22 + w*m.m32, x*m.m03 + y*m.m13 + z*m.m23 + w*m.m33);
+	return *this;
+}
+
+template<typename T>
+inline Vector4& Vector4<T>::transform(const Matrix4<T>& m)
+{
+	*this *= m;
+	return *this;
+}
+
+template<typename T>
+inline Vector4<T> operator*(const Vector4<T>& v, const Matrix4<T>& m) noexcept
+{
+	return Vector4<T>(v.x*m.m00 + v.y*m.m10 + v.z*m.m20 + v.w*m.m30, v.x*m.m01 + v.y*m.m11 + v.z*m.m21 + v.w*m.m31,
+		v.x*m.m02 + v.y*m.m12 + v.z*m.m22 + v.w*m.m32, v.x*m.m03 + v.y*m.m13 + v.z*m.m23 + v.w*m.m33);
+}
+
+//template<typename T>
+//inline Vector4<T> operator*(const Matrix4<T>& m, const Vector4<T>& v) noexcept; // valid for column vectors only
+
+template<typename T>
+inline Vector4<T> transform(const Vector4<T>& v, const Matrix4<T>& m) noexcept
+{
+	return v*m;
+}
+
 #if SIMD_HAS_FLOAT4
 
 template<typename U> 
 inline Vector4<float>::Vector4(const IntVector4<U>& v) : Vector4((float)v.x, (float)v.y, (float)v.z, (float)v.w)
 {
+}
+
+inline Vector4<float>& Vector4<float>::operator*=(const Matrix4<float>& m)
+{
+	auto t = simd::mulAdd4(simd::xxxx(xyzw), m.row0, simd::mul4(simd::yyyy(xyzw), m.row1));
+	t = simd::add4(t, simd::mul4(simd::zzzz(xyzw), m.row2));
+	xyzw = simd::add4(t, simd::mul4(simd::wwww(xyzw), m.row3));
+	return *this;
+}
+
+inline Vector4<float>& Vector4<float>::transform(const Matrix4<float>& m)
+{
+	*this *= m;
+	return *this;
+}
+
+template<>
+inline Vector4<float> operator*(const Vector4<float>& v, const Matrix4<float>& m) noexcept
+{
+	auto t = simd::mulAdd4(simd::xxxx(v), m.row0, simd::mul4(simd::yyyy(v), m.row1));
+	t = simd::add4(t, simd::mul4(simd::zzzz(v), m.row2));
+	return Vector4<float>(simd::add4(t, simd::mul4(simd::wwww(v), m.row3)));
+}
+
+//template<>
+//inline Vector4<float> operator*(const Matrix4<float>& m, const Vector4<float>& v) noexcept; // valid for column vectors only
+
+template<>
+inline Vector4<float> transform(const Vector4<float>& v, const Matrix4<float>& m) noexcept
+{
+	return v*m;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
