@@ -87,54 +87,6 @@ struct YawPitchRoll
 
 template<typename T> const YawPitchRoll<T> YawPitchRoll<T>::ZERO{};
 
-template<std::size_t I, typename T>
-inline T& get(YawPitchRoll<T>& r) noexcept
-{
-	if constexpr (I == 0)
-		return r.yaw;
-	else if constexpr (I == 1)
-		return r.pitch;
-	else if constexpr (I == 2)
-		return r.roll;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const YawPitchRoll<T>& r) noexcept
-{
-	if constexpr (I == 0)
-		return r.yaw;
-	else if constexpr (I == 1)
-		return r.pitch;
-	else if constexpr (I == 2)
-		return r.roll;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(YawPitchRoll<T>&& r) noexcept
-{
-	if constexpr (I == 0)
-		return r.yaw;
-	else if constexpr (I == 1)
-		return r.pitch;
-	else if constexpr (I == 2)
-		return r.roll;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const YawPitchRoll<T>&& r) noexcept
-{
-	if constexpr (I == 0)
-		return r.yaw;
-	else if constexpr (I == 1)
-		return r.pitch;
-	else if constexpr (I == 2)
-		return r.roll;
-	static_assert(false);
-}
-
 template<typename T>
 inline YawPitchRoll<T> operator+(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2) noexcept
 {
@@ -271,6 +223,54 @@ inline bool YawPitchRoll<T>::isApproxEqual(const YawPitchRoll<T>& r, T tolerance
 //	roll = std::clamp(roll, low, high);
 //	return *this;
 //}
+
+template<std::size_t I, typename T>
+inline T& get(YawPitchRoll<T>& r) noexcept
+{
+	if constexpr (I == 0)
+		return r.yaw;
+	else if constexpr (I == 1)
+		return r.pitch;
+	else if constexpr (I == 2)
+		return r.roll;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const YawPitchRoll<T>& r) noexcept
+{
+	if constexpr (I == 0)
+		return r.yaw;
+	else if constexpr (I == 1)
+		return r.pitch;
+	else if constexpr (I == 2)
+		return r.roll;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(YawPitchRoll<T>&& r) noexcept
+{
+	if constexpr (I == 0)
+		return r.yaw;
+	else if constexpr (I == 1)
+		return r.pitch;
+	else if constexpr (I == 2)
+		return r.roll;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const YawPitchRoll<T>&& r) noexcept
+{
+	if constexpr (I == 0)
+		return r.yaw;
+	else if constexpr (I == 1)
+		return r.pitch;
+	else if constexpr (I == 2)
+		return r.roll;
+	static_assert(false);
+}
 
 } // namespace templates
 

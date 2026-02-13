@@ -116,7 +116,6 @@ struct Vector2
 	Vector2& setMinimum(const Vector2& v1, const Vector2& v2);
 	Vector2& setMaximum(const Vector2& v1, const Vector2& v2);
 	Vector2& negate() noexcept { x = -x; y = -y; return *this; }
-	//template<std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
 	Vector2& normalize() noexcept;
 	Vector2& rotate(T angle) noexcept;
 	//Vector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
@@ -298,182 +297,6 @@ const Vector2<float> Vector2<float>::ONE{ 1.f, 1.f };
 const Vector2<float> Vector2<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
 const Vector2<float> Vector2<float>::INF{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 const Vector2<float> Vector2<float>::MINUS_INF{ -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
-
-#endif /* SIMD_HAS_FLOAT4 */
-
-template<std::size_t I, typename T>
-inline T& get(Vector2<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const Vector2<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(Vector2<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const Vector2<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	static_assert(false);
-}
-
-template<typename T>
-inline T dot(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
-{
-	return v1.x*v2.x + v1.y*v2.y;
-}
-
-template<typename T>
-inline T cross(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
-{
-	return v1.x*v2.y - v1.y*v2.x;
-}
-
-template<typename T>
-inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
-{
-	T x = v2.x - v1.x;
-	T y = v2.y - v1.y;
-	return std::sqrt(x*x + y*y);
-}
-
-template<typename T>
-inline T distanceSquared(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
-{
-	T x = v2.x - v1.x;
-	T y = v2.y - v1.y;
-	return x*x + y*y;
-}
-
-template<typename T>
-inline T length(const Vector2<T>& v) noexcept
-{
-	return std::sqrt(v.x*v.x + v.y*v.y);
-}
-
-template<typename T>
-inline T lengthSquared(const Vector2<T>& v) noexcept
-{
-	return v.x*v.x + v.y*v.y;
-}
-
-template<typename T>
-inline Vector2<T> minimum(const Vector2<T>& v1, const Vector2<T>& v2)
-{
-	return Vector2<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y));
-}
-
-template<typename T>
-inline Vector2<T> maximum(const Vector2<T>& v1, const Vector2<T>& v2)
-{
-	return Vector2<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y));
-}
-
-template<typename T>
-inline Vector2<T> lerp(const Vector2<T>& v1, const Vector2<T>& v2, T t) noexcept
-{
-	return Vector2<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y));
-}
-
-template<typename T>
-inline Vector2<T> slerp(const Vector2<T>& v1, const Vector2<T>& v2, T t)
-{
-	// #TODO
-}
-
-template<typename T>
-inline Vector2<T> perpendicular(const Vector2<T>& v) noexcept
-{
-	// #TODO
-}
-
-#if SIMD_HAS_FLOAT4
-
-template<>
-inline float dot(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
-{
-	return simd::toFloat(simd::dot2(v1, v2));
-}
-
-template<>
-inline float cross(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
-{
-	return simd::toFloat(simd::dot2(v1, simd::yxzw(simd::neg1(v2))));
-}
-
-template<>
-inline float distance(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
-{
-	auto v = simd::sub4(v2, v1);
-	return simd::toFloat(simd::sqrt1(simd::dot2(v, v)));
-}
-
-template<>
-inline float distanceSquared(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
-{
-	auto v = simd::sub4(v2, v1);
-	return simd::toFloat(simd::dot2(v, v));
-}
-
-template<>
-inline float length(const Vector2<float>& v) noexcept
-{
-	return simd::toFloat(simd::sqrt1(simd::dot2(v, v)));
-}
-
-template<>
-inline float lengthSquared(const Vector2<float>& v) noexcept
-{
-	return simd::toFloat(simd::dot2(v, v));
-}
-
-template<>
-inline Vector2<float> minimum(const Vector2<float>& v1, const Vector2<float>& v2)
-{
-	return Vector2<float>(simd::min4(v1, v2));
-}
-
-template<>
-inline Vector2<float> maximum(const Vector2<float>& v1, const Vector2<float>& v2)
-{
-	return Vector2<float>(simd::max4(v1, v2));
-}
-
-template<>
-inline Vector2<float> lerp(const Vector2<float>& v1, const Vector2<float>& v2, float t) noexcept
-{
-	return Vector2<float>(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
-}
-
-template<>
-inline Vector2<float> slerp(const Vector2<float>& v1, const Vector2<float>& v2, float t)
-{
-	// #TODO
-}
 
 #endif /* SIMD_HAS_FLOAT4 */
 
@@ -765,6 +588,210 @@ inline Vector2<float>& Vector2<float>::rotate(float angle)
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<std::size_t I, typename T>
+inline T& get(Vector2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Vector2<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Vector2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Vector2<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	static_assert(false);
+}
+
+template<typename T>
+inline T dot(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
+{
+	return v1.x*v2.x + v1.y*v2.y;
+}
+
+template<typename T>
+inline T cross(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
+{
+	return v1.x*v2.y - v1.y*v2.x;
+}
+
+template<typename T>
+inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
+{
+	T x = v2.x - v1.x;
+	T y = v2.y - v1.y;
+	return std::sqrt(x*x + y*y);
+}
+
+template<typename T>
+inline T distanceSquared(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
+{
+	T x = v2.x - v1.x;
+	T y = v2.y - v1.y;
+	return x*x + y*y;
+}
+
+template<typename T>
+inline T length(const Vector2<T>& v) noexcept
+{
+	return std::sqrt(v.x*v.x + v.y*v.y);
+}
+
+template<typename T>
+inline T lengthSquared(const Vector2<T>& v) noexcept
+{
+	return v.x*v.x + v.y*v.y;
+}
+
+template<typename T>
+inline Vector2<T> minimum(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+	return Vector2<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y));
+}
+
+template<typename T>
+inline Vector2<T> maximum(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+	return Vector2<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y));
+}
+
+template<typename T>
+inline Vector2<T> lerp(const Vector2<T>& v1, const Vector2<T>& v2, T t) noexcept
+{
+	return Vector2<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y));
+}
+
+template<typename T>
+inline Vector2<T> slerp(const Vector2<T>& v1, const Vector2<T>& v2, T t)
+{
+	T dp = v1.x*v2.x + v1.y*v2.y;
+	if ((T(1) - dp) < Constants<T>::TOLERANCE)
+	{
+		Vector2<T> c(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y));
+		c.normalize();
+		return c;
+	}
+
+	dp = std::clamp(dp, T(-1), T(1));
+	T theta = std::acos(dp)*t;
+	T st = std::sin(theta);
+	T ct = std::cos(theta);
+	Vector2<T> c(v2.x - v1.x*dp, v2.y - v1.y*dp);
+	c.normalize();
+	return Vector2<T>(v1.x*ct + c.x*st, v1.y*ct + c.y*st);
+}
+
+template<typename T>
+inline Vector2<T> perpendicular(const Vector2<T>& v) noexcept
+{
+	// #TODO
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<>
+inline float dot(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
+{
+	return simd::toFloat(simd::dot2(v1, v2));
+}
+
+template<>
+inline float cross(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
+{
+	return simd::toFloat(simd::dot2(v1, simd::yxzw(simd::neg1(v2))));
+}
+
+template<>
+inline float distance(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
+{
+	auto v = simd::sub4(v2, v1);
+	return simd::toFloat(simd::sqrt1(simd::dot2(v, v)));
+}
+
+template<>
+inline float distanceSquared(const Vector2<float>& v1, const Vector2<float>& v2) noexcept
+{
+	auto v = simd::sub4(v2, v1);
+	return simd::toFloat(simd::dot2(v, v));
+}
+
+template<>
+inline float length(const Vector2<float>& v) noexcept
+{
+	return simd::toFloat(simd::sqrt1(simd::dot2(v, v)));
+}
+
+template<>
+inline float lengthSquared(const Vector2<float>& v) noexcept
+{
+	return simd::toFloat(simd::dot2(v, v));
+}
+
+template<>
+inline Vector2<float> minimum(const Vector2<float>& v1, const Vector2<float>& v2)
+{
+	return Vector2<float>(simd::min4(v1, v2));
+}
+
+template<>
+inline Vector2<float> maximum(const Vector2<float>& v1, const Vector2<float>& v2)
+{
+	return Vector2<float>(simd::max4(v1, v2));
+}
+
+template<>
+inline Vector2<float> lerp(const Vector2<float>& v1, const Vector2<float>& v2, float t) noexcept
+{
+	return Vector2<float>(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
+}
+
+template<>
+inline Vector2<float> slerp(const Vector2<float>& v1, const Vector2<float>& v2, float t)
+{
+	float dp = simd::toFloat(simd::dot2(v1, v2));
+	if ((1.f - dp) < Constants<float>::TOLERANCE)
+	{
+		Vector2<float> c(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
+		c.normalize();
+		return c;
+	}
+
+	dp = std::clamp(dp, -1.f, 1.f);
+	float theta = std::acos(dp)*t;
+	float st = std::sin(theta);
+	float ct = std::cos(theta);
+	Vector2<float> c(simd::sub4(v2, simd::mul4(v1, simd::set4(dp))));
+	c.normalize();
+	return Vector2<float>(simd::mulAdd4(v1, simd::set4(ct), simd::mul4(c, simd::set4(st))));
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
 template<typename T>
 inline Vector2<T> normalize(const Vector2<T>& v) noexcept
 {
@@ -870,13 +897,6 @@ inline Vector2<T>& Vector2<T>::operator*=(const Matrix2<T>& m)
 }
 
 template<typename T>
-inline Vector2<T>& Vector2<T>::transform(const Matrix2<T>& m)
-{
-	*this *= m;
-	return *this;
-}
-
-template<typename T>
 inline Vector2<T> operator*(const Vector2<T>& v, const Matrix2<T>& m) noexcept
 {
 	return Vector2<T>(v.x*m.m00 + v.y*m.m10, v.x*m.m01 + v.y*m.m11);
@@ -884,6 +904,13 @@ inline Vector2<T> operator*(const Vector2<T>& v, const Matrix2<T>& m) noexcept
 
 //template<typename T>
 //inline Vector2<T> operator*(const Matrix2<T>& m, const Vector2<T>& v) noexcept; // valid for column vectors only
+
+template<typename T>
+inline Vector2<T>& Vector2<T>::transform(const Matrix2<T>& m)
+{
+	*this *= m;
+	return *this;
+}
 
 template<typename T>
 inline Vector2<T> transform(const Vector2<T>& v, const Matrix2<T>& m) noexcept
@@ -910,12 +937,6 @@ inline Vector2<float>& Vector2<float>::operator*=(const Matrix2<float>& m)
 	return *this;
 }
 
-inline Vector2<float>& Vector2<float>::transform(const Matrix2<float>& m)
-{
-	*this *= m;
-	return *this;
-}
-
 template<>
 inline Vector2<float> operator*(const Vector2<float>& v, const Matrix2<float>& m) noexcept
 {
@@ -930,6 +951,12 @@ inline Vector2<float> operator*(const Vector2<float>& v, const Matrix2<float>& m
 
 //template<>
 //inline Vector2<float> operator*(const Matrix2<float>& m, const Vector2<float>& v) noexcept; // valid for column vectors only
+
+inline Vector2<float>& Vector2<float>::transform(const Matrix2<float>& m)
+{
+	*this *= m;
+	return *this;
+}
 
 template<>
 inline Vector2<float> transform(const Vector2<float>& v, const Matrix2<float>& m) noexcept

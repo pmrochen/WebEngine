@@ -99,73 +99,7 @@ struct IntVector4
 	T x, y, z, w;
 };
 
-template<std::size_t I, typename T>
-inline T& get(IntVector4<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const IntVector4<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(IntVector4<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const IntVector4<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	else if constexpr (I == 3)
-		return v.w;
-	static_assert(false);
-}
-
-template<typename T>
-inline IntVector4<T> minimum(const IntVector4<T>& v1, const IntVector4<T>& v2)
-{
-	return IntVector4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w));
-}
-
-template<typename T>
-inline IntVector4<T> maximum(const IntVector4<T>& v1, const IntVector4<T>& v2)
-{
-	return IntVector4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w));
-}
+template<typename T> const IntVector4<T> IntVector4<T>::ZERO{};
 
 template<typename T>
 inline IntVector4<T> operator+(const IntVector4<T>& v1, const IntVector4<T>& v2) noexcept 
@@ -278,7 +212,73 @@ inline IntVector4<T>& IntVector4<T>::setMaximum(const IntVector4<T>& v1, const I
 	return *this; 
 }
 
-template<typename T> const IntVector4<T> IntVector4<T>::ZERO{};
+template<std::size_t I, typename T>
+inline T& get(IntVector4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const IntVector4<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(IntVector4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const IntVector4<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	else if constexpr (I == 3)
+		return v.w;
+	static_assert(false);
+}
+
+template<typename T>
+inline IntVector4<T> minimum(const IntVector4<T>& v1, const IntVector4<T>& v2)
+{
+	return IntVector4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z), std::min(v1.w, v2.w));
+}
+
+template<typename T>
+inline IntVector4<T> maximum(const IntVector4<T>& v1, const IntVector4<T>& v2)
+{
+	return IntVector4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z), std::max(v1.w, v2.w));
+}
 
 } // namespace templates
 

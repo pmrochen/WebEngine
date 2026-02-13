@@ -319,163 +319,6 @@ const Color3<float> Color3<float>::LUMINANCE{ 0.2126f, 0.7152f, 0.0722f };
 
 #endif /* SIMD_HAS_FLOAT4 */
 
-template<std::size_t I, typename T>
-inline T& get(Color3<T>& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const Color3<T>& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(Color3<T>&& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const Color3<T>&& c) noexcept
-{
-	if constexpr (I == 0)
-		return c.r;
-	else if constexpr (I == 1)
-		return c.g;
-	else if constexpr (I == 2)
-		return c.b;
-	static_assert(false);
-}
-
-//template<typename T, typename U>
-//inline T& get(Color3<U>& c) noexcept;
-//
-//template<typename T, typename U>
-//inline const T& get(const Color3<U>& c) noexcept;
-
-template<typename T>
-inline T luminance(T r, T g, T b) noexcept
-{
-	return r*T(0.2126) + g*T(0.7152) + b*T(0.0722);
-}
-
-template<typename T>
-inline T luminance(const Color3<T>& c) noexcept
-{
-	return c.r*T(0.2126) + c.g*T(0.7152) + c.b*T(0.0722);
-}
-
-template<typename T>
-inline Color3<T> minimum(const Color3<T>& c1, const Color3<T>& c2)
-{
-	return Color3<T>(std::min(c1.r, c2.r), std::min(c1.g, c2.g), std::min(c1.b, c2.b));
-}
-
-template<typename T>
-inline Color3<T> maximum(const Color3<T>& c1, const Color3<T>& c2)
-{
-	return Color3<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b));
-}
-
-template<typename T>
-inline Color3<T> saturate(const Color3<T>& c)
-{
-	return Color3<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)));
-}
-
-template<typename T>
-inline Color3<T> lerp(const Color3<T>& c1, const Color3<T>& c2, T t) noexcept
-{
-	return Color3<T>(c1.r + t*(c2.r - c1.r), c1.g + t*(c2.g - c1.g), c1.b + t*(c2.b - c1.b));
-}
-
-template<typename T>
-inline Color3<T> makeLinear(const Color3<T>& c) noexcept
-{
-	return Color3<T>(makeLinear(c.r), makeLinear(c.g), makeLinear(c.b)); 
-}
-
-template<typename T>
-inline Color3<T> makeSrgb(const Color3<T>& c) noexcept
-{
-	return Color3<T>(makeSrgb(c.r), makeSrgb(c.g), make Srgb(c.b));
-}
-
-#if SIMD_HAS_FLOAT4
-
-//template<>
-//inline core::simd::float4& get(Color3<float>& c) noexcept
-//{
-//	return c.rgb;
-//}
-//
-//template<>
-//inline const core::simd::float4& get(const Color3<float>& c) noexcept
-//{
-//	return c.rgb;
-//}
-
-template<>
-inline float luminance(float r, float g, float b) noexcept
-{
-	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(simd::set3(r, g, b), Color3<float>::LUMINANCE/*coeff*/));
-}
-
-template<>
-inline float luminance(const Color3<float>& c) noexcept
-{
-	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
-	return simd::toFloat(simd::dot3(c, Color3<float>::LUMINANCE/*coeff*/));
-}
-
-template<>
-inline Color3<float> minimum(const Color3<float>& c1, const Color3<float>& c2)
-{
-	return Color3<float>(simd::min4(c1, c2));
-}
-
-template<>
-inline Color3<float> maximum(const Color3<float>& c1, const Color3<float>& c2)
-{
-	return Color3<float>(simd::max4(c1, c2));
-}
-
-template<>
-inline Color3<float> saturate(const Color3<float>& c)
-{
-	//static const simd::float4 one = simd::set4(1.f);
-	return Color3<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color3<float>::ONE/*one*/));
-}
-
-template<>
-inline Color3<float> lerp(const Color3<float>& c1, const Color3<float>& c2, float t) noexcept
-{
-	return Color3<float>(simd::mulAdd4(simd::set4(t), simd::sub4(c2, c1), c1));
-}
-
-#endif /* SIMD_HAS_FLOAT4 */
-
 template<typename T>
 inline Color3<T> operator+(const Color3<T>& c1, const Color3<T>& c2) noexcept 
 { 
@@ -796,6 +639,163 @@ inline U Color3<float>::toPackedBgr() const
 	Color3<float> c(simd::mulAdd4(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color4<float>::ONE),
 		s, /*half*/Color4<float>::HALF));
 	return makePackedBgr<U>(c.r, c.g, c.b);
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+template<std::size_t I, typename T>
+inline T& get(Color3<T>& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Color3<T>& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Color3<T>&& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Color3<T>&& c) noexcept
+{
+	if constexpr (I == 0)
+		return c.r;
+	else if constexpr (I == 1)
+		return c.g;
+	else if constexpr (I == 2)
+		return c.b;
+	static_assert(false);
+}
+
+//template<typename T, typename U>
+//inline T& get(Color3<U>& c) noexcept;
+//
+//template<typename T, typename U>
+//inline const T& get(const Color3<U>& c) noexcept;
+
+template<typename T>
+inline T luminance(T r, T g, T b) noexcept
+{
+	return r*T(0.2126) + g*T(0.7152) + b*T(0.0722);
+}
+
+template<typename T>
+inline T luminance(const Color3<T>& c) noexcept
+{
+	return c.r*T(0.2126) + c.g*T(0.7152) + c.b*T(0.0722);
+}
+
+template<typename T>
+inline Color3<T> minimum(const Color3<T>& c1, const Color3<T>& c2)
+{
+	return Color3<T>(std::min(c1.r, c2.r), std::min(c1.g, c2.g), std::min(c1.b, c2.b));
+}
+
+template<typename T>
+inline Color3<T> maximum(const Color3<T>& c1, const Color3<T>& c2)
+{
+	return Color3<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b));
+}
+
+template<typename T>
+inline Color3<T> saturate(const Color3<T>& c)
+{
+	return Color3<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)));
+}
+
+template<typename T>
+inline Color3<T> lerp(const Color3<T>& c1, const Color3<T>& c2, T t) noexcept
+{
+	return Color3<T>(c1.r + t*(c2.r - c1.r), c1.g + t*(c2.g - c1.g), c1.b + t*(c2.b - c1.b));
+}
+
+template<typename T>
+inline Color3<T> makeLinear(const Color3<T>& c) noexcept
+{
+	return Color3<T>(makeLinear(c.r), makeLinear(c.g), makeLinear(c.b));
+}
+
+template<typename T>
+inline Color3<T> makeSrgb(const Color3<T>& c) noexcept
+{
+	return Color3<T>(makeSrgb(c.r), makeSrgb(c.g), make Srgb(c.b));
+}
+
+#if SIMD_HAS_FLOAT4
+
+//template<>
+//inline core::simd::float4& get(Color3<float>& c) noexcept
+//{
+//	return c.rgb;
+//}
+//
+//template<>
+//inline const core::simd::float4& get(const Color3<float>& c) noexcept
+//{
+//	return c.rgb;
+//}
+
+template<>
+inline float luminance(float r, float g, float b) noexcept
+{
+	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
+	return simd::toFloat(simd::dot3(simd::set3(r, g, b), Color3<float>::LUMINANCE/*coeff*/));
+}
+
+template<>
+inline float luminance(const Color3<float>& c) noexcept
+{
+	//static const simd::float4 coeff = simd::set4(0.2126f, 0.7152f, 0.0722f, 0.f);
+	return simd::toFloat(simd::dot3(c, Color3<float>::LUMINANCE/*coeff*/));
+}
+
+template<>
+inline Color3<float> minimum(const Color3<float>& c1, const Color3<float>& c2)
+{
+	return Color3<float>(simd::min4(c1, c2));
+}
+
+template<>
+inline Color3<float> maximum(const Color3<float>& c1, const Color3<float>& c2)
+{
+	return Color3<float>(simd::max4(c1, c2));
+}
+
+template<>
+inline Color3<float> saturate(const Color3<float>& c)
+{
+	//static const simd::float4 one = simd::set4(1.f);
+	return Color3<float>(simd::min4(simd::max4(c, simd::zero<simd::float4>()), Color3<float>::ONE/*one*/));
+}
+
+template<>
+inline Color3<float> lerp(const Color3<float>& c1, const Color3<float>& c2, float t) noexcept
+{
+	return Color3<float>(simd::mulAdd4(simd::set4(t), simd::sub4(c2, c1), c1));
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

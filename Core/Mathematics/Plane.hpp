@@ -228,62 +228,6 @@ const Plane<float> Plane<float>::EMPTY{};
 
 #endif /* SIMD_HAS_FLOAT4 */
 
-template<std::size_t I, typename T>
-inline T& get(Plane<T>& p) noexcept
-{
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const Plane<T>& p) noexcept
-{
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(Plane<T>&& p) noexcept
-{
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const Plane<T>&& p) noexcept
-{
-	if constexpr (I == 0)
-		return p.a;
-	else if constexpr (I == 1)
-		return p.b;
-	else if constexpr (I == 2)
-		return p.c;
-	else if constexpr (I == 3)
-		return p.d;
-	static_assert(false);
-}
-
 template<typename T>
 inline Plane<T>::Plane<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2)
 {
@@ -732,6 +676,62 @@ inline std::optional<U> Plane<float>::findIntersection(const Segment3<float>& se
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
+
+template<std::size_t I, typename T>
+inline T& get(Plane<T>& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Plane<T>& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Plane<T>&& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Plane<T>&& p) noexcept
+{
+	if constexpr (I == 0)
+		return p.a;
+	else if constexpr (I == 1)
+		return p.b;
+	else if constexpr (I == 2)
+		return p.c;
+	else if constexpr (I == 3)
+		return p.d;
+	static_assert(false);
+}
 
 } // namespace templates
 

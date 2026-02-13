@@ -143,62 +143,6 @@ template<typename T> const Euler<T> Euler<T>::ZERO_YXZ{ T(), T(), T(), EulerOrde
 template<typename T> const Euler<T> Euler<T>::ZERO_ZXY{ T(), T(), T(), EulerOrder::ZXY };
 template<typename T> const Euler<T> Euler<T>::ZERO_ZYX{ T(), T(), T(), EulerOrder::ZYX };
 
-template<std::size_t I, typename T>
-inline typename std::tuple_element<I, Euler<T>>::type& get(Euler<T>& e) noexcept
-{
-	if constexpr (I == 0)
-		return e.x;
-	else if constexpr (I == 1)
-		return e.y;
-	else if constexpr (I == 2)
-		return e.z;
-	else if constexpr (I == 3)
-		return e.order;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const typename std::tuple_element<I, Euler<T>>::type& get(const Euler<T>& e) noexcept
-{
-	if constexpr (I == 0)
-		return e.x;
-	else if constexpr (I == 1)
-		return e.y;
-	else if constexpr (I == 2)
-		return e.z;
-	else if constexpr (I == 3)
-		return e.order;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline typename std::tuple_element<I, Euler<T>>::type&& get(Euler<T>&& e) noexcept
-{
-	if constexpr (I == 0)
-		return e.x;
-	else if constexpr (I == 1)
-		return e.y;
-	else if constexpr (I == 2)
-		return e.z;
-	else if constexpr (I == 3)
-		return e.order;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const typename std::tuple_element<I, Euler<T>>::type&& get(const Euler<T>&& e) noexcept
-{
-	if constexpr (I == 0)
-		return e.x;
-	else if constexpr (I == 1)
-		return e.y;
-	else if constexpr (I == 2)
-		return e.z;
-	else if constexpr (I == 3)
-		return e.order;
-	static_assert(false);
-}
-
 template<typename T>
 inline Euler<T>& Euler<T>::operator+=(const Euler<T>& e)
 {
@@ -373,6 +317,62 @@ inline bool Euler<T>::isApproxEqual(const Euler<T>& e, T tolerance) const
 //	z = std::clamp(z, low, high);
 //	return *this;
 //}
+
+template<std::size_t I, typename T>
+inline typename std::tuple_element<I, Euler<T>>::type& get(Euler<T>& e) noexcept
+{
+	if constexpr (I == 0)
+		return e.x;
+	else if constexpr (I == 1)
+		return e.y;
+	else if constexpr (I == 2)
+		return e.z;
+	else if constexpr (I == 3)
+		return e.order;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const typename std::tuple_element<I, Euler<T>>::type& get(const Euler<T>& e) noexcept
+{
+	if constexpr (I == 0)
+		return e.x;
+	else if constexpr (I == 1)
+		return e.y;
+	else if constexpr (I == 2)
+		return e.z;
+	else if constexpr (I == 3)
+		return e.order;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline typename std::tuple_element<I, Euler<T>>::type&& get(Euler<T>&& e) noexcept
+{
+	if constexpr (I == 0)
+		return e.x;
+	else if constexpr (I == 1)
+		return e.y;
+	else if constexpr (I == 2)
+		return e.z;
+	else if constexpr (I == 3)
+		return e.order;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const typename std::tuple_element<I, Euler<T>>::type&& get(const Euler<T>&& e) noexcept
+{
+	if constexpr (I == 0)
+		return e.x;
+	else if constexpr (I == 1)
+		return e.y;
+	else if constexpr (I == 2)
+		return e.z;
+	else if constexpr (I == 3)
+		return e.order;
+	static_assert(false);
+}
 
 } // namespace templates
 

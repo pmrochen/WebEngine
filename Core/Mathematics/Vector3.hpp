@@ -326,208 +326,6 @@ const Vector3<float> Vector3<float>::MINUS_INF{ -std::numeric_limits<float>::inf
 
 #endif /* SIMD_HAS_FLOAT4 */
 
-template<std::size_t I, typename T>
-inline T& get(Vector3<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const Vector3<T>& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(Vector3<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(const Vector3<T>&& v) noexcept
-{
-	if constexpr (I == 0)
-		return v.x;
-	else if constexpr (I == 1)
-		return v.y;
-	else if constexpr (I == 2)
-		return v.z;
-	static_assert(false);
-}
-
-template<typename T>
-inline T dot(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
-{
-	return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
-}
-
-template<typename T>
-inline Vector3<T> cross(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
-{
-	return Vector3(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x);
-}
-
-//template<typename T>
-//inline Matrix3<T> tensor(const Vector3<T>& v1, const Vector3<T>& v2) noexcept; // -> Matrix3
-
-template<typename T>
-inline T distance(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
-{
-	T x = v2.x - v1.x;
-	T y = v2.y - v1.y;
-	T z = v2.z - v1.z;
-	return std::sqrt(x*x + y*y + z*z);
-}
-
-template<typename T>
-inline T distanceSquared(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
-{
-	T x = v2.x - v1.x;
-	T y = v2.y - v1.y;
-	T z = v2.z - v1.z;
-	return x*x + y*y + z*z;
-}
-
-template<typename T>
-inline T length(const Vector3<T>& v) noexcept
-{
-	return std::sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
-}
-
-template<typename T>
-inline T lengthSquared(const Vector3<T>& v) noexcept
-{
-	return v.x*v.x + v.y*v.y + v.z*v.z;
-}
-
-template<typename T>
-inline Vector3<T> minimum(const Vector3<T>& v1, const Vector3<T>& v2)
-{
-	return Vector3<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z));
-}
-
-template<typename T>
-inline Vector3<T> maximum(const Vector3<T>& v1, const Vector3<T>& v2)
-{
-	return Vector3<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z));
-}
-
-template<typename T>
-inline Vector3<T> lerp(const Vector3<T>& v1, const Vector3<T>& v2, T t) noexcept
-{
-	return Vector3<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y), v1.z + t*(v2.z - v1.z));
-}
-
-template<typename T>
-inline Vector3<T> slerp(const Vector3<T>& v1, const Vector3<T>& v2, T t)
-{
-	// #TODO
-}
-
-template<typename T>
-inline Vector3<T> reflect(const Vector3<T>& i, const Vector3<T>& n) noexcept
-{
-	// #TODO
-}
-
-template<typename T>
-inline Vector3<T> refract(const Vector3<T>& i, const Vector3<T>& n, T etaRatio) noexcept
-{
-	// #TODO
-}
-
-template<typename T>
-inline Vector3<T> perpendicular(const Vector3<T>& v) noexcept
-{
-	// #TODO
-}
-
-#if SIMD_HAS_FLOAT4
-
-template<>
-inline float dot(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
-{
-	return simd::toFloat(simd::dot3(v1, v2));
-}
-
-template<>
-inline Vector3<float> cross(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
-{
-	return Vector3<float>(simd::sub4(simd::mul4(simd::yzxw(v1), simd::zxyw(v2)),
-		simd::mul4(simd::zxyw(v1), simd::yzxw(v2))));
-}
-
-template<>
-inline float distance(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
-{
-	auto v = simd::sub4(v2, v1);
-	return simd::toFloat(simd::sqrt1(simd::dot3(v, v)));
-}
-
-template<>
-inline float distanceSquared(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
-{
-	auto v = simd::sub4(v2, v1);
-	return simd::toFloat(simd::dot3(v, v));
-}
-
-template<>
-inline float length(const Vector3<float>& v) noexcept
-{
-	return simd::toFloat(simd::sqrt1(simd::dot3(v, v)));
-}
-
-template<>
-inline float lengthSquared(const Vector3<float>& v) noexcept
-{
-	return simd::toFloat(simd::dot3(v, v));
-}
-
-template<>
-inline Vector3<float> minimum(const Vector3<float>& v1, const Vector3<float>& v2)
-{
-	return Vector3<float>(simd::min4(v1, v2));
-}
-
-template<>
-inline Vector3<float> maximum(const Vector3<float>& v1, const Vector3<float>& v2)
-{
-	return Vector3<float>(simd::max4(v1, v2));
-}
-
-template<>
-inline Vector3<float> lerp(const Vector3<float>& v1, const Vector3<float>& v2, float t) noexcept
-{
-	return Vector3<float>(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
-}
-
-template<>
-inline Vector3<float> slerp(const Vector3<float>& v1, const Vector3<float>& v2, float t)
-{
-	// #TODO
-}
-
-#endif /* SIMD_HAS_FLOAT4 */
-
 template<typename T>
 inline Vector3<T> operator+(const Vector3<T>& v1, const Vector3<T>& v2) noexcept 
 { 
@@ -883,6 +681,233 @@ inline Vector3<float>& Vector3<float>::rotate(Axis axis, float angle)
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<std::size_t I, typename T>
+inline T& get(Vector3<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const Vector3<T>& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(Vector3<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(const Vector3<T>&& v) noexcept
+{
+	if constexpr (I == 0)
+		return v.x;
+	else if constexpr (I == 1)
+		return v.y;
+	else if constexpr (I == 2)
+		return v.z;
+	static_assert(false);
+}
+
+template<typename T>
+inline T dot(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+{
+	return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+}
+
+template<typename T>
+inline Vector3<T> cross(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+{
+	return Vector3(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x);
+}
+
+template<typename T>
+inline T distance(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+{
+	T x = v2.x - v1.x;
+	T y = v2.y - v1.y;
+	T z = v2.z - v1.z;
+	return std::sqrt(x*x + y*y + z*z);
+}
+
+template<typename T>
+inline T distanceSquared(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+{
+	T x = v2.x - v1.x;
+	T y = v2.y - v1.y;
+	T z = v2.z - v1.z;
+	return x*x + y*y + z*z;
+}
+
+template<typename T>
+inline T length(const Vector3<T>& v) noexcept
+{
+	return std::sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+template<typename T>
+inline T lengthSquared(const Vector3<T>& v) noexcept
+{
+	return v.x*v.x + v.y*v.y + v.z*v.z;
+}
+
+template<typename T>
+inline Vector3<T> minimum(const Vector3<T>& v1, const Vector3<T>& v2)
+{
+	return Vector3<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z));
+}
+
+template<typename T>
+inline Vector3<T> maximum(const Vector3<T>& v1, const Vector3<T>& v2)
+{
+	return Vector3<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z));
+}
+
+template<typename T>
+inline Vector3<T> lerp(const Vector3<T>& v1, const Vector3<T>& v2, T t) noexcept
+{
+	return Vector3<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y), v1.z + t*(v2.z - v1.z));
+}
+
+template<typename T>
+inline Vector3<T> slerp(const Vector3<T>& v1, const Vector3<T>& v2, T t)
+{
+	T dp = v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+	if ((T(1) - dp) < Constants<T>::TOLERANCE)
+	{
+		Vector3<T> c(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y), v1.z + t*(v2.z - v1.z));
+		c.normalize();
+		return c;
+	}
+
+	dp = std::clamp(dp, T(-1), T(1));
+	T theta = std::acos(dp)*t;
+	T st = std::sin(theta);
+	T ct = std::cos(theta);
+	Vector3<T> c(v2.x - v1.x*dp, v2.y - v1.y*dp, v2.z - v1.z*dp);
+	c.normalize();
+	return Vector3<T>(v1.x*ct + c.x*st, v1.y*ct + c.y*st, v1.z*ct + c.z*st);
+}
+
+template<typename T>
+inline Vector3<T> reflect(const Vector3<T>& i, const Vector3<T>& n) noexcept
+{
+	// #TODO
+}
+
+template<typename T>
+inline Vector3<T> refract(const Vector3<T>& i, const Vector3<T>& n, T etaRatio) noexcept
+{
+	// #TODO
+}
+
+template<typename T>
+inline Vector3<T> perpendicular(const Vector3<T>& v) noexcept
+{
+	// #TODO
+}
+
+#if SIMD_HAS_FLOAT4
+
+template<>
+inline float dot(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
+{
+	return simd::toFloat(simd::dot3(v1, v2));
+}
+
+template<>
+inline Vector3<float> cross(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
+{
+	return Vector3<float>(simd::sub4(simd::mul4(simd::yzxw(v1), simd::zxyw(v2)),
+		simd::mul4(simd::zxyw(v1), simd::yzxw(v2))));
+}
+
+template<>
+inline float distance(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
+{
+	auto v = simd::sub4(v2, v1);
+	return simd::toFloat(simd::sqrt1(simd::dot3(v, v)));
+}
+
+template<>
+inline float distanceSquared(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
+{
+	auto v = simd::sub4(v2, v1);
+	return simd::toFloat(simd::dot3(v, v));
+}
+
+template<>
+inline float length(const Vector3<float>& v) noexcept
+{
+	return simd::toFloat(simd::sqrt1(simd::dot3(v, v)));
+}
+
+template<>
+inline float lengthSquared(const Vector3<float>& v) noexcept
+{
+	return simd::toFloat(simd::dot3(v, v));
+}
+
+template<>
+inline Vector3<float> minimum(const Vector3<float>& v1, const Vector3<float>& v2)
+{
+	return Vector3<float>(simd::min4(v1, v2));
+}
+
+template<>
+inline Vector3<float> maximum(const Vector3<float>& v1, const Vector3<float>& v2)
+{
+	return Vector3<float>(simd::max4(v1, v2));
+}
+
+template<>
+inline Vector3<float> lerp(const Vector3<float>& v1, const Vector3<float>& v2, float t) noexcept
+{
+	return Vector3<float>(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
+}
+
+template<>
+inline Vector3<float> slerp(const Vector3<float>& v1, const Vector3<float>& v2, float t)
+{
+	float dp = simd::toFloat(simd::dot3(v1, v2));
+	if ((1.f - dp) < Constants<float>::TOLERANCE)
+	{
+		Vector3<float> c(simd::mulAdd4(simd::set4(t), simd::sub4(v2, v1), v1));
+		c.normalize();
+		return c;
+	}
+
+	dp = std::clamp(dp, -1.f, 1.f);
+	float theta = std::acos(dp)*t;
+	float st = std::sin(theta);
+	float ct = std::cos(theta);
+	Vector3<float> c(simd::sub4(v2, simd::mul4(v1, simd::set4(dp))));
+	c.normalize();
+	return Vector3<float>(simd::mulAdd4(v1, simd::set4(ct), simd::mul4(c, simd::set4(st))));
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
 template<typename T>
 inline Vector3<T> normalize(const Vector3<T>& v) noexcept
 {
@@ -991,6 +1016,15 @@ inline Vector3<T>& Vector3<T>::operator*=(const Matrix3<T>& m)
 }
 
 template<typename T>
+inline Vector3<T> operator*(const Vector3<T>& v, const Matrix3<T>& m) noexcept
+{
+	return Vector3<T>(v.x*m.m00 + v.y*m.m10 + v.z*m.m20, v.x*m.m01 + v.y*m.m11 + v.z*m.m21, v.x*m.m02 + v.y*m.m12 + v.z*m.m22);
+}
+
+//template<typename T>
+//inline Vector3<T> operator*(const Matrix3<T>& m, const Vector3<T>& v) noexcept; // valid for column vectors only
+
+template<typename T>
 inline Vector3<T>& Vector3<T>::rotate(const Quaternion<T>& q)
 {
 	T x1 = q.y*z - q.z*y;
@@ -1020,15 +1054,6 @@ inline Vector3<T>& Vector3<T>::transform(const AffineTransform<T>& m)
 }
 
 template<typename T>
-inline Vector3<T> operator*(const Vector3<T>& v, const Matrix3<T>& m) noexcept
-{
-	return Vector3<T>(v.x*m.m00 + v.y*m.m10 + v.z*m.m20, v.x*m.m01 + v.y*m.m11 + v.z*m.m21, v.x*m.m02 + v.y*m.m12 + v.z*m.m22);
-}
-
-//template<typename T>
-//inline Vector3<T> operator*(const Matrix3<T>& m, const Vector3<T>& v) noexcept; // valid for column vectors only
-
-template<typename T>
 inline Vector3<T> rotate(const Vector3<T>& v, const Quaternion<T>& q) noexcept
 {
 	T x1 = q.y*v.z - q.z*v.y;
@@ -1053,6 +1078,9 @@ inline Vector3<T> transform(const Vector3<T>& v, const AffineTransform<T>& m) no
 		v.x*m.m02 + v.y*m.m12 + v.z*m.m22 + m.m32);
 }
 
+//template<typename T>
+//inline Matrix3<T> tensor(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+
 #if SIMD_HAS_FLOAT4
 
 template<typename U> 
@@ -1066,6 +1094,16 @@ inline Vector3<float>& Vector3<float>::operator*=(const Matrix3<float>& m)
 	xyz = simd::add4(t, simd::mul4(simd::zzzz(xyz), m.row2));
 	return *this;
 }
+
+template<>
+inline Vector3<float> operator*(const Vector3<float>& v, const Matrix3<float>& m) noexcept
+{
+	auto t = simd::mulAdd4(simd::xxxx(v), m.row0, simd::mul4(simd::yyyy(v), m.row1));
+	return Vector3<float>(simd::add4(t, simd::mul4(simd::zzzz(v), m.row2)));
+}
+
+//template<>
+//inline Vector3<float> operator*(const Matrix3<float>& m, const Vector3<float>& v) noexcept; // valid for column vectors only
 
 inline Vector3<float>& Vector3<float>::rotate(const Quaternion<float>& q)
 {
@@ -1091,16 +1129,6 @@ inline Vector3<float>& Vector3<float>::transform(const AffineTransform<float>& m
 	xyz = simd::add4(t, m.row3);
 	return *this;
 }
-
-template<>
-inline Vector3<float> operator*(const Vector3<float>& v, const Matrix3<float>& m) noexcept
-{
-	auto t = simd::mulAdd4(simd::xxxx(v), m.row0, simd::mul4(simd::yyyy(v), m.row1));
-	return Vector3<float>(simd::add4(t, simd::mul4(simd::zzzz(v), m.row2)));
-}
-
-//template<>
-//inline Vector3<float> operator*(const Matrix3<float>& m, const Vector3<float>& v) noexcept; // valid for column vectors only
 
 template<>
 inline Vector3<float> rotate(const Vector3<float>& v, const Quaternion<float>& q) noexcept

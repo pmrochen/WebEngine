@@ -260,6 +260,461 @@ const Quaternion<float> Quaternion<float>::TOLERANCE{ Constants<float>::TOLERANC
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<typename T>
+inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& q)
+{
+	set(w*q.x + x*q.w + y*q.z - z*q.y, w*q.y - x*q.z + y*q.w + z*q.x,
+		w*q.z + x*q.y - y*q.x + z*q.w, w*q.w - x*q.x - y*q.y - z*q.z);
+	return *this;
+}
+
+template<typename T>
+inline Quaternion<T>& Quaternion<T>::operator*=(const Vector3<T>& v)
+{
+	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
+	return *this;
+}
+
+template<typename T>
+inline Quaternion<T> operator+(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+{
+	return Quaternion<T>(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w);
+}
+
+template<typename T>
+inline Quaternion<T> operator-(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+{
+	return Quaternion<T>(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w);
+}
+
+template<typename T>
+inline Quaternion<T> operator*(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
+{
+	return Quaternion<T>(q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y, q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
+		q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w, q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z);
+}
+
+template<typename T>
+inline Quaternion<T> operator*(const Vector3<T>& v, const Quaternion<T>& q) noexcept
+{
+	return Quaternion<T>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
+}
+
+template<typename T>
+inline Quaternion<T> operator*(const Quaternion<T>& q, const Vector3<T>& v) noexcept
+{
+	return Quaternion<T>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
+}
+
+template<typename T>
+inline Quaternion<T> operator*(T f, const Quaternion<T>& q) noexcept
+{
+	return Quaternion<T>(f*q.x, f*q.y, f*q.z, f*q.w);
+}
+
+template<typename T>
+inline Quaternion<T> operator*(const Quaternion<T>& q, T f) noexcept
+{
+	return Quaternion<T>(q.x*f, q.y*f, q.z*f, q.w*f);
+}
+
+//template<typename T>
+//inline Quaternion<T> operator/(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
+//{ 
+//	return q1*(Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w)/q2.getNorm()); 
+//}
+
+template<typename T>
+inline Quaternion<T> operator/(T f, const Quaternion<T>& q) noexcept
+{
+	return f*(Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm()); // #FIXME inline
+}
+
+template<typename T>
+inline Quaternion<T> operator/(const Quaternion<T>& q, T f) noexcept
+{
+	return operator*(q, T(1)/f);
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<U>& q)
+{
+	return s >> q.x >> std::ws >> q.y >> std::ws >> q.z >> std::ws >> q.w;
+}
+
+template<typename C, typename T, typename U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Quaternion<U>& q)
+{
+	constexpr C WS(0x20);
+	return s << q.x << WS << q.y << WS << q.z << WS << q.w;
+}
+
+template<typename T>
+template<std::size_t I>
+inline T& Quaternion<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<typename T>
+template<std::size_t I>
+inline const T& Quaternion<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<typename T>
+inline Quaternion<T> Quaternion<T>::fromAxisAngle(const Vector3<T>& axis, T angle)
+{
+	T m = axis.getMagnitude();
+	if ((m > T(0)) && (angle != T(0)))
+	{
+		T half = angle*T(0.5);
+		T sinHalfN = std::sin(half)/m;
+		return Quaternion<T>(axis.x*sinHalfN, axis.y*sinHalfN, axis.z*sinHalfN, std::cos(half));
+	}
+
+	return IDENTITY;
+}
+
+template<typename T>
+inline bool Quaternion<T>::isApproxZero() const
+{
+	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE) &&
+		(std::fabs(z) < Constants<T>::TOLERANCE) && (std::fabs(w) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Quaternion<T>::isApproxIdentity() const
+{
+	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE) &&
+		(std::fabs(z) < Constants<T>::TOLERANCE) && (std::fabs(w - T(1)) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Quaternion<T>::isApproxEqual(const Quaternion<T>& q) const
+{
+	return (std::fabs(q.x - x) < Constants<T>::TOLERANCE) && (std::fabs(q.y - y) < Constants<T>::TOLERANCE) &&
+		(std::fabs(q.z - z) < Constants<T>::TOLERANCE) && (std::fabs(q.w - w) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Quaternion<T>::isApproxEqual(const Quaternion<T>& q, T tolerance) const
+{
+	return (std::fabs(q.x - x) < tolerance) && (std::fabs(q.y - y) < tolerance) &&
+		(std::fabs(q.z - z) < tolerance) && (std::fabs(q.w - w) < tolerance);
+}
+
+template<typename T>
+inline Vector3<T> Quaternion<T>::getAxis() const
+{
+	T cosine = T(1) - w*w;
+	if (cosine <= T(0))
+		return Vector3<T>();
+
+	//#if MATHEMATICS_FAST_NORMALIZE
+	//	if costexpr(std::is_same_v<T, float>)
+	//	{
+	//		float m = rcpSqrtApprox(cosine);
+	//		if (m <= std::numeric_limits<T>::max())
+	//		{
+	//			//if (w < T(0)) m = -m;	// <0, PI>
+	//			return Vector3<T>(x*m, y*m, z*m);
+	//		}
+	//		else
+	//			return Vector3<T>();
+	//	}
+	//	else
+	//#else
+	{
+		T m = std::sqrt(cosine);
+		if (m > T(0))
+		{
+			//if (w < T(0)) m = -m;	// <0, PI>
+			return Vector3<T>(x/m, y/m, z/m);
+		}
+		else
+			return Vector3<T>();
+	}
+	//#endif
+}
+
+template<typename T>
+inline T Quaternion<T>::getAngle() const
+{
+	//T invAbs = getInverseAbsoluteValue();
+	//if (invAbs <= std::numeric_limits<T>::max())
+	//	return T(2)*std::acos(std::clamp(w*invAbs, T(-1), T(1)));				// <-PI, PI>
+	//	//return T(2)*std::acos(std::clamp(std::fabs(w*invAbs), T(-1), T(1)));	// <0, PI>
+	//else
+	//	return T(0);
+
+	return T(2)*std::acos(std::clamp(w, T(-1), T(1)));				// <-PI, PI>
+	//return T(2)*std::acos(std::clamp(std::fabs(w), T(-1), T(1)));	// <0, PI>
+}
+
+template<typename T>
+inline Quaternion<T>& Quaternion<T>::normalize()
+{
+	//#if MATHEMATICS_FAST_NORMALIZE
+	//	if costexpr(std::is_same_v<T, float>)
+	//	{
+	//		T m = rcpSqrtApprox(getMagnitudeSquared());
+	//		if (m <= std::numeric_limits<T>::max())
+	//			*this *= m;
+	//	}
+	//	else
+	//#endif
+	{
+		T m = getMagnitude();
+		if (m > T(0))
+			*this /= m;
+	}
+	return *this;
+}
+
+#if SIMD_HAS_FLOAT4
+
+inline Quaternion<float>& Quaternion<float>::operator*=(const Quaternion<float>& q)
+{
+	auto t0 = simd::broadcast<3>(xyzw);
+	auto t1 = simd::swizzle<1, 0, 3, 2>(q.xyzw);
+	auto t3 = simd::broadcast<0>(xyzw);
+	auto t4 = simd::swizzle<2, 3, 0, 1>(q.xyzw);
+	auto t5 = simd::broadcast<1>(xyzw);
+	auto t6 = simd::swizzle<1, 3, 0, 2>(q.xyzw);
+	auto m0 = simd::mul4(t0, t1);
+	auto m1 = simd::mul4(t3, t4);
+	auto m2 = simd::mul4(t5, t6);
+	auto t7 = simd::broadcast<2>(xyzw);
+	auto t8 = simd::swizzle<1, 0, 2, 3>(q.xyzw);
+	auto m3 = simd::mul4(t7, t8);
+	auto e = simd::subAdd4(m0, m1);
+	e = simd::swizzle<2, 0, 3, 1>(e);
+	e = simd::subAdd4(e, m2);
+	e = simd::swizzle<3, 1, 0, 2>(e);
+	e = simd::subAdd4(e, m3);
+	xyzw = simd::swizzle<0, 1, 3, 2>(e);
+	return *this;
+}
+
+inline Quaternion<float>& Quaternion<float>::operator*=(const Vector3<float>& v) // #TODO SIMD
+{
+	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
+	return *this;
+}
+
+template<>
+inline Quaternion<float> operator+(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	return Quaternion<float>(simd::add4(q1, q2));
+}
+
+template<>
+inline Quaternion<float> operator-(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	return Quaternion<float>(simd::sub4(q1, q2));
+}
+
+template<>
+inline Quaternion<float> operator*(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
+{
+	auto t0 = simd::broadcast<3>(q1.xyzw);
+	auto t1 = simd::swizzle<1, 0, 3, 2>(q2.xyzw);
+	auto t3 = simd::broadcast<0>(q1.xyzw);
+	auto t4 = simd::swizzle<2, 3, 0, 1>(q2.xyzw);
+	auto t5 = simd::broadcast<1>(q1.xyzw);
+	auto t6 = simd::swizzle<1, 3, 0, 2>(q2.xyzw);
+	auto m0 = simd::mul4(t0, t1);
+	auto m1 = simd::mul4(t3, t4);
+	auto m2 = simd::mul4(t5, t6);
+	auto t7 = simd::broadcast<2>(q1.xyzw);
+	auto t8 = simd::swizzle<1, 0, 2, 3>(q2.xyzw);
+	auto m3 = simd::mul4(t7, t8);
+	auto e = simd::subAdd4(m0, m1);
+	e = simd::swizzle<2, 0, 3, 1>(e);
+	e = simd::subAdd4(e, m2);
+	e = simd::swizzle<3, 1, 0, 2>(e);
+	e = simd::subAdd4(e, m3);
+	return Quaternion<float>(simd::swizzle<0, 1, 3, 2>(e));
+}
+
+template<>
+inline Quaternion<float> operator*(const Vector3<float>& v, const Quaternion<float>& q) noexcept // #TODO SIMD
+{
+	return Quaternion<float>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
+}
+
+template<>
+inline Quaternion<float> operator*(const Quaternion<float>& q, const Vector3<float>& v) noexcept // #TODO SIMD
+{
+	return Quaternion<float>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
+		-(q.x*v.x + q.y*v.y + q.z*v.z));
+}
+
+template<>
+inline Quaternion<float> operator*(float f, const Quaternion<float>& q) noexcept
+{
+	return Quaternion<float>(simd::mul4(simd::set4(f), q));
+}
+
+template<>
+inline Quaternion<float> operator*(const Quaternion<float>& q, float f) noexcept
+{
+	return Quaternion<float>(simd::mul4(q, simd::set4(f)));
+}
+
+//template<>
+//inline Quaternion<float> operator/(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
+//{
+//	return q1*(Quaternion<float>(simd::neg3(q2))/q2.getNorm());
+//}
+
+template<>
+inline Quaternion<float> operator/(float f, const Quaternion<float>& q) noexcept
+{
+	return f*(Quaternion<float>(simd::neg3(q))/q.getNorm()); // #FIXME inline
+}
+
+template<>
+inline Quaternion<float> operator/(const Quaternion<float>& q, float f) noexcept
+{
+	return Quaternion<float>(simd::div4(q, simd::set4(f)));
+}
+
+template<typename C, typename T>
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<float>& q)
+{
+	float x, y, z, w;
+	s >> x >> std::ws >> y >> std::ws >> z >> std::ws >> w;
+	q.set(x, y, z, w);
+	return s;
+}
+
+template<typename A>
+inline void Quaternion<float>::load(A& ar)
+{
+	float t0, t1, t2, t3;
+	ar(t0, t1, t2, t3);
+	set(t0, t1, t2, t3);
+}
+
+template<std::size_t I>
+inline float& Quaternion<float>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+template<std::size_t I>
+inline const float& Quaternion<float>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	else if constexpr (I == 2)
+		return z;
+	else if constexpr (I == 3)
+		return w;
+	static_assert(false);
+}
+
+inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& axis, float angle)
+{
+	float m = axis.getMagnitude();
+	if ((m > 0.f) && (angle != 0.f))
+	{
+		float half = angle*0.5f;
+		float sinHalfN = std::sin(half)/m;
+		return Quaternion<float>(axis*sinHalfN, std::cos(half));
+	}
+
+	return IDENTITY;
+}
+
+inline Vector3<float> Quaternion<float>::getAxis() const
+{
+	float cosine = 1.f - w*w;
+	if (cosine <= 0.f)
+		return Vector3<float>();
+
+#if MATHEMATICS_FAST_NORMALIZE
+	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::set1(cosine)));
+	if (m <= std::numeric_limits<float>::max())
+	{
+		//if (w < 0.f) m = -m;	// <0, PI>
+		return getVector()*m;
+	}
+	else
+		return Vector3<float>();
+#else
+	float m = std::sqrt(cosine);
+	if (m > 0.f)
+	{
+		//if (w < 0.f) m = -m;	// <0, PI>
+		return getVector()/m;
+	}
+	else
+		return Vector3<float>();
+#endif
+}
+
+inline float Quaternion<float>::getAngle() const
+{
+	//float invAbs = getInverseAbsoluteValue();
+	//if (invAbs <= std::numeric_limits<float>::max())
+	//	return 2.f*std::acos(std::clamp(w*invAbs, -1.f, 1.f));				// <-PI, PI>
+	//	//return 2.f*std::acos(std::clamp(std::fabs(w*invAbs), -1.f, 1.f));	// <0, PI>
+	//else
+	//	return 0.f;
+
+	return 2.f*std::acos(std::clamp(w, -1.f, 1.f));					// <-PI, PI>
+	//return 2.f*std::acos(std::clamp(std::fabs(w), -1.f, 1.f));	// <0, PI>
+}
+
+inline Quaternion<float>& Quaternion<float>::normalize()
+{
+#if MATHEMATICS_FAST_NORMALIZE
+	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::dot4(xyzw, xyzw)));
+	if (m <= std::numeric_limits<float>::max())
+		*this *= m;
+#else
+	float m = getMagnitude();
+	if (m > 0.f)
+		*this /= m;
+#endif
+	return *this;
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
 template<std::size_t I, typename T>
 inline T& get(Quaternion<T>& v) noexcept
 {
@@ -454,461 +909,6 @@ template<>
 inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
 {
 	return Quaternion<float>(simd::neg3(q.xyzw))/q.getNorm(); // #FIXME inline
-}
-
-#endif /* SIMD_HAS_FLOAT4 */
-
-template<typename T>
-inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& q)
-{
-	set(w*q.x + x*q.w + y*q.z - z*q.y, w*q.y - x*q.z + y*q.w + z*q.x,
-		w*q.z + x*q.y - y*q.x + z*q.w, w*q.w - x*q.x - y*q.y - z*q.z);
-	return *this;
-}
-
-template<typename T>
-inline Quaternion<T>& Quaternion<T>::operator*=(const Vector3<T>& v)
-{
-	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
-	return *this;
-}
-
-template<typename T>
-inline Quaternion<T> operator+(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
-{ 
-	return Quaternion<T>(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w);
-}
-
-template<typename T>
-inline Quaternion<T> operator-(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
-{ 
-	return Quaternion<T>(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w);
-}
-
-template<typename T>
-inline Quaternion<T> operator*(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
-{
-	return Quaternion<T>(q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y, q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
-		q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w, q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z);
-}
-
-template<typename T>
-inline Quaternion<T> operator*(const Vector3<T>& v, const Quaternion<T>& q) noexcept
-{
-	return Quaternion<T>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
-		-(q.x*v.x + q.y*v.y + q.z*v.z));
-}
-
-template<typename T>
-inline Quaternion<T> operator*(const Quaternion<T>& q, const Vector3<T>& v) noexcept
-{
-	return Quaternion<T>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
-		-(q.x*v.x + q.y*v.y + q.z*v.z));
-}
-
-template<typename T>
-inline Quaternion<T> operator*(T f, const Quaternion<T>& q) noexcept 
-{ 
-	return Quaternion<T>(f*q.x, f*q.y, f*q.z, f*q.w); 
-}
-
-template<typename T>
-inline Quaternion<T> operator*(const Quaternion<T>& q, T f) noexcept 
-{ 
-	return Quaternion<T>(q.x*f, q.y*f, q.z*f, q.w*f); 
-}
-
-//template<typename T>
-//inline Quaternion<T> operator/(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
-//{ 
-//	return q1*(Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w)/q2.getNorm()); 
-//}
-
-template<typename T>
-inline Quaternion<T> operator/(T f, const Quaternion<T>& q) noexcept 
-{ 
-	return f*(Quaternion<T>(-q.x, -q.y, -q.z, q.w)/q.getNorm()); // #FIXME inline
-}
-
-template<typename T>
-inline Quaternion<T> operator/(const Quaternion<T>& q, T f) noexcept 
-{ 
-	return operator*(q, T(1)/f); 
-}
-
-template<typename C, typename T, typename U>
-inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<U>& q)
-{ 
-	return s >> q.x >> std::ws >> q.y >> std::ws >> q.z >> std::ws >> q.w; 
-}
-
-template<typename C, typename T, typename U>
-inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Quaternion<U>& q)
-{ 
-	constexpr C WS(0x20);
-	return s << q.x << WS << q.y << WS << q.z << WS << q.w;
-}
-
-template<typename T>
-template<std::size_t I>
-inline T& Quaternion<T>::get()
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	else if constexpr (I == 3)
-		return w;
-	static_assert(false);
-}
-
-template<typename T>
-template<std::size_t I>
-inline const T& Quaternion<T>::get() const
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	else if constexpr (I == 3)
-		return w;
-	static_assert(false);
-}
-
-template<typename T>
-inline Quaternion<T> Quaternion<T>::fromAxisAngle(const Vector3<T>& axis, T angle)
-{
-	T m = axis.getMagnitude();
-	if ((m > T(0)) && (angle != T(0)))
-	{
-		T half = angle*T(0.5);
-		T sinHalfN = std::sin(half)/m;
-		return Quaternion<T>(axis.x*sinHalfN, axis.y*sinHalfN, axis.z*sinHalfN, std::cos(half));
-	}
-
-	return IDENTITY;
-}
-
-template<typename T>
-inline bool Quaternion<T>::isApproxZero() const
-{ 
-	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE) && 
-		(std::fabs(z) < Constants<T>::TOLERANCE) && (std::fabs(w) < Constants<T>::TOLERANCE);
-}
-
-template<typename T>
-inline bool Quaternion<T>::isApproxIdentity() const
-{ 
-	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE) && 
-		(std::fabs(z) < Constants<T>::TOLERANCE) && (std::fabs(w - T(1)) < Constants<T>::TOLERANCE);
-}
-
-template<typename T>
-inline bool Quaternion<T>::isApproxEqual(const Quaternion<T>& q) const
-{ 
-	return (std::fabs(q.x - x) < Constants<T>::TOLERANCE) && (std::fabs(q.y - y) < Constants<T>::TOLERANCE) && 
-		(std::fabs(q.z - z) < Constants<T>::TOLERANCE) && (std::fabs(q.w - w) < Constants<T>::TOLERANCE); 
-}
-
-template<typename T>
-inline bool Quaternion<T>::isApproxEqual(const Quaternion<T>& q, T tolerance) const
-{
-	return (std::fabs(q.x - x) < tolerance) && (std::fabs(q.y - y) < tolerance) && 
-		(std::fabs(q.z - z) < tolerance) && (std::fabs(q.w - w) < tolerance); 
-}
-
-template<typename T>
-inline Vector3<T> Quaternion<T>::getAxis() const
-{
-	T cosine = T(1) - w*w;
-	if (cosine <= T(0))
-		return Vector3<T>();
-
-//#if MATHEMATICS_FAST_NORMALIZE
-//	if costexpr(std::is_same_v<T, float>)
-//	{
-//		float m = rcpSqrtApprox(cosine);
-//		if (m <= std::numeric_limits<T>::max())
-//		{
-//			//if (w < T(0)) m = -m;	// <0, PI>
-//			return Vector3<T>(x*m, y*m, z*m);
-//		}
-//		else
-//			return Vector3<T>();
-//	}
-//	else
-//#else
-	{
-		T m = std::sqrt(cosine);
-		if (m > T(0))
-		{
-			//if (w < T(0)) m = -m;	// <0, PI>
-			return Vector3<T>(x/m, y/m, z/m);
-		}
-		else
-			return Vector3<T>();
-	}
-//#endif
-}
-
-template<typename T>
-inline T Quaternion<T>::getAngle() const
-{
-	//T invAbs = getInverseAbsoluteValue();
-	//if (invAbs <= std::numeric_limits<T>::max())
-	//	return T(2)*std::acos(std::clamp(w*invAbs, T(-1), T(1)));				// <-PI, PI>
-	//	//return T(2)*std::acos(std::clamp(std::fabs(w*invAbs), T(-1), T(1)));	// <0, PI>
-	//else
-	//	return T(0);
-
-	return T(2)*std::acos(std::clamp(w, T(-1), T(1)));				// <-PI, PI>
-	//return T(2)*std::acos(std::clamp(std::fabs(w), T(-1), T(1)));	// <0, PI>
-}
-
-template<typename T>
-inline Quaternion<T>& Quaternion<T>::normalize()
-{
-//#if MATHEMATICS_FAST_NORMALIZE
-//	if costexpr(std::is_same_v<T, float>)
-//	{
-//		T m = rcpSqrtApprox(getMagnitudeSquared());
-//		if (m <= std::numeric_limits<T>::max())
-//			*this *= m;
-//	}
-//	else
-//#endif
-	{
-		T m = getMagnitude();
-		if (m > T(0))
-			*this /= m;
-	}
-	return *this;
-}
-
-#if SIMD_HAS_FLOAT4
-
-inline Quaternion<float>& Quaternion<float>::operator*=(const Quaternion<float>& q)
-{
-	auto t0 = simd::broadcast<3>(xyzw);
-	auto t1 = simd::swizzle<1, 0, 3, 2>(q.xyzw);
-	auto t3 = simd::broadcast<0>(xyzw);
-	auto t4 = simd::swizzle<2, 3, 0, 1>(q.xyzw);
-	auto t5 = simd::broadcast<1>(xyzw);
-	auto t6 = simd::swizzle<1, 3, 0, 2>(q.xyzw);
-	auto m0 = simd::mul4(t0, t1);
-	auto m1 = simd::mul4(t3, t4);
-	auto m2 = simd::mul4(t5, t6);
-	auto t7 = simd::broadcast<2>(xyzw);
-	auto t8 = simd::swizzle<1, 0, 2, 3>(q.xyzw);
-	auto m3 = simd::mul4(t7, t8);
-	auto e = simd::subAdd4(m0, m1);
-	e = simd::swizzle<2, 0, 3, 1>(e);
-	e = simd::subAdd4(e, m2);
-	e = simd::swizzle<3, 1, 0, 2>(e);
-	e = simd::subAdd4(e, m3);
-	xyzw = simd::swizzle<0, 1, 3, 2>(e);
-	return *this;
-}
-
-inline Quaternion<float>& Quaternion<float>::operator*=(const Vector3<float>& v) // #TODO SIMD
-{
-	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
-	return *this;
-}
-
-template<>
-inline Quaternion<float> operator+(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
-{ 
-	return Quaternion<float>(simd::add4(q1, q2)); 
-}
-
-template<>
-inline Quaternion<float> operator-(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
-{ 
-	return Quaternion<float>(simd::sub4(q1, q2)); 
-}
-
-template<>
-inline Quaternion<float> operator*(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
-{
-	auto t0 = simd::broadcast<3>(q1.xyzw);
-	auto t1 = simd::swizzle<1, 0, 3, 2>(q2.xyzw);
-	auto t3 = simd::broadcast<0>(q1.xyzw);
-	auto t4 = simd::swizzle<2, 3, 0, 1>(q2.xyzw);
-	auto t5 = simd::broadcast<1>(q1.xyzw);
-	auto t6 = simd::swizzle<1, 3, 0, 2>(q2.xyzw);
-	auto m0 = simd::mul4(t0, t1);
-	auto m1 = simd::mul4(t3, t4);
-	auto m2 = simd::mul4(t5, t6);
-	auto t7 = simd::broadcast<2>(q1.xyzw);
-	auto t8 = simd::swizzle<1, 0, 2, 3>(q2.xyzw);
-	auto m3 = simd::mul4(t7, t8);
-	auto e = simd::subAdd4(m0, m1);
-	e = simd::swizzle<2, 0, 3, 1>(e);
-	e = simd::subAdd4(e, m2);
-	e = simd::swizzle<3, 1, 0, 2>(e);
-	e = simd::subAdd4(e, m3);
-	return Quaternion<float>(simd::swizzle<0, 1, 3, 2>(e));
-}
-
-template<>
-inline Quaternion<float> operator*(const Vector3<float>& v, const Quaternion<float>& q) noexcept // #TODO SIMD
-{
-	return Quaternion<float>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
-		-(q.x*v.x + q.y*v.y + q.z*v.z));
-}
-
-template<>
-inline Quaternion<float> operator*(const Quaternion<float>& q, const Vector3<float>& v) noexcept // #TODO SIMD
-{
-	return Quaternion<float>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
-		-(q.x*v.x + q.y*v.y + q.z*v.z));
-}
-
-template<>
-inline Quaternion<float> operator*(float f, const Quaternion<float>& q) noexcept 
-{ 
-	return Quaternion<float>(simd::mul4(simd::set4(f), q)); 
-}
-
-template<>
-inline Quaternion<float> operator*(const Quaternion<float>& q, float f) noexcept 
-{ 
-	return Quaternion<float>(simd::mul4(q, simd::set4(f))); 
-}
-
-//template<>
-//inline Quaternion<float> operator/(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept 
-//{
-//	return q1*(Quaternion<float>(simd::neg3(q2))/q2.getNorm());
-//}
-
-template<>
-inline Quaternion<float> operator/(float f, const Quaternion<float>& q) noexcept 
-{ 
-	return f*(Quaternion<float>(simd::neg3(q))/q.getNorm()); // #FIXME inline
-}
-
-template<>
-inline Quaternion<float> operator/(const Quaternion<float>& q, float f) noexcept 
-{ 
-	return Quaternion<float>(simd::div4(q, simd::set4(f)));
-}
-
-template<typename C, typename T>
-inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<float>& q)
-{
-	float x, y, z, w;
-	s >> x >> std::ws >> y >> std::ws >> z >> std::ws >> w;
-	q.set(x, y, z, w);
-	return s;
-}
-
-template<typename A>
-inline void Quaternion<float>::load(A& ar)
-{
-	float t0, t1, t2, t3;
-	ar(t0, t1, t2, t3);
-	set(t0, t1, t2, t3);
-}
-
-template<std::size_t I>
-inline float& Quaternion<float>::get()
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	else if constexpr (I == 3)
-		return w;
-	static_assert(false);
-}
-
-template<std::size_t I>
-inline const float& Quaternion<float>::get() const
-{
-	if constexpr (I == 0)
-		return x;
-	else if constexpr (I == 1)
-		return y;
-	else if constexpr (I == 2)
-		return z;
-	else if constexpr (I == 3)
-		return w;
-	static_assert(false);
-}
-
-inline Quaternion<float> Quaternion<float>::fromAxisAngle(const Vector3<float>& axis, float angle)
-{
-	float m = axis.getMagnitude();
-	if ((m > 0.f) && (angle != 0.f))
-	{
-		float half = angle*0.5f;
-		float sinHalfN = std::sin(half)/m;
-		return Quaternion<float>(axis*sinHalfN, std::cos(half));
-	}
-
-	return IDENTITY;
-}
-
-inline Vector3<float> Quaternion<float>::getAxis() const
-{
-	float cosine = 1.f - w*w;
-	if (cosine <= 0.f)
-		return Vector3<float>();
-
-#if MATHEMATICS_FAST_NORMALIZE
-	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::set1(cosine)));
-	if (m <= std::numeric_limits<float>::max())
-	{
-		//if (w < 0.f) m = -m;	// <0, PI>
-		return getVector()*m;
-	}
-	else
-		return Vector3<float>();
-#else
-	float m = std::sqrt(cosine);
-	if (m > 0.f)
-	{
-		//if (w < 0.f) m = -m;	// <0, PI>
-		return getVector()/m;
-	}
-	else
-		return Vector3<float>();
-#endif
-}
-
-inline float Quaternion<float>::getAngle() const
-{
-	//float invAbs = getInverseAbsoluteValue();
-	//if (invAbs <= std::numeric_limits<float>::max())
-	//	return 2.f*std::acos(std::clamp(w*invAbs, -1.f, 1.f));				// <-PI, PI>
-	//	//return 2.f*std::acos(std::clamp(std::fabs(w*invAbs), -1.f, 1.f));	// <0, PI>
-	//else
-	//	return 0.f;
-
-	return 2.f*std::acos(std::clamp(w, -1.f, 1.f));					// <-PI, PI>
-	//return 2.f*std::acos(std::clamp(std::fabs(w), -1.f, 1.f));	// <0, PI>
-}
-
-inline Quaternion<float>& Quaternion<float>::normalize()
-{
-#if MATHEMATICS_FAST_NORMALIZE
-	float m = simd::toFloat(simd::rcpSqrtApprox1(simd::dot4(xyzw, xyzw)));
-	if (m <= std::numeric_limits<float>::max())
-		*this *= m;
-#else
-	float m = getMagnitude();
-	if (m > 0.f)
-		*this /= m;
-#endif
-	return *this;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

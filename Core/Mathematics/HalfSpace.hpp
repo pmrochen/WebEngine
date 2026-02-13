@@ -68,7 +68,7 @@ struct HalfSpace
 	template<std::size_t I> T& get() noexcept;
 	template<std::size_t I> const T& get() const noexcept;
 
-	Plane<T>::ConstResult asPlane() const noexcept { return reinterpret_cast<const Plane<T>&>(*this); }
+	const Plane<T>& asPlane() const noexcept;
 
 	// Properties
 	bool isEmpty() const noexcept { return (a == T()) && (b == T()) && (c == T()) && (d == T()); }
@@ -154,7 +154,7 @@ struct HalfSpace<float>
 	template<> simd::float4& get() noexcept { return abcd; }
 	template<> const simd::float4& get() const noexcept { return abcd; }
 
-	Plane<float>::ConstResult asPlane() const noexcept;
+	const Plane<float> asPlane() const noexcept;
 
 	// Properties
 	bool isEmpty() const noexcept { return simd::all4(simd::equal(abcd, simd::zero<simd::float4>())); }
@@ -205,62 +205,6 @@ struct HalfSpace<float>
 const HalfSpace<float> HalfSpace<float>::EMPTY{};
 
 #endif /* SIMD_HAS_FLOAT4 */
-
-template<std::size_t I, typename T>
-inline T& get(HalfSpace<T>& h) noexcept
-{
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T& get(const HalfSpace<T>& h) noexcept
-{
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline T&& get(HalfSpace<T>&& h) noexcept
-{
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
-
-template<std::size_t I, typename T>
-inline const T&& get(HalfSpace<T>&& h) noexcept
-{
-	if constexpr (I == 0)
-		return h.a;
-	else if constexpr (I == 1)
-		return h.b;
-	else if constexpr (I == 2)
-		return h.c;
-	else if constexpr (I == 3)
-		return h.d;
-	static_assert(false);
-}
 
 template<typename T>
 inline HalfSpace<T>::HalfSpace<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2)
@@ -568,6 +512,62 @@ inline bool HalfSpace<float>::testIntersection(const Triangle3<float>& triangle)
 
 #endif /* SIMD_HAS_FLOAT4 */
 
+template<std::size_t I, typename T>
+inline T& get(HalfSpace<T>& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T& get(const HalfSpace<T>& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline T&& get(HalfSpace<T>&& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
+template<std::size_t I, typename T>
+inline const T&& get(HalfSpace<T>&& h) noexcept
+{
+	if constexpr (I == 0)
+		return h.a;
+	else if constexpr (I == 1)
+		return h.b;
+	else if constexpr (I == 2)
+		return h.c;
+	else if constexpr (I == 3)
+		return h.d;
+	static_assert(false);
+}
+
 } // namespace templates
 
 #if MATHEMATICS_DOUBLE
@@ -629,13 +629,19 @@ inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.
 {
 }
 
+template<typename T>
+inline const Plane<T>& asPlane() const 
+{ 
+	return reinterpret_cast<const Plane<T>&>(*this); 
+}
+
 #if SIMD_HAS_FLOAT4
 
 inline HalfSpace<float>::HalfSpace(const Plane<float>& p) : abcd(p.abcd)
 {
 }
 
-inline Plane<float>::ConstResult HalfSpace<float>::asPlane() const
+inline const Plane<float> HalfSpace<float>::asPlane() const
 { 
 	return Plane<float>(abcd); 
 }
