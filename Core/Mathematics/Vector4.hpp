@@ -988,12 +988,12 @@ inline Vector4<float> transform(const Vector4<float>& v, const Matrix4<float>& m
 }
 
 template<>
-inline Matrix4<float> tensor(const Vector4<float>& v1, const Vector4<float>& v2) noexcept // #TODO SIMD
+inline Matrix4<float> tensor(const Vector4<float>& v1, const Vector4<float>& v2) noexcept
 {
-	return Matrix4<float>(v1.x*v2.x, v1.x*v2.y, v1.x*v2.z, v1.x*v2.w,
-		v1.y*v2.x, v1.y*v2.y, v1.y*v2.z, v1.y*v2.w,
-		v1.z*v2.x, v1.z*v2.y, v1.z*v2.z, v1.z*v2.w,
-		v1.w*v2.x, v1.w*v2.y, v1.w*v2.z, v1.w*v2.w);
+	return Matrix4<float>(simd::mul4(simd::xxxx(v1), v2),
+		simd::mul4(simd::yyyy(v1), v2),
+		simd::mul4(simd::zzzz(v1), v2),
+		simd::mul4(simd::wwww(v1), v2));
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

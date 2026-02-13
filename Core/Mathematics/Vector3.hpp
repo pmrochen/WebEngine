@@ -1192,11 +1192,11 @@ inline Vector3<float> transform(const Vector3<float>& v, const AffineTransform<f
 }
 
 template<>
-inline Matrix3<float> tensor(const Vector3<float>& v1, const Vector3<float>& v2) noexcept // #TODO SIMD
+inline Matrix3<float> tensor(const Vector3<float>& v1, const Vector3<float>& v2) noexcept
 {
-	return Matrix3<float>(v1.x*v2.x, v1.x*v2.y, v1.x*v2.z,
-		v1.y*v2.x, v1.y*v2.y, v1.y*v2.z,
-		v1.z*v2.x, v1.z*v2.y, v1.z*v2.z);
+	return Matrix3<float>(simd::mul4(simd::xxxx(v1), v2),
+		simd::mul4(simd::yyyy(v1), v2),
+		simd::mul4(simd::zzzz(v1), v2));
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
