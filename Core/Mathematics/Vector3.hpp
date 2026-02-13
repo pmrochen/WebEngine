@@ -809,24 +809,6 @@ inline Vector3<T> slerp(const Vector3<T>& v1, const Vector3<T>& v2, T t)
 	return Vector3<T>(v1.x*ct + c.x*st, v1.y*ct + c.y*st, v1.z*ct + c.z*st);
 }
 
-template<typename T>
-inline Vector3<T> reflect(const Vector3<T>& i, const Vector3<T>& n) noexcept
-{
-	// #TODO
-}
-
-template<typename T>
-inline Vector3<T> refract(const Vector3<T>& i, const Vector3<T>& n, T etaRatio) noexcept
-{
-	// #TODO
-}
-
-template<typename T>
-inline Vector3<T> perpendicular(const Vector3<T>& v) noexcept
-{
-	// #TODO
-}
-
 #if SIMD_HAS_FLOAT4
 
 template<>
@@ -909,11 +891,60 @@ inline Vector3<float> slerp(const Vector3<float>& v1, const Vector3<float>& v2, 
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
+inline Vector3<T> perpendicular(const Vector3<T>& v) noexcept // #TODO SIMD
+{
+	int min = 0, a = 1, b = 2;
+
+	if (std::fabs(v.y) < std::fabs(v.x)) // #TODO Use getMinComponent()
+	{
+		a = min;
+		min = 1;
+	}
+
+	if (std::fabs(v.z) < std::fabs(v[min]))
+	{
+		b = min;
+		min = 2;
+	}
+
+	Vector3<T> u/*(Uninitialized())*/;
+	//u[min] = T(0);
+	u[a] = v[b];
+	u[b] = -v[a];
+	return u*(v.getMagnitude()/u.getMagnitude()); // #FIXME division by zero
+}
+
+template<typename T>
+inline Vector3<T> reflect(const Vector3<T>& i, const Vector3<T>& n) noexcept
+{
+	return i - T(2)*dot(i, n)*n;
+}
+
+template<typename T>
+inline Vector3<T> refract(const Vector3<T>& i, const Vector3<T>& n, T etaRatio) noexcept
+{
+	T cosI = dot(-i, n);
+	T cosT2 = T(1) - etaRatio*etaRatio*(T(1) - cosI*cosI);
+	return (cosT2 <= T(0)) ? Vector3<T>() : (etaRatio*i + ((etaRatio*cosI - std::sqrt(std::fabs(cosT2)))*n));
+}
+
+template<typename T>
 inline Vector3<T> normalize(const Vector3<T>& v) noexcept
 {
 	Vector3<T> u(v);
 	u.normalize();
 	return u;
+}
+
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Vector3<T> normalize(Vector3<T>&& v) noexcept
+{
+	v.normalize();
+	return v;
 }
 
 template<typename T>
@@ -1078,8 +1109,13 @@ inline Vector3<T> transform(const Vector3<T>& v, const AffineTransform<T>& m) no
 		v.x*m.m02 + v.y*m.m12 + v.z*m.m22 + m.m32);
 }
 
-//template<typename T>
-//inline Matrix3<T> tensor(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+template<typename T>
+inline Matrix3<T> tensor(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
+{
+	return Matrix3<T>(v1.x*v2.x, v1.x*v2.y, v1.x*v2.z,
+		v1.y*v2.x, v1.y*v2.y, v1.y*v2.z,
+		v1.z*v2.x, v1.z*v2.y, v1.z*v2.z);
+}
 
 #if SIMD_HAS_FLOAT4
 
@@ -1153,6 +1189,14 @@ inline Vector3<float> transform(const Vector3<float>& v, const AffineTransform<f
 	auto t = simd::mulAdd4(simd::xxxx(v), m.row0, simd::mul4(simd::yyyy(v), m.row1));
 	t = simd::add4(t, simd::mul4(simd::zzzz(v), m.row2));
 	return Vector3<float>(simd::add4(t, m.row3));
+}
+
+template<>
+inline Matrix3<float> tensor(const Vector3<float>& v1, const Vector3<float>& v2) noexcept // #TODO SIMD
+{
+	return Matrix3<float>(v1.x*v2.x, v1.x*v2.y, v1.x*v2.z,
+		v1.y*v2.x, v1.y*v2.y, v1.y*v2.z,
+		v1.z*v2.x, v1.z*v2.y, v1.z*v2.z);
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

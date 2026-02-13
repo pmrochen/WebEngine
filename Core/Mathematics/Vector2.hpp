@@ -709,7 +709,7 @@ inline Vector2<T> slerp(const Vector2<T>& v1, const Vector2<T>& v2, T t)
 template<typename T>
 inline Vector2<T> perpendicular(const Vector2<T>& v) noexcept
 {
-	// #TODO
+	return Vector2<T>(-v.y, v.x);
 }
 
 #if SIMD_HAS_FLOAT4
@@ -790,6 +790,16 @@ inline Vector2<float> slerp(const Vector2<float>& v1, const Vector2<float>& v2, 
 	return Vector2<float>(simd::mulAdd4(v1, simd::set4(ct), simd::mul4(c, simd::set4(st))));
 }
 
+template<>
+inline Vector2<float> perpendicular(const Vector2<float>& v) noexcept
+{
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	return Vector2<float>(simd::neg1(simd::yxxx(v)));
+#else
+	return Vector2<float>(simd::neg1(simd::yxzw(v)));
+#endif
+}
+
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
@@ -798,6 +808,17 @@ inline Vector2<T> normalize(const Vector2<T>& v) noexcept
 	Vector2<T> u(v);
 	u.normalize();
 	return u;
+}
+
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Vector2<T> normalize(Vector2<T>&& v) noexcept
+{
+	v.normalize();
+	return v;
 }
 
 template<typename T>

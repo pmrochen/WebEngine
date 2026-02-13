@@ -807,6 +807,17 @@ inline Vector4<T> normalize(const Vector4<T>& v) noexcept
 	return u;
 }
 
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Vector4<T> normalize(Vector4<T>&& v) noexcept
+{
+	v.normalize();
+	return v;
+}
+
 //template<typename T>
 //inline Vector4<T> project(const Vector4<T>& v1, const Vector4<T>& v2) noexcept
 //{
@@ -929,8 +940,14 @@ inline Vector4<T> transform(const Vector4<T>& v, const Matrix4<T>& m) noexcept
 	return v*m;
 }
 
-//template<typename T>
-//inline Matrix4<T> tensor(const Vector4<T>& v1, const Vector4<T>& v2) noexcept
+template<typename T>
+inline Matrix4<T> tensor(const Vector4<T>& v1, const Vector4<T>& v2) noexcept
+{
+	return Matrix4<T>(v1.x*v2.x, v1.x*v2.y, v1.x*v2.z, v1.x*v2.w,
+		v1.y*v2.x, v1.y*v2.y, v1.y*v2.z, v1.y*v2.w,
+		v1.z*v2.x, v1.z*v2.y, v1.z*v2.z, v1.z*v2.w,
+		v1.w*v2.x, v1.w*v2.y, v1.w*v2.z, v1.w*v2.w);
+}
 
 #if SIMD_HAS_FLOAT4
 
@@ -968,6 +985,15 @@ template<>
 inline Vector4<float> transform(const Vector4<float>& v, const Matrix4<float>& m) noexcept
 {
 	return v*m;
+}
+
+template<>
+inline Matrix4<float> tensor(const Vector4<float>& v1, const Vector4<float>& v2) noexcept // #TODO SIMD
+{
+	return Matrix4<float>(v1.x*v2.x, v1.x*v2.y, v1.x*v2.z, v1.x*v2.w,
+		v1.y*v2.x, v1.y*v2.y, v1.y*v2.z, v1.y*v2.w,
+		v1.z*v2.x, v1.z*v2.y, v1.z*v2.z, v1.z*v2.w,
+		v1.w*v2.x, v1.w*v2.y, v1.w*v2.z, v1.w*v2.w);
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
