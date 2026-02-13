@@ -733,6 +733,25 @@ inline const T&& get(const Plane<T>&& p) noexcept
 	static_assert(false);
 }
 
+template<typename T>
+inline Plane<T> normalize(const Plane<T>& p) noexcept
+{
+	Plane<T> u(p);
+	u.normalize();
+	return u;
+}
+
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Plane<T> normalize(Plane<T>&& p) noexcept
+{
+	p.normalize();
+	return p;
+}
+
 } // namespace templates
 
 #if MATHEMATICS_DOUBLE

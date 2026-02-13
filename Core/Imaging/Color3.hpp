@@ -727,6 +727,19 @@ inline Color3<T> saturate(const Color3<T>& c)
 	return Color3<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)));
 }
 
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Color3<T> saturate(Color3<T>&& c)
+{
+	c.r = std::clamp(c.r, T(0), T(1));
+	c.g = std::clamp(c.g, T(0), T(1));
+	c.b = std::clamp(c.b, T(0), T(1));
+	return c;
+}
+
 template<typename T>
 inline Color3<T> lerp(const Color3<T>& c1, const Color3<T>& c2, T t) noexcept
 {
@@ -739,10 +752,36 @@ inline Color3<T> makeLinear(const Color3<T>& c) noexcept
 	return Color3<T>(makeLinear(c.r), makeLinear(c.g), makeLinear(c.b));
 }
 
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Color3<T> makeLinear(Color3<T>&& c) noexcept
+{
+	c.r = makeLinear(c.r);
+	c.g = makeLinear(c.g);
+	c.b = makeLinear(c.b);
+	return c;
+}
+
 template<typename T>
 inline Color3<T> makeSrgb(const Color3<T>& c) noexcept
 {
-	return Color3<T>(makeSrgb(c.r), makeSrgb(c.g), make Srgb(c.b));
+	return Color3<T>(makeSrgb(c.r), makeSrgb(c.g), makeSrgb(c.b));
+}
+
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Color3<T> makeSrgb(Color3<T>&& c) noexcept
+{
+	c.r = makeSrgb(c.r);
+	c.g = makeSrgb(c.g);
+	c.b = makeSrgb(c.b);
+	return c;
 }
 
 #if SIMD_HAS_FLOAT4

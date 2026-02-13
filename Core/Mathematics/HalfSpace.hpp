@@ -568,6 +568,25 @@ inline const T&& get(HalfSpace<T>&& h) noexcept
 	static_assert(false);
 }
 
+template<typename T>
+inline HalfSpace<T> normalize(const HalfSpace<T>& h) noexcept
+{
+	HalfSpace<T> u(h);
+	u.normalize();
+	return u;
+}
+
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline HalfSpace<T> normalize(HalfSpace<T>&& h) noexcept
+{
+	h.normalize();
+	return h;
+}
+
 } // namespace templates
 
 #if MATHEMATICS_DOUBLE

@@ -946,6 +946,17 @@ inline Quaternion<T> normalize(const Quaternion<T>& q) noexcept
 	return r;
 }
 
+#if SIMD_HAS_FLOAT4
+template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
+#else
+template<typename T>
+#endif
+inline Quaternion<T> normalize(Quaternion<T>&& q) noexcept
+{
+	q.normalize();
+	return q;
+}
+
 //template<typename T>
 //inline T angle(const Quaternion<T>& q1, const Quaternion<T>& q1)
 //{
