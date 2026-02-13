@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <algorithm>
 #include <utility>
+#include <tuple>
 #include <cstddef>
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
@@ -36,6 +37,8 @@ struct Matrix2
 	//explicit Matrix2(Identity) noexcept {}
 	constexpr Matrix2(T m00, T m01, T m10, T m11) noexcept : m00(m00), m01(m01), m10(m10), m11(m11) {}
 	constexpr Matrix2(const Vector2<T>& row0, const Vector2<T>& row1) noexcept : m00(row0.x), m01(row0.y), m10(row1.x), m11(row1.y) {}
+	constexpr explicit Matrix2(const std::pair<Vector2<T>, Vector2<T>>& t) noexcept : Matrix2(t.first, t.second) {}
+	constexpr explicit Matrix2(const std::tuple<Vector2<T>, Vector2<T>>& t) noexcept : Matrix2(std::get<0>(t), std::get<1>(t)) {}
 	explicit Matrix2(const T* m) noexcept : m00(m[0]), m01(m[1]), m10(m[2]), m11(m[3]) {}
 
 	//explicit operator T*() noexcept { return &m00; }
@@ -133,9 +136,13 @@ struct Matrix2<float>
 	//explicit Matrix2(Identity) noexcept {}
 	/*constexpr*/ Matrix2(float m00, float m01, float m10, float m11) noexcept;
 	/*constexpr*/ Matrix2(const Vector2<float>& row0, const Vector2<float>& row1) noexcept : row0(row0), row1(row1) {}
+	/*constexpr*/ explicit Matrix2(const std::pair<Vector2<float>, Vector2<float>>& t) noexcept : Matrix2(t.first, t.second) {}
+	/*constexpr*/ explicit Matrix2(const std::tuple<Vector2<float>, Vector2<float>>& t) noexcept : Matrix2(std::get<0>(t), std::get<1>(t)) {}
 	explicit Matrix2(const float* m) noexcept;
 	explicit Matrix2(const simd::float4* m) noexcept : row0(m[0]), row1(m[1]) {}
 	Matrix2(simd::float4 row0, simd::float4 row1) noexcept : row0(row0), row1(row1) {}
+	explicit Matrix2(const std::pair<simd::float4, simd::float4>& t) noexcept : row0(t.first), row1(t.second) {}
+	explicit Matrix2(const std::tuple<simd::float4, simd::float4>& t) noexcept : row0(std::get<0>(t)), row1(std::get<1>(t)) {}
 	Matrix2(const Matrix2& m) noexcept : row0(m.row0), row1(m.row1) {}
 	Matrix2& operator=(const Matrix2& m) noexcept { row0 = m.row0; row1 = m.row1; return *this; }
 

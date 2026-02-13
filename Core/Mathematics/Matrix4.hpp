@@ -10,6 +10,7 @@
 #include <limits>
 #include <type_traits>
 #include <algorithm>
+#include <tuple>
 #include <cstddef>
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
@@ -52,6 +53,7 @@ struct Matrix4
 	//explicit Matrix4(Identity) noexcept {}
 	constexpr Matrix4(T m00, T m01, T m02, T m03, T m10, T m11, T m12, T m13, T m20, T m21, T m22, T m23, T m30, T m31, T m32, T m33) noexcept;
 	constexpr Matrix4(const Vector4<T>& row0, const Vector4<T>& row1, const Vector4<T>& row2, const Vector4<T>& row3) noexcept;
+	constexpr explicit Matrix4(const std::tuple<Vector4<T>, Vector4<T>, Vector4<T>, Vector4<T>>& t) noexcept;
 	constexpr Matrix4(const Matrix2<T>& m) noexcept;
 	constexpr Matrix4(const Matrix3<T>& m) noexcept;
 	constexpr Matrix4(const AffineTransform<T>& m) noexcept;
@@ -205,12 +207,14 @@ struct Matrix4<float>
 	//explicit Matrix4(Identity) noexcept {}
 	/*constexpr*/ Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) noexcept;
 	/*constexpr*/ Matrix4(const Vector4<float>& row0, const Vector4<float>& row1, const Vector4<float>& row2, const Vector4<float>& row3) noexcept;
+	/*constexpr*/ explicit Matrix4(const std::tuple<Vector4<float>, Vector4<float>, Vector4<float>, Vector4<float>>& t) noexcept;
 	/*constexpr*/ Matrix4(const Matrix2<float>& m) noexcept;
 	/*constexpr*/ Matrix4(const Matrix3<float>& m) noexcept;
 	/*constexpr*/ Matrix4(const Affinefloatransform<float>& m) noexcept;
 	explicit Matrix4(const float* m) noexcept;
 	explicit Matrix4(const simd::float4* m) noexcept : row0(m[0]), row1(m[1]), row2(m[2]), row3(m[3]) {}
 	Matrix4(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) noexcept;
+	explicit Matrix4(const std::tuple<simd::float4, simd::float4, simd::float4, simd::float4>& t) noexcept;
 	Matrix4(const Matrix4& m) noexcept : row0(m.row0), row1(m.row1), row2(m.row2), row3(m.row3) {}
 	Matrix4& operator=(const Matrix4& m) noexcept { row0 = m.row0; row1 = m.row1; row2 = m.row2; row3 = m.row3; return *this; }
 
@@ -371,6 +375,12 @@ template<typename T>
 inline Matrix4<T>::Matrix4(const Vector4<T>& row0, const Vector4<T>& row1, const Vector4<T>& row2, const Vector4<T>& row3) :
 	m00(row0.x), m01(row0.y), m02(row0.z), m03(row0.w), m10(row1.x), m11(row1.y), m12(row1.z), m13(row1.w),
 	m20(row2.x), m21(row2.y), m22(row2.z), m23(row2.w), m30(row3.x), m31(row3.y), m32(row3.z), m33(row3.w) 
+{
+}
+
+template<typename T>
+inline Matrix4<T>::Matrix4(const std::tuple<Vector3<T>, Vector3<T>, Vector3<T>, Vector3<T>>& t) :
+	Matrix4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))
 {
 }
 
@@ -623,6 +633,11 @@ inline Matrix4<float>::Matrix4(const Vector4<float>& row0, const Vector4<float>&
 {
 }
 
+inline Matrix4<float>::Matrix4(const std::tuple<Vector3<float>, Vector3<float>, Vector3<float>, Vector3<float>>& t) :
+	Matrix4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))
+{
+}
+
 inline Matrix4<float>::Matrix4(const Matrix2<float>& m) : 
 	row0(simd::cutoff2(m.row0)),
 	row1(simd::cutoff2(m.row1)),
@@ -656,7 +671,18 @@ inline Matrix4<float>::Matrix4(const float* m) :
 }
 
 inline Matrix4<float>::Matrix4(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) :
-	row0(row0), row1(row1), row2(row2), row3(row3) 
+	row0(row0), 
+	row1(row1), 
+	row2(row2), 
+	row3(row3) 
+{
+}
+
+inline Matrix4<float>::Matrix4(const std::tuple<simd::float4, simd::float4, simd::float4, simd::float4>& t) :
+	row0(std::get<0>(t)), 
+	row1(std::get<1>(t)), 
+	row2(std::get<2>(t)), 
+	row3(std::get<3>(t))
 {
 }
 
