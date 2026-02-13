@@ -48,6 +48,7 @@ template<typename T> inline T yzxx(T v) { return swizzle<Y, Z, X, X>(v); }
 template<typename T> inline T yzxw(T v) { return swizzle<Y, Z, X, W>(v); }
 template<typename T> inline T yzww(T v) { return swizzle<Y, Z, W, W>(v); }
 template<typename T> inline T ywww(T v) { return swizzle<Y, W, W, W>(v); }
+template<typename T> inline T yxzz(T v) { return swizzle<Y, X, Z, Z>(v); }
 template<typename T> inline T yxzw(T v) { return swizzle<Y, X, Z, W>(v); }
 template<typename T> inline T yxwz(T v) { return swizzle<Y, X, W, Z>(v); }
 template<typename T> inline T zxxx(T v) { return swizzle<Z, X, X, X>(v); }
