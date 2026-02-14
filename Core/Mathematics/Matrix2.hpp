@@ -99,8 +99,8 @@ struct Matrix2
 	Matrix2& preScale(T f) noexcept { (*this) *= f; return *this; }
 	Matrix2& scale(const Vector2<T>& v) noexcept;
 	Matrix2& scale(T f) noexcept { (*this) *= f; return *this; }
-	Matrix2& rotate(T angle) noexcept { concatenate(Matrix2(Uninitialized()).setRotation(angle)); return *this; }
-	Matrix2& shear(T xy, T yx) noexcept { concatenate(Matrix2(Uninitialized()).setShearing(xy, yx)); return *this; }
+	//Matrix2& rotate(T angle) noexcept { concatenate(Matrix2(Uninitialized()).setRotation(angle)); return *this; }
+	//Matrix2& shear(T xy, T yx) noexcept { concatenate(Matrix2(Uninitialized()).setShearing(xy, yx)); return *this; }
 	Matrix2& negate() noexcept;
 	Matrix2& transpose() noexcept;
 	Matrix2& invert() noexcept;
@@ -206,8 +206,8 @@ struct Matrix2<float>
 	Matrix2& preScale(float f) noexcept { (*this) *= f; return *this; }
 	Matrix2& scale(const Vector2<float>& v) noexcept;
 	Matrix2& scale(float f) noexcept { (*this) *= f; return *this; }
-	Matrix2& rotate(float angle) noexcept { concatenate(Matrix2(Uninitialized()).setRotation(angle)); return *this; }
-	Matrix2& shear(float xy, float yx) noexcept { concatenate(Matrix2(Uninitialized()).setShearing(xy, yx)); return *this; }
+	//Matrix2& rotate(float angle) noexcept { concatenate(Matrix2(Uninitialized()).setRotation(angle)); return *this; }
+	//Matrix2& shear(float xy, float yx) noexcept { concatenate(Matrix2(Uninitialized()).setShearing(xy, yx)); return *this; }
 	Matrix2& negate() noexcept;
 	Matrix2& transpose() noexcept;
 	Matrix2& invert() noexcept;

@@ -163,12 +163,12 @@ struct AffineTransform
 	AffineTransform& preScale(T f) noexcept;
 	AffineTransform& scale(const Vector3<T>& v) noexcept;
 	AffineTransform& scale(T f) noexcept;
-	AffineTransform& rotate(Axis axis, T angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
-	AffineTransform& rotate(const Vector3<T>& axis, T angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
-	AffineTransform& rotate(const YawPitchRoll<T>& r) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(r)); return *this; }
-	AffineTransform& rotate(const Euler<T>& e) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(e)); return *this; }
-	AffineTransform& rotate(const Quaternion<T>& q) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(q)); return *this; }
-	AffineTransform& shear(T xy, T xz, T yx, T yz, T zx, T zy) noexcept { concatenate(AffineTransform(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
+	//AffineTransform& rotate(Axis axis, T angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//AffineTransform& rotate(const Vector3<T>& axis, T angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//AffineTransform& rotate(const YawPitchRoll<T>& r) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(r)); return *this; }
+	//AffineTransform& rotate(const Euler<T>& e) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(e)); return *this; }
+	//AffineTransform& rotate(const Quaternion<T>& q) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(q)); return *this; }
+	//AffineTransform& shear(T xy, T xz, T yx, T yz, T zx, T zy) noexcept { concatenate(AffineTransform(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
 	AffineTransform& invert() noexcept;
 	AffineTransform& invertOrthogonal() noexcept;
 	//template<typename U = void> AffineTransform& invert() noexcept;
@@ -331,12 +331,12 @@ struct AffineTransform<float>
 	AffineTransform& preScale(float f) noexcept;
 	AffineTransform& scale(const Vector3<float>& v) noexcept;
 	AffineTransform& scale(float f) noexcept;
-	AffineTransform& rotate(Axis axis, float angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
-	AffineTransform& rotate(const Vector3<float>& axis, float angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
-	AffineTransform& rotate(const YawPitchRoll<float>& r) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(r)); return *this; }
-	AffineTransform& rotate(const Euler<float>& e) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(e)); return *this; }
-	AffineTransform& rotate(const Quaternion<float>& q) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(q)); return *this; }
-	AffineTransform& shear(float xy, float xz, float yx, float yz, float zx, float zy) noexcept { concatenate(AffineTransform(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
+	//AffineTransform& rotate(Axis axis, float angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//AffineTransform& rotate(const Vector3<float>& axis, float angle) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//AffineTransform& rotate(const YawPitchRoll<float>& r) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(r)); return *this; }
+	//AffineTransform& rotate(const Euler<float>& e) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(e)); return *this; }
+	//AffineTransform& rotate(const Quaternion<float>& q) noexcept { concatenate(AffineTransform(Uninitialized()).setRotation(q)); return *this; }
+	//AffineTransform& shear(float xy, float xz, float yx, float yz, float zx, float zy) noexcept { concatenate(AffineTransform(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
 	AffineTransform& invert() noexcept;
 	template<typename U = void> AffineTransform& invert() noexcept;
 	//template<> AffineTransform& invert<Orthogonal>/*invertOrthogonal*/() noexcept;

@@ -130,12 +130,12 @@ struct Matrix3
 	Matrix3& preScale(T f) noexcept { (*this) *= f; return *this; }
 	Matrix3& scale(const Vector3<T>& v) noexcept;
 	Matrix3& scale(T f) noexcept { (*this) *= f; return *this; }
-	Matrix3& rotate(Axis axis, T angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
-	Matrix3& rotate(const Vector3<T>& axis, T angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
-	Matrix3& rotate(const YawPitchRoll<T>& r) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(r)); return *this; }
-	Matrix3& rotate(const Euler<T>& e) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(e)); return *this; }
-	Matrix3& rotate(const Quaternion<T>& q) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(q)); return *this; }
-	Matrix3& shear(T xy, T xz, T yx, T yz, T zx, T zy) noexcept { concatenate(Matrix3(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
+	//Matrix3& rotate(Axis axis, T angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//Matrix3& rotate(const Vector3<T>& axis, T angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//Matrix3& rotate(const YawPitchRoll<T>& r) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(r)); return *this; }
+	//Matrix3& rotate(const Euler<T>& e) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(e)); return *this; }
+	//Matrix3& rotate(const Quaternion<T>& q) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(q)); return *this; }
+	//Matrix3& shear(T xy, T xz, T yx, T yz, T zx, T zy) noexcept { concatenate(Matrix3(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
 	Matrix3& negate() noexcept;
 	Matrix3& transpose() noexcept;
 	Matrix3& invert() noexcept;
@@ -271,12 +271,12 @@ struct Matrix3<float>
 	Matrix3& preScale(float f) noexcept { (*this) *= f; return *this; }
 	Matrix3& scale(const Vector3<float>& v) noexcept;
 	Matrix3& scale(float f) noexcept { (*this) *= f; return *this; }
-	Matrix3& rotate(Axis axis, float angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
-	Matrix3& rotate(const Vector3<float>& axis, float angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
-	Matrix3& rotate(const YawPitchRoll<float>& r) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(r)); return *this; }
-	Matrix3& rotate(const Euler<float>& e) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(e)); return *this; }
-	Matrix3& rotate(const Quaternion<float>& q) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(q)); return *this; }
-	Matrix3& shear(float xy, float xz, float yx, float yz, float zx, float zy) noexcept { concatenate(Matrix3(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
+	//Matrix3& rotate(Axis axis, float angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//Matrix3& rotate(const Vector3<float>& axis, float angle) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(axis, angle)); return *this; }
+	//Matrix3& rotate(const YawPitchRoll<float>& r) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(r)); return *this; }
+	//Matrix3& rotate(const Euler<float>& e) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(e)); return *this; }
+	//Matrix3& rotate(const Quaternion<float>& q) noexcept { concatenate(Matrix3(Uninitialized()).setRotation(q)); return *this; }
+	//Matrix3& shear(float xy, float xz, float yx, float yz, float zx, float zy) noexcept { concatenate(Matrix3(Uninitialized()).setShearing(xy, xz, yx, yz, zx, zy)); return *this; }
 	Matrix3& negate() noexcept;
 	Matrix3& transpose() noexcept;
 	Matrix3& invert() noexcept;
