@@ -256,9 +256,9 @@ struct Color3<float>
 	template<typename U> U toXyz() const { return rgbToXyz<U>(rgb); }
 
 	bool isZero() const noexcept { return simd::all3(simd::equal(rgb, simd::zero<simd::float4>())); }
-	bool isApproxZero() const noexcept { simd::all3(simd::lessThan(simd::abs4(rgb), TOLERANCE)); }
-	bool isApproxEqual(const Color3& c) const noexcept { simd::all3(simd::lessThan(simd::abs4(simd::sub4(rgb, c)), TOLERANCE)); }
-	bool isApproxEqual(const Color3& c, float tolerance) const noexcept { simd::all3(simd::lessThan(simd::abs4(simd::sub4(rgb, c)), simd::set4(tolerance))); }
+	bool isApproxZero() const noexcept { return simd::all3(simd::lessThan(simd::abs4(rgb), TOLERANCE)); }
+	bool isApproxEqual(const Color3& c) const noexcept { return simd::all3(simd::lessThan(simd::abs4(simd::sub4(rgb, c)), TOLERANCE)); }
+	bool isApproxEqual(const Color3& c, float tolerance) const noexcept { return simd::all3(simd::lessThan(simd::abs4(simd::sub4(rgb, c)), simd::set4(tolerance))); }
 	bool allLessThan(const Color3& c) const noexcept { return simd::all3(simd::lessThan(rgb, c)); }
 	bool allLessThanEqual(const Color3& c) const noexcept { return simd::all3(simd::lessThanEqual(rgb, c)); }
 	bool allGreaterThan(const Color3& c) const noexcept { return simd::all3(simd::greaterThan(rgb, c)); }

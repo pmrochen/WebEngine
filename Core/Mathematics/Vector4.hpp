@@ -225,9 +225,9 @@ struct Vector4<float>
 	//void setXY(Vector2<float>::ConstArg v) noexcept { xyzw = simd::insert2(v, xyzw); }
 	//void setXYZ(Vector3<float>::ConstArg v) noexcept { xyzw = simd::insert3(v, xyzw); }
 	bool isZero() const noexcept { return simd::all4(simd::equal(xyzw, simd::zero<simd::float4>())); }
-	bool isApproxZero() const noexcept { simd::all4(simd::lessThan(simd::abs4(xyzw), TOLERANCE)); }
-	bool isApproxEqual(const Vector4& v) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, v)), TOLERANCE)); }
-	bool isApproxEqual(const Vector4& v, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, v)), simd::set4(tolerance))); }
+	bool isApproxZero() const noexcept { return simd::all4(simd::lessThan(simd::abs4(xyzw), TOLERANCE)); }
+	bool isApproxEqual(const Vector4& v) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, v)), TOLERANCE)); }
+	bool isApproxEqual(const Vector4& v, float tolerance) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, v)), simd::set4(tolerance))); }
 	bool allLessThan(const Vector4& v) const noexcept { return simd::all4(simd::lessThan(xyzw, v)); }
 	bool allLessThanEqual(const Vector4& v) const noexcept { return simd::all4(simd::lessThanEqual(xyzw, v)); }
 	bool allGreaterThan(const Vector4& v) const noexcept { return simd::all4(simd::greaterThan(xyzw, v)); }
