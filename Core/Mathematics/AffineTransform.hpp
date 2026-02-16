@@ -114,7 +114,7 @@ struct AffineTransform
 	bool hasApproxUniformScaling() const noexcept { return getBasis().hasApproxUniformScaling(); }
 	bool isFinite() const noexcept;
 	const Vector3<T>& getRow(int i) const noexcept { return reinterpret_cast<const Vector3<T>*>(&m00)[i]; }
-	Vector4<T> getColumn(int i) const noexcept;
+	Vector4<T> getColumn(int i) const noexcept { return Vector4<T>((&m00)[i], (&m10)[i], (&m20)[i], (&m30)[i]); }
 	Vector3<T> getScaleComponent() const noexcept { return getBasis().getScaleComponent(); }
 	//Vector3<T>& getOrigin() noexcept { return *reinterpret_cast<Vector3<T>*>(&m30); }
 	const Vector3<T>& getOrigin() const noexcept { return *reinterpret_cast<const Vector3<T>*>(&m30); }
@@ -282,7 +282,7 @@ struct AffineTransform<float>
 	bool hasApproxUniformScaling() const noexcept { return getBasis().hasApproxUniformScaling(); }
 	bool isFinite() const noexcept;
 	const Vector3<float>& getRow(int i) const noexcept { return reinterpret_cast<const Vector3<float>&>((&row0)[i]); }
-	Vector4<float> getColumn(int i) const noexcept;
+	Vector4<float> getColumn(int i) const noexcept; // #TODO
 	Vector3<float> getScaleComponent() const noexcept { return getBasis().getScaleComponent(); }
 	//Vector3<float>& getOrigin() noexcept { return *reinterpret_cast<Vector3<float>*>(&m30); }
 	const Vector3<float>& getOrigin() const noexcept { return *reinterpret_cast<const Vector3<float>*>(&m30); }
@@ -500,6 +500,75 @@ inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const A
 		m.m10 << WS << m.m11 << WS << m.m12 << WS <<
 		m.m20 << WS << m.m21 << WS << m.m22 << WS <<
 		m.m30 << WS << m.m31 << WS << m.m32;
+}
+
+template<typename T>
+inline bool AffineTransform<T>::isIdentity() const
+{
+	return (m00 == T(1)) && (m01 == T()) && (m02 == T()) &&
+		(m10 == T()) && (m11 == T(1)) && (m12 == T()) &&
+		(m20 == T()) && (m21 == T()) && (m22 == T(1)) &&
+		(m30 == T()) && (m31 == T()) && (m32 == T());
+}
+
+template<typename T>
+inline bool AffineTransform<T>::isApproxIdentity() const
+{
+	return (std::fabs(T(1) - m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m02) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(T(1) - m11) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m12) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m20) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m21) < Constants<T>::TOLERANCE) &&
+		(std::fabs(T(1) - m22) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m30) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m31) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m32) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool AffineTransform<T>::isApproxEqual(const AffineTransform<T>& m) const
+{
+	return (std::fabs(m.m00 - m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m01 - m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m02 - m02) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m10 - m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m11 - m11) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m12 - m12) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m20 - m20) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m21 - m21) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m22 - m22) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m30 - m30) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m31 - m31) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m32 - m32) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool AffineTransform<T>::isApproxEqual(const AffineTransform<T>& m, T tolerance) const
+{
+	return (std::fabs(m.m00 - m00) < tolerance) &&
+		(std::fabs(m.m01 - m01) < tolerance) &&
+		(std::fabs(m.m02 - m02) < tolerance) &&
+		(std::fabs(m.m10 - m10) < tolerance) &&
+		(std::fabs(m.m11 - m11) < tolerance) &&
+		(std::fabs(m.m12 - m12) < tolerance) &&
+		(std::fabs(m.m20 - m20) < tolerance) &&
+		(std::fabs(m.m21 - m21) < tolerance) &&
+		(std::fabs(m.m22 - m22) < tolerance) &&
+		(std::fabs(m.m30 - m30) < tolerance) &&
+		(std::fabs(m.m31 - m31) < tolerance) &&
+		(std::fabs(m.m32 - m32) < tolerance);
+}
+
+template<typename T>
+inline bool AffineTransform<T>::isFinite() const
+{
+	return std::isfinite(m00) && std::isfinite(m01) && std::isfinite(m02) &&
+		std::isfinite(m10) && std::isfinite(m11) && std::isfinite(m12) &&
+		std::isfinite(m20) && std::isfinite(m21) && std::isfinite(m22) &&
+		std::isfinite(m30) && std::isfinite(m31) && std::isfinite(m32);
 }
 
 template<typename T>
@@ -725,21 +794,37 @@ inline void AffineTransform<float>::load(A& ar)
 	set(t00, t01, t02, t10, t11, t12, t20, t21, t22, t30, t31, t32);
 }
 
-inline bool AffineTransform<float>::isZero() const
-{
-	const auto zero = simd::zero<simd::float4>();
-	return simd::all3(simd::equal(row0, zero)) && 
-		simd::all3(simd::equal(row1, zero)) && 
-		simd::all3(simd::equal(row2, zero)) && 
-		simd::all3(simd::equal(row3, zero));
-}
-
 inline bool AffineTransform<float>::isIdentity() const
 {
 	return simd::all3(simd::equal(row0, Vector3<float>::UNIT_X)) &&
 		simd::all3(simd::equal(row1, Vector3<float>::UNIT_Y)) &&
 		simd::all3(simd::equal(row2, Vector3<float>::UNIT_Z)) &&
 		simd::all3(simd::equal(row3, simd::zero<simd::float4>()));
+}
+
+inline bool AffineTransform<float>::isApproxIdentity() const
+{
+	return simd::all3(simd::lessThan(simd::abs4(simd::sub4(row0, Vector3<float>::UNIT_X)), Vector3<float>::TOLERANCE)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row1, Vector3<float>::UNIT_Y)), Vector3<float>::TOLERANCE)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row2, Vector3<float>::UNIT_Z)), Vector3<float>::TOLERANCE)) &&
+		simd::all3(simd::lessThan(simd::abs4(row3), Vector3<float>::TOLERANCE));
+}
+
+inline bool AffineTransform<float>::isApproxEqual(const AffineTransform& m) const
+{
+	return simd::all3(simd::lessThan(simd::abs4(simd::sub4(row0, m.row0)), Vector3<float>::TOLERANCE)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row1, m.row1)), Vector3<float>::TOLERANCE)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row2, m.row2)), Vector3<float>::TOLERANCE)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row3, m.row3)), Vector3<float>::TOLERANCE));
+}
+
+inline bool AffineTransform<float>::isApproxEqual(const AffineTransform& m, float tolerance) const
+{
+	auto t = simd::set4(tolerance);
+	return simd::all3(simd::lessThan(simd::abs4(simd::sub4(row0, m.row0)), t)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row1, m.row1)), t)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row2, m.row2)), t)) &&
+		simd::all3(simd::lessThan(simd::abs4(simd::sub4(row3, m.row3)), t));
 }
 
 inline bool AffineTransform<float>::isFinite() const
@@ -828,7 +913,14 @@ inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const Affine
 template<typename T>
 inline AffineTransform<T> inverse(const AffineTransform<T>& m) noexcept
 {
-	return Matrix4<T>(Uninitialized()).setInverse(m);
+	return AffineTransform<T>(Uninitialized()).setInverse(m);
+}
+
+template<typename T>
+inline AffineTransform<T> inverse(AffineTransform<T>&& m) noexcept
+{
+	m.invert();
+	return m;
 }
 
 template<typename T>
@@ -842,11 +934,42 @@ inline AffineTransform<T> inverseOrthogonal(const AffineTransform<T>& m) noexcep
 	return n;
 }
 
+template<typename T>
+inline AffineTransform<T> inverseOrthogonal(AffineTransform<T>&& m) noexcept
+{
+	T t = m.m01; m.m01 = m.m10; m.m10 = t;
+	t = m.m02; m.m02 = m.m20; m.m20 = t;
+	t = m.m12; m.m12 = m.m21; m.m21 = t;
+	m[3] = -(m[3]*m.getBasis());
+	return m;
+}
+
 //template<typename U = void, typename T>
 //inline AffineTransform<T> inverse(const AffineTransform<T>& m) noexcept
 //{
 //	return Matrix4<T>(Uninitialized()).setInverse<U>(m);
 //}
+
+#if SIMD_HAS_FLOAT4
+
+template<>
+inline AffineTransform<float> inverseOrthogonal(const AffineTransform<float>& m) noexcept
+{
+	AffineTransform<T> n(m.row0, m.row1, m.row2, m.row3);
+	simd::transpose3x3(n.row0, n.row1, n.row2);
+	n[3] = -(m[3]*n.getBasis());
+	return n;
+}
+
+template<>
+inline AffineTransform<float> inverseOrthogonal(AffineTransform<float>&& m) noexcept
+{
+	simd::transpose3x3(m.row0, m.row1, m.row2);
+	m[3] = -(m[3]*m.getBasis());
+	return m;
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
 
 } // namespace templates
 

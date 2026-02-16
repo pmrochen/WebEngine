@@ -18,6 +18,7 @@
 #include "Constants.hpp"
 #include "Scalar.hpp"
 #include "Vector2.hpp"
+#include "Vector4.hpp"
 
 namespace core::mathematics {
 namespace templates {
@@ -76,10 +77,10 @@ struct Matrix2
 	bool hasApproxUniformScaling() const noexcept;
 	bool isFinite() const noexcept { return std::isfinite(m00) && std::isfinite(m01) && std::isfinite(m10) && std::isfinite(m11); }
 	const Vector2<T>& getRow(int i) const noexcept { return reinterpret_cast<const Vector2<T>*>(&m00)[i]; }
-	Vector2<T> getColumn(int i) const noexcept;
+	Vector2<T> getColumn(int i) const noexcept { return Vector2<T>((&m00)[i], (&m10)[i]); }
 	Vector2<T> getScaleComponent() const noexcept { return Vector2<T>((*this)[0].getMagnitude(), (*this)[1].getMagnitude()); }
-	T getTrace() const noexcept { return m00 + m11; }
-	T getDeterminant() const noexcept;
+	T getTrace() const noexcept { return (m00 + m11); }
+	T getDeterminant() const noexcept { return (m00*m11 - m01*m10); }
 	bool isSingular() const noexcept { return (getDeterminant() == T(0)); }
 	Matrix2& setZero/*zero*/() noexcept { m00 = T(); m01 = T(); m10 = T(); m11 = T(); return *this; }
 	Matrix2& setIdentity/*makeIdentity*/() noexcept { m00 = T(1); m01 = T(); m10 = T(); m11 = T(1); return *this; }
@@ -94,11 +95,11 @@ struct Matrix2
 	Matrix2& setInverse/*inverseOf*/(const Matrix2& m) noexcept;
 	Matrix2& setInverseTranspose/*inverseTransposeOf*/(const Matrix2& m) noexcept;
 	Matrix2& preConcatenate(const Matrix2& m) noexcept;
-	Matrix2& concatenate(const Matrix2& m) noexcept;
+	Matrix2& concatenate(const Matrix2& m) noexcept { return operator*=(m); }
 	Matrix2& preScale(const Vector2<T>& v) noexcept;
-	Matrix2& preScale(T f) noexcept { (*this) *= f; return *this; }
+	Matrix2& preScale(T f) noexcept { return operator*=(f); }
 	Matrix2& scale(const Vector2<T>& v) noexcept;
-	Matrix2& scale(T f) noexcept { (*this) *= f; return *this; }
+	Matrix2& scale(T f) noexcept { return operator*=(f); }
 	//Matrix2& rotate(T angle) noexcept { concatenate(Matrix2(Uninitialized()).setRotation(angle)); return *this; }
 	//Matrix2& shear(T xy, T yx) noexcept { concatenate(Matrix2(Uninitialized()).setShearing(xy, yx)); return *this; }
 	Matrix2& negate() noexcept;
@@ -173,9 +174,9 @@ struct Matrix2<float>
 	static Matrix2 getScalingRotation(const Vector2<float>& s, float angle) noexcept { return Matrix2(Uninitialized()).setScalingRotation(s, angle); }
 	static Matrix2 getShearing(float xy, float yx) noexcept { return Matrix2(Uninitialized()).setShearing(xy, yx); }
 
-	bool isZero() const noexcept { return simd::all4(simd::equal(simd::pack2x2(row0, row1), simd::zero<simd::float4>())); }
+	bool isZero() const noexcept;
 	bool isApproxZero() const noexcept;
-	bool isIdentity() const noexcept { return simd::all4(simd::equal(simd::pack2x2(row0, row1), simd::constant4<simd::float4, 1, 0, 0, 1>())); }
+	bool isIdentity() const noexcept;
 	bool isApproxIdentity() const noexcept;
 	bool isApproxEqual(const Matrix2& m) const noexcept;
 	bool isApproxEqual(const Matrix2& m, float tolerance) const noexcept;
@@ -183,10 +184,10 @@ struct Matrix2<float>
 	bool hasApproxUniformScaling() const noexcept;
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(simd::pack2x2(row0, row1))); }
 	const Vector2<float>& getRow(int i) const noexcept { return reinterpret_cast<const Vector2<float>&>((&row0)[i]); }
-	Vector2<float> getColumn(int i) const noexcept;
+	Vector2<float> getColumn(int i) const noexcept; // #TODO
 	Vector2<float> getScaleComponent() const noexcept { return Vector2<float>((*this)[0].getMagnitude(), (*this)[1].getMagnitude()); }
-	float getTrace() const noexcept { return m00 + m11; }
-	float getDeterminant() const noexcept;
+	float getTrace() const noexcept { return (m00 + m11); }
+	float getDeterminant() const noexcept { return (m00*m11 - m01*m10); } // #TODO SIMD
 	bool isSingular() const noexcept { return (getDeterminant() == 0.f); }
 	Matrix2& setZero/*zero*/() noexcept { row0 = simd::zero<simd::float4>(); row1 = simd::zero<simd::float4>(); return *this; }
 	Matrix2& setIdentity/*makeIdentity*/() noexcept { row0 = Vector2<float>::UNIT_X; row1 = Vector2<float>::UNIT_Y; return *this; }
@@ -201,11 +202,11 @@ struct Matrix2<float>
 	Matrix2& setInverse/*inverseOf*/(const Matrix2& m) noexcept;
 	Matrix2& setInverseTranspose/*inverseTransposeOf*/(const Matrix2& m) noexcept;
 	Matrix2& preConcatenate(const Matrix2& m) noexcept;
-	Matrix2& concatenate(const Matrix2& m) noexcept;
+	Matrix2& concatenate(const Matrix2& m) noexcept { return operator*=(m); }
 	Matrix2& preScale(const Vector2<float>& v) noexcept;
-	Matrix2& preScale(float f) noexcept { (*this) *= f; return *this; }
+	Matrix2& preScale(float f) noexcept { return operator*=(f); }
 	Matrix2& scale(const Vector2<float>& v) noexcept;
-	Matrix2& scale(float f) noexcept { (*this) *= f; return *this; }
+	Matrix2& scale(float f) noexcept { return operator*=(f); }
 	//Matrix2& rotate(float angle) noexcept { concatenate(Matrix2(Uninitialized()).setRotation(angle)); return *this; }
 	//Matrix2& shear(float xy, float yx) noexcept { concatenate(Matrix2(Uninitialized()).setShearing(xy, yx)); return *this; }
 	Matrix2& negate() noexcept;
@@ -317,6 +318,54 @@ inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const M
 {
 	constexpr C WS(0x20);
 	return s << m.m00 << WS << m.m01 << WS << m.m10 << WS << m.m11;
+}
+
+template<typename T>
+inline bool Matrix2<T>::isApproxZero() const
+{
+	return (std::fabs(m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m11) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Matrix2<T>::isApproxIdentity() const
+{
+	return (std::fabs(T(1) - m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(T(1) - m11) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Matrix2<T>::isApproxEqual(const Matrix2<T>& m) const
+{
+	return (std::fabs(m.m00 - m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m01 - m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m10 - m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m11 - m11) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Matrix2<T>::isApproxEqual(const Matrix2<T>& m, T tolerance) const
+{
+	return (std::fabs(m.m00 - m00) < tolerance) &&
+		(std::fabs(m.m01 - m01) < tolerance) &&
+		(std::fabs(m.m10 - m10) < tolerance) &&
+		(std::fabs(m.m11 - m11) < tolerance);
+}
+
+template<typename T>
+inline bool Matrix2<T>::isApproxOrthogonal() const
+{
+	// #TODO
+}
+
+template<typename T>
+inline bool Matrix2<T>::hasApproxUniformScaling() const
+{
+	// #TODO
 }
 
 #if SIMD_HAS_FLOAT4
@@ -463,6 +512,49 @@ inline void Matrix2<float>::load(A& ar)
 	set(t00, t01, t10, t11);
 }
 
+inline bool Matrix2<float>::isZero() const
+{ 
+	return simd::all4(simd::equal(simd::pack2x2(row0, row1), simd::zero<simd::float4>())); 
+}
+
+inline bool Matrix2<float>::isApproxZero() const
+{ 
+	simd::all4(simd::lessThan(simd::abs4(simd::pack2x2(row0, row1)), Vector4<float>::TOLERANCE)); 
+}
+
+inline bool Matrix2<float>::isIdentity() const
+{ 
+	return simd::all4(simd::equal(simd::pack2x2(row0, row1), simd::constant4<simd::float4, 1, 0, 0, 1>())); 
+}
+
+inline bool Matrix2<float>::isApproxIdentity() const
+{
+	return simd::all4(simd::lessThan(simd::abs4(simd::sub4(simd::pack2x2(row0, row1), simd::constant4<simd::float4, 1, 0, 0, 1>())), 
+		Vector4<float>::TOLERANCE));
+}
+
+inline bool Matrix2<float>::isApproxEqual(const Matrix2& m) const
+{
+	return simd::all4(simd::lessThan(simd::abs4(simd::sub4(simd::pack2x2(row0, row1), simd::pack2x2(m.row0, m.row1))), 
+		Vector4<float>::TOLERANCE));
+}
+
+inline bool Matrix2<float>::isApproxEqual(const Matrix2& m, float tolerance) const
+{
+	return simd::all4(simd::lessThan(simd::abs4(simd::sub4(simd::pack2x2(row0, row1), simd::pack2x2(m.row0, m.row1))), 
+		simd::set4(tolerance)));
+}
+
+inline bool Matrix2<float>::isApproxOrthogonal() const
+{
+	// #TODO
+}
+
+inline bool Matrix2<float>::hasApproxUniformScaling() const
+{
+	// #TODO
+}
+
 inline Matrix2<float>& Matrix2<float>::set(float m00, float m01, float m10, float m11)
 { 
 #if MATHEMATICS_SIMD_EXPAND_LAST
@@ -502,9 +594,23 @@ inline Matrix2<T> transpose(const Matrix2<T>& m) noexcept
 }
 
 template<typename T>
+inline Matrix2<T> transpose(Matrix2<T>&& m) noexcept
+{
+	m.transpose();
+	return m;
+}
+
+template<typename T>
 inline Matrix2<T> inverse(const Matrix2<T>& m) noexcept
 {
 	return Matrix2<T>(Uninitialized()).setInverse(m);
+}
+
+template<typename T>
+inline Matrix2<T> inverse(Matrix2<T>&& m) noexcept
+{
+	m.invert();
+	return m;
 }
 
 template<typename T>
@@ -518,9 +624,16 @@ inline Matrix2<T> adjoint(const Matrix2<T>& m) noexcept
 template<>
 inline Matrix2<float> transpose(const Matrix2<float>& m) noexcept
 {
-	Matrix2<float> n(m);
+	Matrix2<float> n(m.row0, m.row1);
 	simd::transpose2x2(n.row0, n.row1);
 	return n;
+}
+
+template<>
+inline Matrix2<float> transpose(Matrix2<float>&& m) noexcept
+{
+	simd::transpose2x2(m.row0, m.row1);
+	return m;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

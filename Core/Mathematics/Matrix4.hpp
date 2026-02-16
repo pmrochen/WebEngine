@@ -112,8 +112,8 @@ struct Matrix4
 	bool isApproxEqual(const Matrix4& m, T tolerance) const noexcept;
 	bool isFinite() const noexcept;
 	const Vector4<T>& getRow(int i) const noexcept { return reinterpret_cast<const Vector4<T>*>(&m00)[i]; }
-	Vector4<T> getColumn(int i) const noexcept;
-	T getTrace() const noexcept { return m00 + m11 + m22 + m33; }
+	Vector4<T> getColumn(int i) const noexcept { return Vector4<T>((&m00)[i], (&m10)[i], (&m20)[i], (&m30)[i]); }
+	T getTrace() const noexcept { return (m00 + m11 + m22 + m33); }
 	T getDeterminant() const noexcept;
 	bool isSingular() const noexcept { return (getDeterminant() == T(0)); }
 	Matrix4& setZero/*zero*/() noexcept;
@@ -149,7 +149,7 @@ struct Matrix4
 	Matrix4& setInverse/*inverseOf*/(const Matrix4& m) noexcept;
 	Matrix4& setInverseTranspose/*inverseTransposeOf*/(const Matrix4& m) noexcept;
 	Matrix4& preConcatenate(const Matrix4& m) noexcept;
-	Matrix4& concatenate(const Matrix4& m) noexcept;
+	Matrix4& concatenate(const Matrix4& m) noexcept { return operator*=(m); }
 	Matrix4& translate(const Vector3<T>& v) noexcept;
 	Matrix4& preScale(const Vector3<T>& v) noexcept;
 	Matrix4& scale(const Vector3<T>& v) noexcept;
@@ -273,8 +273,8 @@ struct Matrix4<float>
 	bool isApproxEqual(const Matrix4& m, float tolerance) const noexcept;
 	bool isFinite() const noexcept;
 	const Vector4<float>& getRow(int i) const noexcept { return reinterpret_cast<const Vector4<float>&>((&row0)[i]); }
-	Vector4<float> getColumn(int i) const noexcept;
-	float getfloatrace() const noexcept { return m00 + m11 + m22 + m33; }
+	Vector4<float> getColumn(int i) const noexcept; // #TODO
+	float getTrace() const noexcept { return (m00 + m11 + m22 + m33); }
 	float getDeterminant() const noexcept;
 	bool isSingular() const noexcept { return (getDeterminant() == 0.f); }
 	Matrix4& setZero/*zero*/() noexcept;
@@ -310,7 +310,7 @@ struct Matrix4<float>
 	Matrix4& setInverse/*inverseOf*/(const Matrix4& m) noexcept;
 	Matrix4& setInverseTranspose/*inverseTransposeOf*/(const Matrix4& m) noexcept;
 	Matrix4& preConcatenate(const Matrix4& m) noexcept;
-	Matrix4& concatenate(const Matrix4& m) noexcept;
+	Matrix4& concatenate(const Matrix4& m) noexcept { return operator*=(m); }
 	Matrix4& translate(const Vector3<float>& v) noexcept;
 	Matrix4& preScale(const Vector3<float>& v) noexcept;
 	Matrix4& scale(const Vector3<float>& v) noexcept;
@@ -562,6 +562,132 @@ inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const M
 		m.m10 << WS << m.m11 << WS << m.m12 << WS << m.m13 << WS <<
 		m.m20 << WS << m.m21 << WS << m.m22 << WS << m.m23 << WS <<
 		m.m30 << WS << m.m31 << WS << m.m32 << WS << m.m33;
+}
+
+template<typename T>
+inline bool Matrix4<T>::isZero() const
+{
+	return (m00 == T()) && (m01 == T()) && (m02 == T()) && (m03 == T()) &&
+		(m10 == T()) && (m11 == T()) && (m12 == T()) && (m13 == T()) &&
+		(m20 == T()) && (m21 == T()) && (m22 == T()) && (m23 == T()) &&
+		(m30 == T()) && (m31 == T()) && (m32 == T()) && (m33 == T());
+}
+
+template<typename T>
+inline bool Matrix4<T>::isApproxZero() const
+{
+	return (std::fabs(m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m02) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m03) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m11) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m12) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m13) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m20) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m21) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m22) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m23) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m30) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m31) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m32) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m33) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Matrix4<T>::isIdentity() const
+{
+	return (m00 == T(1)) && (m01 == T()) && (m02 == T()) && (m03 == T()) &&
+		(m10 == T()) && (m11 == T(1)) && (m12 == T()) && (m13 == T()) &&
+		(m20 == T()) && (m21 == T()) && (m22 == T(1)) && (m23 == T()) &&
+		(m30 == T()) && (m31 == T()) && (m32 == T()) && (m33 == T(1));
+}
+
+template<typename T>
+inline bool Matrix4<T>::isApproxIdentity() const
+{
+	return (std::fabs(T(1) - m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m02) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m03) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(T(1) - m11) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m12) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m13) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m20) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m21) < Constants<T>::TOLERANCE) &&
+		(std::fabs(T(1) - m22) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m23) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m30) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m31) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m32) < Constants<T>::TOLERANCE) &&
+		(std::fabs(T(1) - m33) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Matrix4<T>::isApproxEqual(const Matrix4<T>& m) const
+{
+	return (std::fabs(m.m00 - m00) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m01 - m01) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m02 - m02) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m03 - m03) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m10 - m10) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m11 - m11) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m12 - m12) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m13 - m13) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m20 - m20) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m21 - m21) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m22 - m22) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m23 - m23) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m30 - m30) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m31 - m31) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m32 - m32) < Constants<T>::TOLERANCE) &&
+		(std::fabs(m.m33 - m33) < Constants<T>::TOLERANCE);
+}
+
+template<typename T>
+inline bool Matrix4<T>::isApproxEqual(const Matrix4<T>& m, T tolerance) const
+{
+	return (std::fabs(m.m00 - m00) < tolerance) &&
+		(std::fabs(m.m01 - m01) < tolerance) &&
+		(std::fabs(m.m02 - m02) < tolerance) &&
+		(std::fabs(m.m03 - m03) < tolerance) &&
+		(std::fabs(m.m10 - m10) < tolerance) &&
+		(std::fabs(m.m11 - m11) < tolerance) &&
+		(std::fabs(m.m12 - m12) < tolerance) &&
+		(std::fabs(m.m13 - m13) < tolerance) &&
+		(std::fabs(m.m20 - m20) < tolerance) &&
+		(std::fabs(m.m21 - m21) < tolerance) &&
+		(std::fabs(m.m22 - m22) < tolerance) &&
+		(std::fabs(m.m23 - m23) < tolerance) &&
+		(std::fabs(m.m30 - m30) < tolerance) &&
+		(std::fabs(m.m31 - m31) < tolerance) &&
+		(std::fabs(m.m32 - m32) < tolerance) &&
+		(std::fabs(m.m33 - m33) < tolerance);
+}
+
+template<typename T>
+inline bool Matrix4<T>::isFinite() const
+{
+	return std::isfinite(m00) && std::isfinite(m01) && std::isfinite(m02) && std::isfinite(m03) &&
+		std::isfinite(m10) && std::isfinite(m11) && std::isfinite(m12) && std::isfinite(m13) &&
+		std::isfinite(m20) && std::isfinite(m21) && std::isfinite(m22) && std::isfinite(m23) &&
+		std::isfinite(m30) && std::isfinite(m31) && std::isfinite(m32) && std::isfinite(m33);
+}
+
+template<typename T>
+inline T Matrix4<T>::getDeterminant() const
+{
+	auto det3 = [](T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) -> T
+		{
+			return m00*(m11*m22 - m12*m21) - m01*(m10*m22 - m12*m20) + m02*(m10*m21 - m11*m20);
+		};
+
+	T q = det3(m11, m21, m31, m12, m22, m32, m13, m23, m33);
+	T r = det3(m10, m20, m30, m12, m22, m32, m13, m23, m33);
+	T s = det3(m10, m20, m30, m11, m21, m31, m13, m23, m33);
+	T t = det3(m10, m20, m30, m11, m21, m31, m12, m22, m32);
+	return (m00*q - m01*r + m02*s - m03*t);
 }
 
 template<typename T>
@@ -853,12 +979,45 @@ inline bool Matrix4<float>::isZero() const
 		simd::all4(simd::equal(row3, zero));
 }
 
+inline bool Matrix4<float>::isApproxZero() const
+{
+	return simd::all4(simd::lessThan(simd::abs4(row0), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(row1), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(row2), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(row3), Vector4<float>::TOLERANCE));
+}
+
 inline bool Matrix4<float>::isIdentity() const
 {
 	return simd::all4(simd::equal(row0, Vector4<float>::UNIT_X)) && 
 		simd::all4(simd::equal(row1, Vector4<float>::UNIT_Y)) &&
 		simd::all4(simd::equal(row2, Vector4<float>::UNIT_Z)) &&
 		simd::all4(simd::equal(row3, Vector4<float>::UNIT_W));
+}
+
+inline bool Matrix4<float>::isApproxIdentity() const
+{
+	return simd::all4(simd::lessThan(simd::abs4(simd::sub4(row0, Vector4<float>::UNIT_X)), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row1, Vector4<float>::UNIT_Y)), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row2, Vector4<float>::UNIT_Z)), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row3, Vector4<float>::UNIT_W)), Vector4<float>::TOLERANCE));
+}
+
+inline bool Matrix4<float>::isApproxEqual(const Matrix4& m) const
+{
+	return simd::all4(simd::lessThan(simd::abs4(simd::sub4(row0, m.row0)), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row1, m.row1)), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row2, m.row2)), Vector4<float>::TOLERANCE)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row3, m.row3)), Vector4<float>::TOLERANCE));
+}
+
+inline bool Matrix4<float>::isApproxEqual(const Matrix4& m, float tolerance) const
+{
+	auto t = simd::set4(tolerance);
+	return simd::all4(simd::lessThan(simd::abs4(simd::sub4(row0, m.row0)), t)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row1, m.row1)), t)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row2, m.row2)), t)) &&
+		simd::all4(simd::lessThan(simd::abs4(simd::sub4(row3, m.row3)), t));
 }
 
 inline bool Matrix4<float>::isFinite() const
@@ -937,30 +1096,49 @@ inline Matrix4<T> transpose(const Matrix4<T>& m) noexcept
 }
 
 template<typename T>
+inline Matrix4<T> transpose(Matrix4<T>&& m) noexcept
+{
+	m.transpose();
+	return m;
+}
+
+template<typename T>
 inline Matrix4<T> inverse(const Matrix4<T>& m) noexcept
 {
 	return Matrix4<T>(Uninitialized()).setInverse(m);
 }
 
 template<typename T>
+inline Matrix4<T> inverse(Matrix4<T>&& m) noexcept
+{
+	m.invert();
+	return m;
+}
+
+template<typename T>
 inline Matrix4<T> adjoint(const Matrix4<T>& m) noexcept
 {
-	return Matrix4<T>(Matrix3<T>(m.m11, m.m21, m.m31, m.m12, m.m22, m.m32, m.m13, m.m23, m.m33).getDeterminant(),
-		-(Matrix3<T>(m.m01, m.m21, m.m31, m.m02, m.m22, m.m32, m.m03, m.m23, m.m33).getDeterminant()),
-		Matrix3<T>(m.m01, m.m11, m.m31, m.m02, m.m12, m.m32, m.m03, m.m13, m.m33).getDeterminant(),
-		-(Matrix3<T>(m.m01, m.m11, m.m21, m.m02, m.m12, m.m22, m.m03, m.m13, m.m23).getDeterminant()),
-		-(Matrix3<T>(m.m10, m.m20, m.m30, m.m12, m.m22, m.m32, m.m13, m.m23, m.m33).getDeterminant()),
-		Matrix3<T>(m.m00, m.m20, m.m30, m.m02, m.m22, m.m32, m.m03, m.m23, m.m33).getDeterminant(),
-		-(Matrix3<T>(m.m00, m.m10, m.m30, m.m02, m.m12, m.m32, m.m03, m.m13, m.m33).getDeterminant()),
-		Matrix3<T>(m.m00, m.m10, m.m20, m.m02, m.m12, m.m22, m.m03, m.m13, m.m23).getDeterminant(),
-		Matrix3<T>(m.m10, m.m20, m.m30, m.m11, m.m21, m.m31, m.m13, m.m23, m.m33).getDeterminant(),
-		-(Matrix3<T>(m.m00, m.m20, m.m30, m.m01, m.m21, m.m31, m.m03, m.m23, m.m33).getDeterminant()),
-		Matrix3<T>(m.m00, m.m10, m.m30, m.m01, m.m11, m.m31, m.m03, m.m13, m.m33).getDeterminant(),
-		-(Matrix3<T>(m.m00, m.m10, m.m20, m.m01, m.m11, m.m21, m.m03, m.m13, m.m23).getDeterminant()),
-		-(Matrix3<T>(m.m10, m.m20, m.m30, m.m11, m.m21, m.m31, m.m12, m.m22, m.m32).getDeterminant()),
-		Matrix3<T>(m.m00, m.m20, m.m30, m.m01, m.m21, m.m31, m.m02, m.m22, m.m32).getDeterminant(),
-		-(Matrix3<T>(m.m00, m.m10, m.m30, m.m01, m.m11, m.m31, m.m02, m.m12, m.m32).getDeterminant()),
-		Matrix3<T>(m.m00, m.m10, m.m20, m.m01, m.m11, m.m21, m.m02, m.m12, m.m22).getDeterminant());
+	auto det3 = [](T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) -> T 
+		{ 
+			return m00*(m11*m22 - m12*m21) - m01*(m10*m22 - m12*m20) + m02*(m10*m21 - m11*m20);
+		};
+
+	return Matrix4<T>(det3(m.m11, m.m21, m.m31, m.m12, m.m22, m.m32, m.m13, m.m23, m.m33),
+		-det3(m.m01, m.m21, m.m31, m.m02, m.m22, m.m32, m.m03, m.m23, m.m33),
+		det3(m.m01, m.m11, m.m31, m.m02, m.m12, m.m32, m.m03, m.m13, m.m33),
+		-det3(m.m01, m.m11, m.m21, m.m02, m.m12, m.m22, m.m03, m.m13, m.m23),
+		-det3(m.m10, m.m20, m.m30, m.m12, m.m22, m.m32, m.m13, m.m23, m.m33),
+		det3(m.m00, m.m20, m.m30, m.m02, m.m22, m.m32, m.m03, m.m23, m.m33),
+		-det3(m.m00, m.m10, m.m30, m.m02, m.m12, m.m32, m.m03, m.m13, m.m33),
+		det3(m.m00, m.m10, m.m20, m.m02, m.m12, m.m22, m.m03, m.m13, m.m23),
+		det3(m.m10, m.m20, m.m30, m.m11, m.m21, m.m31, m.m13, m.m23, m.m33),
+		-det3(m.m00, m.m20, m.m30, m.m01, m.m21, m.m31, m.m03, m.m23, m.m33),
+		det3(m.m00, m.m10, m.m30, m.m01, m.m11, m.m31, m.m03, m.m13, m.m33),
+		-det3(m.m00, m.m10, m.m20, m.m01, m.m11, m.m21, m.m03, m.m13, m.m23),
+		-det3(m.m10, m.m20, m.m30, m.m11, m.m21, m.m31, m.m12, m.m22, m.m32),
+		det3(m.m00, m.m20, m.m30, m.m01, m.m21, m.m31, m.m02, m.m22, m.m32),
+		-det3(m.m00, m.m10, m.m30, m.m01, m.m11, m.m31, m.m02, m.m12, m.m32),
+		det3(m.m00, m.m10, m.m20, m.m01, m.m11, m.m21, m.m02, m.m12, m.m22));
 }
 
 #if SIMD_HAS_FLOAT4
@@ -968,9 +1146,16 @@ inline Matrix4<T> adjoint(const Matrix4<T>& m) noexcept
 template<>
 inline Matrix4<float> transpose(const Matrix4<float>& m) noexcept
 {
-	Matrix4<float> n(m);
+	Matrix4<float> n(m.row0, m.row1, m.row2, m.row3);
 	simd::transpose4x4(n.row0, n.row1, n.row2, n.row3);
 	return n;
+}
+
+template<>
+inline Matrix4<float> transpose(Matrix4<float>&& m) noexcept
+{
+	simd::transpose4x4(m.row0, m.row1, m.row2, m.row3);
+	return m;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

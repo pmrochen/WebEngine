@@ -73,7 +73,7 @@ struct Quaternion
 	Quaternion& operator*=(const Quaternion& q) noexcept;
 	Quaternion& operator*=(const Vector3<T>& v) noexcept;
 	Quaternion& operator*=(T f) noexcept { x *= f; y *= f; z *= f; w *= f; return *this; }
-	//Quaternion& operator/=(const Quaternion& q) noexcept { *this = *this/q; return *this; }
+	//Quaternion& operator/=(const Quaternion& q) noexcept;
 	Quaternion& operator/=(T f) noexcept { return operator*=(T(1)/f); }
 	bool operator==(const Quaternion& q) const noexcept { return (x == q.x) && (y == q.y) && (z == q.z) && (w == q.w); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
@@ -112,7 +112,7 @@ struct Quaternion
 	Quaternion& conjugate() noexcept { x = -x; y = -y; z = -z; return *this; }
 	Quaternion& invert() noexcept;
 	Quaternion& rotate(const Quaternion& q) noexcept;
-	Quaternion& preConcatenate(const Quaternion& q) noexcept;
+	Quaternion& preConcatenate(const Quaternion& q) noexcept { return operator*=(q); }
 	Quaternion& concatenate(const Quaternion& q) noexcept;
 	Quaternion& negate() noexcept { x = -x; y = -y; z = -z; w = -w; return *this; }
 	Quaternion& normalize() noexcept;
@@ -188,7 +188,7 @@ struct Quaternion<float>
 	Quaternion& operator*=(const Quaternion& q) noexcept;
 	Quaternion& operator*=(const Vector3<float>& v) noexcept;
 	Quaternion& operator*=(float f) noexcept { xyzw = simd::mul4(xyzw, simd::set4(f)); return *this; }
-	//Quaternion& operator/=(const Quaternion& q) noexcept { *this = *this/q; return *this; }
+	//Quaternion& operator/=(const Quaternion& q) noexcept;
 	Quaternion& operator/=(float f) noexcept { xyzw = simd::div4(xyzw, simd::set4(f)); return *this; }
 	bool operator==(const Quaternion& q) const noexcept { return simd::all4(simd::equal(xyzw, q)); }
 	bool operator!=(const Quaternion& q) const noexcept { return !(*this == q); }
@@ -206,11 +206,11 @@ struct Quaternion<float>
 	static Quaternion fromAxisAngle(const Vector3<float>& axis, float angle) noexcept;
 
 	bool isZero() const noexcept { return simd::all4(simd::equal(xyzw, simd::zero<simd::float4>())); }
-	bool isApproxZero() const noexcept { simd::all4(simd::lessThan(simd::abs4(xyzw), TOLERANCE)); }
+	bool isApproxZero() const noexcept { return simd::all4(simd::lessThan(simd::abs4(xyzw), TOLERANCE)); }
 	bool isIdentity() const noexcept { return simd::all4(simd::equal(xyzw, IDENTITY)); }
-	bool isApproxIdentity() const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, IDENTITY)), TOLERANCE)); }
-	bool isApproxEqual(const Quaternion& q) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), TOLERANCE)); }
-	bool isApproxEqual(const Quaternion& q, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), simd::set4(tolerance))); }
+	bool isApproxIdentity() const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, IDENTITY)), TOLERANCE)); }
+	bool isApproxEqual(const Quaternion& q) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), TOLERANCE)); }
+	bool isApproxEqual(const Quaternion& q, float tolerance) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), simd::set4(tolerance))); }
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(xyzw)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::xyzz(xyzw)); }
@@ -235,7 +235,7 @@ struct Quaternion<float>
 	Quaternion& conjugate() noexcept { xyzw = simd::neg3(xyzw); return *this; }
 	Quaternion& invert() noexcept;
 	Quaternion& rotate(const Quaternion& q) noexcept;
-	Quaternion& preConcatenate(const Quaternion& q) noexcept;
+	Quaternion& preConcatenate(const Quaternion& q) noexcept { return operator*=(q); }
 	Quaternion& concatenate(const Quaternion& q) noexcept;
 	Quaternion& negate() noexcept { xyzw = simd::neg4(xyzw); return *this; }
 	Quaternion& normalize() noexcept;
@@ -274,6 +274,13 @@ inline Quaternion<T>& Quaternion<T>::operator*=(const Vector3<T>& v)
 	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
 	return *this;
 }
+
+//template<typename T>
+//inline Quaternion<T>& Quaternion<T>::operator/=(const Quaternion<T>& q)
+//{ 
+//	*this = (*this)*inverse(q);
+//	return *this; 
+//}
 
 template<typename T>
 inline Quaternion<T> operator+(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
@@ -502,13 +509,6 @@ inline Quaternion<T>& Quaternion<T>::rotate(const Quaternion<T>& q)
 }
 
 template<typename T>
-inline Quaternion<T>& Quaternion<T>::preConcatenate(const Quaternion<T>& q)
-{ 
-	*this *= q; 
-	return *this; 
-}
-
-template<typename T>
 inline Quaternion<T>& Quaternion<T>::concatenate(const Quaternion<T>& q)
 { 
 	*this = q*(*this); 
@@ -565,6 +565,12 @@ inline Quaternion<float>& Quaternion<float>::operator*=(const Vector3<float>& v)
 	set(w*v.x + y*v.z - z*v.y, w*v.y + z*v.x - x*v.z, w*v.z + x*v.y - y*v.x, -(x*v.x + y*v.y + z*v.z));
 	return *this;
 }
+
+//inline Quaternion<float>& Quaternion<float>::operator/=(const Quaternion<float>& q)
+//{ 
+//	*this = (*this)*inverse(q);
+//	return *this; 
+//}
 
 template<>
 inline Quaternion<float> operator+(const Quaternion<float>& q1, const Quaternion<float>& q2) noexcept
@@ -636,7 +642,7 @@ inline Quaternion<float> operator*(const Quaternion<float>& q, float f) noexcept
 template<>
 inline Quaternion<float> operator/(float f, const Quaternion<float>& q) noexcept
 {
-	f /= simd::toFloat(simd::dot4(xyzw, xyzw));
+	f /= simd::toFloat(simd::dot4(q, q));
 	return Quaternion<float>(simd::mul4(simd::neg3(q), simd::set4(f)));
 }
 
@@ -747,26 +753,20 @@ inline float Quaternion<float>::getAngle() const
 inline Quaternion<float>& Quaternion<float>::setInverse(const Quaternion<float>& q)
 {
 	auto f = simd::dot4(q, q); // #TODO simd::dot4<XYZW>
-	xyzw = simd::div4(simd::neg3(q), simd::xxxx(f));
+	xyzw = simd::div4(simd::neg3(q), simd::broadcast<0>(f));
 	return *this; 
 }
 
 inline Quaternion<float>& Quaternion<float>::invert()
 {
 	auto f = simd::dot4(xyzw, xyzw); // #TODO simd::dot4<XYZW>
-	xyzw = simd::div4(simd::neg3(xyzw), simd::xxxx(f));
+	xyzw = simd::div4(simd::neg3(xyzw), simd::broadcast<0>(f));
 	return *this; 
 }
 
 inline Quaternion<float>& Quaternion<float>::rotate(const Quaternion<float>& q)
 { 
 	*this = q*(*this)*Quaternion<float>(simd::neg3(q)); // #TODO expand
-	return *this; 
-}
-
-inline Quaternion<float>& Quaternion<float>::preConcatenate(const Quaternion<float>& q)
-{ 
-	*this *= q; 
 	return *this; 
 }
 
@@ -1015,7 +1015,7 @@ template<>
 inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
 {
 	auto f = simd::dot4(q, q); // #TODO simd::dot4<XYZW>
-	return Quaternion<float>(simd::div4(simd::neg3(q), simd::xxxx(f)));
+	return Quaternion<float>(simd::div4(simd::neg3(q), simd::broadcast<0>(f)));
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
