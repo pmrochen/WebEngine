@@ -648,23 +648,62 @@ inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, 
 	row3 = _mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3); 	// 0, m32, m31, m30
 }
 
-inline void transpose2x2(__m128& row0, __m128& row1)
+//inline std::tuple<__m128, __m128> transpose2x2(__m128 row0, __m128 row1)
+//{
+//	__m128 t = _mm_unpacklo_ps(row0, row1);
+//	const __m128 zero = _mm_setzero_ps();
+//	return { _mm_movelh_ps(t, zero), _mm_movehl_ps(zero, t) };
+//}
+
+inline void transpose2x2(__m128 row0, __m128 row1, __m128& col0, __m128& col1)
 {
 	__m128 t = _mm_unpacklo_ps(row0, row1);
 	const __m128 zero = _mm_setzero_ps();
-	row0 = _mm_movelh_ps(t, zero);
-	row1 = _mm_movehl_ps(zero, t);
+	col0 = _mm_movelh_ps(t, zero);
+	col1 = _mm_movehl_ps(zero, t);
 }
 
-inline void transpose3x3(__m128& row0, __m128& row1, __m128& row2)
+//inline std::tuple<__m128, __m128, __m128> transpose3x3(__m128 row0, __m128 row1, __m128 row2)
+//{
+//	const __m128 row3 = _mm_setzero_ps();
+//	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
+//	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
+//	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
+//	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
+//	return { _mm_shuffle_ps(t0, t1, 0x88), _mm_shuffle_ps(t0, t1, 0xDD), _mm_shuffle_ps(t2, t3, 0x88) };
+//}
+
+inline void transpose3x3(__m128 row0, __m128 row1, __m128 row2, __m128& col0, __m128& col1, __m128& col2)
 {
-	__m128 row3 = _mm_setzero_ps();
-	_MM_TRANSPOSE4_PS(row0, row1, row2, row3);
+	const __m128 row3 = _mm_setzero_ps();
+	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
+	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
+	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
+	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
+	col0 = _mm_shuffle_ps(t0, t1, 0x88);
+	col1 = _mm_shuffle_ps(t0, t1, 0xDD);
+	col2 = _mm_shuffle_ps(t2, t3, 0x88);
 }
 
-inline void transpose4x4(__m128& row0, __m128& row1, __m128& row2, __m128& row3)
+//inline std::tuple<__m128, __m128, __m128, __m128> transpose4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3)
+//{
+//	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
+//	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
+//	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
+//	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
+//	return { _mm_shuffle_ps(t0, t1, 0x88), _mm_shuffle_ps(t0, t1, 0xDD), _mm_shuffle_ps(t2, t3, 0x88), _mm_shuffle_ps(t2, t3, 0xDD) };
+//}
+
+inline void transpose4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, __m128& col0, __m128& col1, __m128& col2, __m128& col3)
 {
-	_MM_TRANSPOSE4_PS(row0, row1, row2, row3);
+	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
+	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
+	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
+	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
+	col0 = _mm_shuffle_ps(t0, t1, 0x88);
+	col1 = _mm_shuffle_ps(t0, t1, 0xDD);
+	col2 = _mm_shuffle_ps(t2, t3, 0x88);
+	col3 = _mm_shuffle_ps(t2, t3, 0xDD);
 }
 
 inline float toFloat/*extract*/(__m128 s)
