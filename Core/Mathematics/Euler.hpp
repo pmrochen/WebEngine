@@ -21,6 +21,7 @@
 #include "Constants.hpp"
 #include "Scalar.hpp"
 #include "Vector3.hpp"
+#include "Matrix3.hpp"
 #include "Quaternion.hpp"
 #include "YawPitchRoll.hpp"
 
@@ -75,7 +76,7 @@ struct Euler
 	constexpr Euler(T x, T y, T z, EulerOrder order) noexcept : x(x), y(y), z(z), order(order) {}
 	constexpr Euler(const Euler& e, EulerOrder order) noexcept : x(e.x), y(e.y), z(e.z), order(order) {}
 	constexpr Euler(const YawPitchRoll<T>& r) noexcept : x(r.pitch), y(r.yaw), z(r.roll), order(EulerOrder::ZXY) {}
-	Euler(const Quaternion<T>& q, EulerOrder order) noexcept;
+	Euler(const Quaternion<T>& q, EulerOrder order) noexcept : Euler(Matrix3<T>::makeRotation(q), order) {}
 	Euler(const Matrix3<T>& m, EulerOrder order) noexcept;
 	explicit Euler(const std::tuple<T, T, T, EulerOrder>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), order(std::get<3>(t)) {}
 	template<typename U> explicit Euler(const std::tuple<U, U, U, EulerOrder>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), order(std::get<3>(t)) {}
@@ -142,6 +143,79 @@ template<typename T> const Euler<T> Euler<T>::ZERO_YZX{ T(), T(), T(), EulerOrde
 template<typename T> const Euler<T> Euler<T>::ZERO_YXZ{ T(), T(), T(), EulerOrder::YXZ };
 template<typename T> const Euler<T> Euler<T>::ZERO_ZXY{ T(), T(), T(), EulerOrder::ZXY };
 template<typename T> const Euler<T> Euler<T>::ZERO_ZYX{ T(), T(), T(), EulerOrder::ZYX };
+
+template<typename T>
+inline Euler<T>::Euler(const Matrix3<T>& m, EulerOrder order) : x(), y(), z(), order(order)
+{
+	if (order == EulerOrder::UNSPECIFIED)
+		return;
+
+	// Based on Ken Shoemake's code
+	// http://www.realtimerendering.com/resources/GraphicsGems/gemsiv/euler_angle/
+
+	static const char* safe = "\000\001\002\000";
+	static const char* next = "\001\002\000\001";
+	unsigned int o = (unsigned int)order;
+	int f = o & 1; o >>= 1;
+	int s = o & 1; o >>= 1;
+	int n = o & 1; o >>= 1;
+	int i = safe[o & 3];
+	int j = next[i + n];
+	int k = next[i + 1 - n];
+
+	T ti, tj, th;
+	if (s)
+	{
+		T sy = std::sqrt(m[j][i]*m[j][i] + m[k][i]*m[k][i]);
+		if (sy > T(16)*Constants<T>::EPSILON/*Constants<T>::TOLERANCE*/)
+		{
+			ti = std::atan2(m[j][i], m[k][i]);
+			tj = std::atan2(sy, m[i][i]);
+			th = std::atan2(m[i][j], -m[i][k]);
+		}
+		else
+		{
+			ti = std::atan2(-m[k][j], m[j][j]);
+			tj = std::atan2(sy, m[i][i]);
+			th = T(0);
+		}
+	}
+	else
+	{
+		T cy = std::sqrt(m[i][i]*m[i][i] + m[i][j]*m[i][j]);
+		if (cy > T(16)*Constants<T>::EPSILON/*Constants<T>::TOLERANCE*/)
+		{
+			ti = std::atan2(m[j][k], m[k][k]);
+			tj = std::atan2(-m[i][k], cy);
+			th = std::atan2(m[i][j], m[i][i]);
+		}
+		else
+		{
+			ti = std::atan2(-m[k][j], m[j][j]);
+			tj = std::atan2(-m[i][k], cy);
+			th = T(0);
+		}
+	}
+
+	if (n)
+	{
+		ti = -ti;
+		tj = -tj;
+		th = -th;
+	}
+
+	if (f)
+	{
+		T t = ti;
+		ti = th;
+		th = t;
+	}
+
+	T* e = &x;
+	e[f ? (s ? i : k) : i] = ti;
+	e[j] = tj;
+	e[f ? i : (s ? i : k)] = th;
+}
 
 template<typename T>
 inline Euler<T>& Euler<T>::operator+=(const Euler<T>& e)
@@ -404,87 +478,3 @@ struct hash<::core::mathematics::templates::Euler<T>>
 };
 
 } // namespace std
-
-#include "Matrix3.hpp"
-
-namespace core::mathematics::templates {
-
-template<typename T>
-inline Euler<T>::Euler(const Quaternion<T>& q, EulerOrder order) : Euler<T>(Matrix3<T>::makeRotation(q), order)
-{
-}
-
-template<typename T>
-inline Euler<T>::Euler(const Matrix3<T>& m, EulerOrder order) : x(), y(), z(), order(order)
-{
-	if (order == EulerOrder::UNSPECIFIED)
-        return;
-
-	// Based on Ken Shoemake's code
-	// http://www.realtimerendering.com/resources/GraphicsGems/gemsiv/euler_angle/
-	
-	static const char* safe = "\000\001\002\000";
-	static const char* next = "\001\002\000\001";
-	unsigned int o = (unsigned int)order;
-	int f = o & 1; o >>= 1;
-	int s = o & 1; o >>= 1;
-	int n = o & 1; o >>= 1;
-	int i = safe[o & 3];
-	int j = next[i + n];
-	int k = next[i + 1 - n];
-
-	T ti, tj, th;
-	if (s)
-	{
-		T sy = std::sqrt(m[j][i]*m[j][i] + m[k][i]*m[k][i]);
-		if (sy > T(16)*Constants<T>::EPSILON/*Constants<T>::TOLERANCE*/)
-		{
-			ti = std::atan2(m[j][i], m[k][i]);
-			tj = std::atan2(sy, m[i][i]);
-			th = std::atan2(m[i][j], -m[i][k]);
-		}
-		else
-		{
-			ti = std::atan2(-m[k][j], m[j][j]);
-			tj = std::atan2(sy, m[i][i]);
-			th = T(0);
-		}
-	}
-	else
-	{
-		T cy = std::sqrt(m[i][i]*m[i][i] + m[i][j]*m[i][j]);
-		if (cy > T(16)*Constants<T>::EPSILON/*Constants<T>::TOLERANCE*/)
-		{
-			ti = std::atan2(m[j][k], m[k][k]);
-			tj = std::atan2(-m[i][k], cy);
-			th = std::atan2(m[i][j], m[i][i]);
-		}
-		else
-		{
-			ti = std::atan2(-m[k][j], m[j][j]);
-			tj = std::atan2(-m[i][k], cy);
-			th = T(0);
-		}
-	}
-	
-	if (n)
-	{
-		ti = -ti;
-		tj = -tj;
-		th = -th;
-	}
-	
-	if (f)
-	{
-		T t = ti;
-		ti = th;
-		th = t;
-	}
-	
-    T* e = &x;
-	e[f ? (s ? i : k) : i] = ti;
-	e[j] = tj;
-	e[f ? i : (s ? i : k)] = th;
-}
-
-} // namespace core::mathematics::templates

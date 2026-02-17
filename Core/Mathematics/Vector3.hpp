@@ -28,13 +28,13 @@ template<typename T>
 struct IntVector3;
 
 template<typename T>
-struct Quaternion;
-
-template<typename T>
 struct Matrix3;
 
 template<typename T>
 struct AffineTransform;
+
+template<typename T>
+struct Quaternion;
 
 template<typename T>
 struct Vector3
@@ -154,13 +154,13 @@ template<typename T> const Vector3<T> Vector3<T>::MINUS_INF{ -std::numeric_limit
 #if SIMD_HAS_FLOAT4
 
 template<>
-struct Quaternion<float>;
-
-template<>
 struct Matrix3<float>;
 
 template<>
 struct AffineTransform<float>;
+
+template<>
+struct Quaternion<float>;
 
 template<>
 struct Vector3<float>
@@ -1027,9 +1027,9 @@ struct hash<::core::mathematics::templates::Vector3<T>>
 } // namespace std
 
 #include "IntVector3.hpp"
-#include "Quaternion.hpp"
 #include "Matrix3.hpp"
 #include "AffineTransform.hpp"
+#include "Quaternion.hpp"
 
 namespace core::mathematics::templates {
 

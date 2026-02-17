@@ -18,12 +18,10 @@
 #include "Constants.hpp"
 #include "Scalar.hpp"
 #include "Vector3.hpp"
+#include "Matrix3.hpp"
 
 namespace core::mathematics {
 namespace templates {
-
-template<typename T>
-struct Matrix3;
 
 template<typename T>
 struct YawPitchRoll;
@@ -132,9 +130,6 @@ template<typename T> const Quaternion<T> Quaternion<T>::IDENTITY{ T(0), T(0), T(
 template<typename T> const Quaternion<T> Quaternion<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
 
 #if SIMD_HAS_FLOAT4
-
-template<>
-struct Matrix3<float>;
 
 template<>
 struct YawPitchRoll<float>;
@@ -259,6 +254,12 @@ const Quaternion<float> Quaternion<float>::IDENTITY{ 0.f, 0.f, 0.f, 1.f };
 const Quaternion<float> Quaternion<float>::TOLERANCE{ Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE, Constants<float>::TOLERANCE };
 
 #endif /* SIMD_HAS_FLOAT4 */
+
+template<typename T>
+inline Quaternion<T>::Quaternion(const Matrix3<T>& m)
+{
+	// #TODO
+}
 
 template<typename T>
 inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& q)
@@ -536,6 +537,11 @@ inline Quaternion<T>& Quaternion<T>::normalize()
 }
 
 #if SIMD_HAS_FLOAT4
+
+inline Quaternion<float>::Quaternion(const Matrix3<float>& m)
+{
+	// #TODO
+}
 
 inline Quaternion<float>& Quaternion<float>::operator*=(const Quaternion<float>& q)
 {
@@ -1168,3 +1174,36 @@ struct hash<::core::mathematics::templates::Quaternion<T>>
 };
 
 } // namespace std
+
+#include "YawPitchRoll.hpp"
+#include "Euler.hpp"
+
+namespace core::mathematics::templates {
+
+template<typename T>
+inline Quaternion<T>::Quaternion(const YawPitchRoll<T>& ypr)
+{
+	// #TODO
+}
+
+template<typename T>
+inline Quaternion<T>::Quaternion(const Euler<T>& e)
+{
+	// #TODO
+}
+
+#if SIMD_HAS_FLOAT4
+
+inline Quaternion<float>::Quaternion(const YawPitchRoll<float>& ypr)
+{
+	// #TODO
+}
+
+inline Quaternion<float>::Quaternion(const Euler<float>& e)
+{
+	// #TODO
+}
+
+#endif /* SIMD_HAS_FLOAT4 */
+
+} // namespace core::mathematics::templates

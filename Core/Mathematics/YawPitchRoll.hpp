@@ -18,6 +18,7 @@
 #include "Constants.hpp"
 #include "Scalar.hpp"
 #include "Vector3.hpp"
+#include "Matrix3.hpp"
 #include "Quaternion.hpp"
 
 namespace core::mathematics {
@@ -25,9 +26,6 @@ namespace templates {
 
 template<typename T>
 struct Euler;
-
-template<typename T>
-struct Matrix3;
 
 template<typename T>
 struct YawPitchRoll
@@ -38,7 +36,7 @@ struct YawPitchRoll
 	explicit YawPitchRoll(Uninitialized) noexcept {}
 	constexpr YawPitchRoll(T yaw, T pitch, T roll) noexcept : yaw(yaw), pitch(pitch), roll(roll) {}
 	explicit YawPitchRoll(const Euler<T>& e) noexcept;
-	explicit YawPitchRoll(const Quaternion<T>& q) noexcept;
+	explicit YawPitchRoll(const Quaternion<T>& q) noexcept : YawPitchRoll(Matrix3<T>::makeRotation(q)) {}
 	explicit YawPitchRoll(const Matrix3<T>& m) noexcept;
 	//explicit YawPitchRoll(const Vector3<T>& direction) noexcept; // -> fromForward
 	//YawPitchRoll(const Vector3<T>& direction, T roll) noexcept;
@@ -320,7 +318,6 @@ struct hash<::core::mathematics::templates::YawPitchRoll<T>>
 } // namespace std
 
 #include "Euler.hpp"
-#include "Matrix3.hpp"
 
 namespace core::mathematics::templates {
 
@@ -346,11 +343,6 @@ inline YawPitchRoll<T>::YawPitchRoll(const Euler<T>& e)
 		pitch = T();
 		roll = T();
 	}
-}
-
-template<typename T>
-inline YawPitchRoll<T>::YawPitchRoll(const Quaternion<T>& q) : YawPitchRoll<T>(Matrix3<T>::makeRotation(q))
-{
 }
 
 template<typename T>
