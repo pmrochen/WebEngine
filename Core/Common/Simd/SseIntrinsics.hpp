@@ -721,6 +721,11 @@ inline float extract(__m128 v)
 		return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(I, I, I, I)));
 }
 
+inline __m128 cutoff1(__m128 x)
+{
+	return _mm_and_ps(x, detail::MASK1);
+}
+
 inline __m128 cutoff2(__m128 xy)
 {
 	return _mm_movelh_ps(xy, _mm_setzero_ps());
