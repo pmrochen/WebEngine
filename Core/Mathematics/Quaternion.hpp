@@ -18,6 +18,7 @@
 #include "Constants.hpp"
 #include "Scalar.hpp"
 #include "Vector3.hpp"
+#include "Matrix2.hpp"
 #include "Matrix3.hpp"
 
 namespace core::mathematics {
@@ -41,7 +42,7 @@ struct Quaternion
 
 	constexpr Quaternion() noexcept : x(), y(), z(), w() {}
 	explicit Quaternion(Uninitialized) noexcept {}
-	//explicit Quaternion(Identity) noexcept : x(), y(), z(), w(1) {}
+	explicit Quaternion(Identity) noexcept : x(), y(), z(), w(1) {}
 	constexpr explicit Quaternion(T scalar) noexcept : x(), y(), z(), w(scalar) {}
 	constexpr Quaternion(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	constexpr explicit Quaternion(Vector3<T>::ConstArg vector) noexcept : x(vector.x), y(vector.y), z(vector.z), w() {}
@@ -149,7 +150,7 @@ struct Quaternion<float>
 
 	/*constexpr*/ Quaternion() noexcept : xyzw(simd::zero<simd::float4>()) {}
 	explicit Quaternion(Uninitialized) noexcept {}
-	//explicit Quaternion(Identity) noexcept : xyzw(IDENTITY) {}
+	explicit Quaternion(Identity) noexcept : xyzw(IDENTITY) {}
 	/*constexpr*/ explicit Quaternion(float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, simd::zero<simd::float4>())) {}
 	/*constexpr*/ Quaternion(float x, float y, float z, float w) noexcept : xyzw(simd::set4(x, y, z, w)) {}
 	/*constexpr*/ explicit Quaternion(Vector3<float>::ConstArg vector) noexcept : xyzw(simd::cutoff3(vector)) {}
