@@ -27,13 +27,13 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+struct Quaternion;
+
+template<typename T>
 struct YawPitchRoll;
 
 template<typename T>
 struct Euler;
-
-template<typename T>
-struct Quaternion;
 
 template<typename T>
 struct Plane;
@@ -50,7 +50,7 @@ struct Matrix4
 
 	constexpr Matrix4() noexcept : m00(), m01(), m02(), m03(), m10(), m11(), m12(), m13(), m20(), m21(), m22(), m23(), m30(), m31(), m32(), m33() {}
 	explicit Matrix4(Uninitialized) noexcept {}
-	//explicit Matrix4(Identity) noexcept {}
+	explicit Matrix4(Identity) noexcept : m00(1), m01(), m02(), m03(), m10(), m11(1), m12(), m13(), m20(), m21(), m22(1), m23(), m30(), m31(), m32(), m33(1) {}
 	constexpr Matrix4(T m00, T m01, T m02, T m03, T m10, T m11, T m12, T m13, T m20, T m21, T m22, T m23, T m30, T m31, T m32, T m33) noexcept;
 	constexpr Matrix4(const Vector4<T>& row0, const Vector4<T>& row1, const Vector4<T>& row2, const Vector4<T>& row3) noexcept;
 	constexpr explicit Matrix4(const std::tuple<Vector4<T>, Vector4<T>, Vector4<T>, Vector4<T>>& t) noexcept;
@@ -181,13 +181,13 @@ template<typename T> const Matrix4<T> Matrix4<T>::IDENTITY{ T(1), T(0), T(0), T(
 #if SIMD_HAS_FLOAT4
 
 template<>
+struct Quaternion<float>;
+
+template<>
 struct YawPitchRoll<float>;
 
 template<>
 struct Euler<float>;
-
-template<>
-struct Quaternion<float>;
 
 template<>
 struct Plane<float>;
@@ -204,13 +204,13 @@ struct Matrix4<float>
 
 	/*constexpr*/ Matrix4() noexcept;
 	explicit Matrix4(Uninitialized) noexcept {}
-	//explicit Matrix4(Identity) noexcept {}
+	explicit Matrix4(Identity) noexcept;
 	/*constexpr*/ Matrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) noexcept;
 	/*constexpr*/ Matrix4(const Vector4<float>& row0, const Vector4<float>& row1, const Vector4<float>& row2, const Vector4<float>& row3) noexcept;
 	/*constexpr*/ explicit Matrix4(const std::tuple<Vector4<float>, Vector4<float>, Vector4<float>, Vector4<float>>& t) noexcept;
 	/*constexpr*/ Matrix4(const Matrix2<float>& m) noexcept;
 	/*constexpr*/ Matrix4(const Matrix3<float>& m) noexcept;
-	/*constexpr*/ Matrix4(const Affinefloatransform<float>& m) noexcept;
+	/*constexpr*/ Matrix4(const AffineTransform<float>& m) noexcept;
 	explicit Matrix4(const float* m) noexcept;
 	explicit Matrix4(const simd::float4* m) noexcept : row0(m[0]), row1(m[1]), row2(m[2]), row3(m[3]) {}
 	Matrix4(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) noexcept;
@@ -280,6 +280,7 @@ struct Matrix4<float>
 	Matrix4& setZero/*zero*/() noexcept;
 	Matrix4& setIdentity/*makeIdentity*/() noexcept;
 	Matrix4& set(const Vector4<float>& row0, const Vector4<float>& row1, const Vector4<float>& row2, const Vector4<float>& row3) noexcept;
+	Matrix4& set(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3) noexcept;
 	Matrix4& set(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33) noexcept;
 	Matrix4& setTranslation/*makeTranslation*/(const Vector3<float>& v) noexcept;
 	Matrix4& setScaling/*makeScaling*/(const Vector3<float>& v) noexcept;
@@ -293,11 +294,11 @@ struct Matrix4<float>
 	Matrix4& setRotationTranslation(const YawPitchRoll<float>& r, const Vector3<float>& t) noexcept;
 	Matrix4& setRotationTranslation(const Euler<float>& e, const Vector3<float>& t) noexcept;
 	Matrix4& setRotationTranslation(const Quaternion<float>& q, const Vector3<float>& t) noexcept;
-	Matrix4& setScalingRotation(const Vector3<float>& s, Axis axis, float angle) noexcept;
-	Matrix4& setScalingRotation(const Vector3<float>& s, const Vector3<float>& axis, float angle) noexcept;
-	Matrix4& setScalingRotation(const Vector3<float>& s, const YawPitchRoll<float>& r) noexcept;
-	Matrix4& setScalingRotation(const Vector3<float>& s, const Euler<float>& e) noexcept;
-	Matrix4& setScalingRotation(const Vector3<float>& s, const Quaternion<float>& q) noexcept;
+	Matrix4& setScalingRotation(const Vector3<float>& s, Axis axis, float angle) noexcept { return setRotation(axis, angle).preScale(s); }
+	Matrix4& setScalingRotation(const Vector3<float>& s, const Vector3<float>& axis, float angle) noexcept { return setRotation(axis, angle).preScale(s); }
+	Matrix4& setScalingRotation(const Vector3<float>& s, const YawPitchRoll<float>& r) noexcept { return setRotation(r).preScale(s); }
+	Matrix4& setScalingRotation(const Vector3<float>& s, const Euler<float>& e) noexcept { return setRotation(e).preScale(s); }
+	Matrix4& setScalingRotation(const Vector3<float>& s, const Quaternion<float>& q) noexcept { return setRotation(q).preScale(s); }
 	Matrix4& setScalingTranslation(const Vector3<float>& s, const Vector3<float>& t) noexcept;
 	Matrix4& setScalingRotationTranslation(const Vector3<float>& s, Axis axis, float angle, const Vector3<float>& t) noexcept;
 	Matrix4& setScalingRotationTranslation(const Vector3<float>& s, const Vector3<float>& axis, float angle, const Vector3<float>& t) noexcept;
@@ -731,6 +732,242 @@ inline Matrix4<T>& Matrix4<T>::set(T m00, T m01, T m02, T m03, T m10, T m11, T m
 	return *this;
 }
 
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setTranslation(const Vector3<T>& v)
+{
+	m00 = T(1); m01 = T(); m02 = T(); m03 = T();
+	m10 = T(); m11 = T(1); m12 = T(); m13 = T();
+	m20 = T(); m21 = T(); m22 = T(1); m23 = T();
+	m30 = v.x; m31 = v.y; m32 = v.z; m33 = T(1);
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScaling(const Vector3<T>& v)
+{
+	m00 = v.x; m01 = T(); m02 = T(); m03 = T();
+	m10 = T(); m11 = v.y; m12 = T(); m13 = T();
+	m20 = T(); m21 = T(); m22 = v.z; m23 = T();
+	m30 = T(); m31 = T(); m32 = T(); m33 = T(1);
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotation(Axis axis, T angle)
+{
+	if (angle != T(0))
+	{
+		T sinAngle = std::sin(angle);
+		T cosAngle = std::cos(angle);
+
+		switch (axis)
+		{
+			case Axis::X:
+				return set(T(1), T(), T(), T(), T(), cosAngle, sinAngle, T(), T(), -sinAngle, cosAngle, T(), T(), T(), T(), T(1));
+			case Axis::Y:
+				return set(cosAngle, T(), -sinAngle, T(), T(), T(1), T(), T(), sinAngle, T(), cosAngle, T(), T(), T(), T(), T(1));
+			case Axis::Z:
+				return set(cosAngle, sinAngle, T(), T(), -sinAngle, cosAngle, T(), T(), T(), T(), T(1), T(), T(), T(), T(), T(1));
+			default:
+				return setZero();
+		}
+	}
+
+	return setIdentity();
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotation(const Vector3<T>& axis, T angle)
+{
+	T m = axis.getMagnitude();
+	if ((m > T(0)) && (angle != T(0)))
+	{
+		Vector3<T> abc = axis/m;
+		T sinAngle = std::sin(angle);
+		T cosAngle = std::cos(angle);
+		T mCos = T(1) - cosAngle;
+		T aa = abc.x*abc.x, bb = abc.y*abc.y, cc = abc.z*abc.z;
+		T abm = abc.x*abc.y*mCos, acm = abc.x*abc.z*mCos, bcm = abc.y*abc.z*mCos;
+		T aSin = abc.x*sinAngle, bSin = abc.y*sinAngle, cSin = abc.z*sinAngle;
+
+		return set(aa*mCos + cosAngle, abm + cSin, acm - bSin, T(),
+			abm - cSin, bb*mCos + cosAngle, bcm + aSin, T(),
+			acm + bSin, bcm - aSin, cc*mCos + cosAngle, T(),
+			T(), T(), T(), T(1));
+	}
+
+	return setIdentity();
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotationTranslation(Axis axis, T angle, const Vector3<T>& t)
+{
+	setRotation(axis, angle);
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotationTranslation(const Vector3<T>& axis, T angle, const Vector3<T>& t)
+{
+	setRotation(axis, angle);
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotation(const Vector3<T>& s, Axis axis, T angle)
+{
+	setRotation(axis, angle);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotation(const Vector3<T>& s, const Vector3<T>& axis, T angle)
+{
+	setRotation(axis, angle);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingTranslation(const Vector3<T>& s, const Vector3<T>& t)
+{
+	m00 = s.x; m01 = T(); m02 = T(); m03 = T();
+	m10 = T(); m11 = s.y; m12 = T(); m13 = T();
+	m20 = T(); m21 = T(); m22 = s.z; m23 = T();
+	m30 = t.x; m31 = t.y; m32 = t.z; m33 = T(1);
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotationTranslation(const Vector3<T>& s, Axis axis, T angle, const Vector3<T>& t)
+{
+	setRotation(axis, angle);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotationTranslation(const Vector3<T>& s, const Vector3<T>& axis, T angle, const Vector3<T>& t)
+{
+	setRotation(axis, angle);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setShearing(T xy, T xz, T yx, T yz, T zx, T zy)
+{
+	m00 = T(1); m01 = xy; m02 = xz; m03 = T();
+	m10 = yx; m11 = T(1); m12 = yz; m13 = T();
+	m20 = zx; m21 = zy; m22 = T(1); m23 = T();
+	m30 = T(); m31 = T(); m32 = T(); m33 = T(1);
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setTranspose(const Matrix4<T>& m)
+{
+	m00 = m.m00; m01 = m.m10; m02 = m.m20; m03 = m.m30;
+	m10 = m.m01; m11 = m.m11; m12 = m.m21; m13 = m.m31;
+	m20 = m.m02; m21 = m.m12; m22 = m.m22; m23 = m.m32;
+	m30 = m.m03; m31 = m.m13; m32 = m.m23; m33 = m.m33;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setInverse(const Matrix4<T>& m)
+{
+	// #TODO
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setInverseTranspose(const Matrix4<T>& m)
+{
+	// #TODO
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::preConcatenate(const Matrix4<T>& m)
+{
+	set(m.m00*m00 + m.m01*m10 + m.m02*m20 + m.m03*m30,
+		m.m00*m01 + m.m01*m11 + m.m02*m21 + m.m03*m31,
+		m.m00*m02 + m.m01*m12 + m.m02*m22 + m.m03*m32,
+		m.m00*m03 + m.m01*m13 + m.m02*m23 + m.m03*m33,
+		m.m10*m00 + m.m11*m10 + m.m12*m20 + m.m13*m30,
+		m.m10*m01 + m.m11*m11 + m.m12*m21 + m.m13*m31,
+		m.m10*m02 + m.m11*m12 + m.m12*m22 + m.m13*m32,
+		m.m10*m03 + m.m11*m13 + m.m12*m23 + m.m13*m33,
+		m.m20*m00 + m.m21*m10 + m.m22*m20 + m.m23*m30,
+		m.m20*m01 + m.m21*m11 + m.m22*m21 + m.m23*m31,
+		m.m20*m02 + m.m21*m12 + m.m22*m22 + m.m23*m32,
+		m.m20*m03 + m.m21*m13 + m.m22*m23 + m.m23*m33,
+		m.m30*m00 + m.m31*m10 + m.m32*m20 + m.m33*m30,
+		m.m30*m01 + m.m31*m11 + m.m32*m21 + m.m33*m31,
+		m.m30*m02 + m.m31*m12 + m.m32*m22 + m.m33*m32,
+		m.m30*m03 + m.m31*m13 + m.m32*m23 + m.m33*m33);
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::preScale(const Vector3<T>& v)
+{
+	m00 *= v.x; m01 *= v.x; m02 *= v.x; m03 *= v.x;
+	m10 *= v.y; m11 *= v.y; m12 *= v.y; m13 *= v.y;
+	m20 *= v.z; m21 *= v.z; m22 *= v.z; m23 *= v.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::scale(const Vector3<T>& v)
+{
+	m00 *= v.x; m01 *= v.y; m02 *= v.z;
+	m10 *= v.x; m11 *= v.y; m12 *= v.z;
+	m20 *= v.x; m21 *= v.y; m22 *= v.z;
+	m30 *= v.x; m31 *= v.y; m32 *= v.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::negate()
+{
+	m00 = -m00; m01 = -m01; m02 = -m02; m03 = -m03;
+	m10 = -m10; m11 = -m11; m12 = -m12; m13 = -m13;
+	m20 = -m20; m21 = -m21; m22 = -m22; m23 = -m23;
+	m30 = -m30; m31 = -m31; m32 = -m32; m33 = -m33;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::transpose()
+{
+	T t = m01; m01 = m10; m10 = t;
+	t = m02; m02 = m20; m20 = t;
+	t = m03; m03 = m30; m30 = t;
+	t = m12; m12 = m21; m21 = t;
+	t = m13; m13 = m31; m31 = t;
+	t = m23; m23 = m32; m32 = t;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::invert()
+{
+	// #TODO
+}
+
 #if SIMD_HAS_FLOAT4
 
 inline Matrix4<float>::Matrix4() : 
@@ -738,6 +975,14 @@ inline Matrix4<float>::Matrix4() :
 	row1(simd::zero<simd::float4>()), 
 	row2(simd::zero<simd::float4>()), 
 	row3(simd::zero<simd::float4>()) 
+{
+}
+
+inline Matrix4<float>::Matrix4(Identity) :
+	row0(Vector4<float>::UNIT_X),
+	row1(Vector4<float>::UNIT_Y),
+	row2(Vector4<float>::UNIT_Z),
+	row3(Vector4<float>::UNIT_W)
 {
 }
 
@@ -1028,6 +1273,20 @@ inline bool Matrix4<float>::isFinite() const
 		simd::all4(simd::isFinite(row3));
 }
 
+inline float Matrix4<float>::getDeterminant() const // #TODO SIMD
+{
+	auto det3 = [](float m00, float m01, float m02, float m10, float m11, float m12, float m20, float m21, float m22) -> float
+		{
+			return m00*(m11*m22 - m12*m21) - m01*(m10*m22 - m12*m20) + m02*(m10*m21 - m11*m20);
+		};
+
+	float q = det3(m11, m21, m31, m12, m22, m32, m13, m23, m33);
+	float r = det3(m10, m20, m30, m12, m22, m32, m13, m23, m33);
+	float s = det3(m10, m20, m30, m11, m21, m31, m13, m23, m33);
+	float t = det3(m10, m20, m30, m11, m21, m31, m12, m22, m32);
+	return (m00*q - m01*r + m02*s - m03*t);
+}
+
 inline Matrix4<float>& Matrix4<float>::setZero()
 {
 	row0 = simd::zero<simd::float4>();
@@ -1056,6 +1315,15 @@ inline Matrix4<float>& Matrix4<float>::set(const Vector4<float>& row0, const Vec
 	return *this;
 }
 
+inline Matrix4<float>& Matrix4<float>::set(simd::float4 row0, simd::float4 row1, simd::float4 row2, simd::float4 row3)
+{
+	this->row0 = row0;
+	this->row1 = row1;
+	this->row2 = row2;
+	this->row3 = row3;
+	return *this;
+}
+
 inline Matrix4<float>& Matrix4<float>::set(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)
 {
@@ -1064,6 +1332,198 @@ inline Matrix4<float>& Matrix4<float>::set(float m00, float m01, float m02, floa
 	row2 = simd::set4(m20, m21, m22, m23);
 	row3 = simd::set4(m30, m31, m32, m33);
 	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setTranslation(const Vector3<float>& v)
+{
+	row0 = Vector4<float>::UNIT_X;
+	row1 = Vector4<float>::UNIT_Y;
+	row2 = Vector4<float>::UNIT_Z;
+	row3 = simd::insert3(v, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScaling(const Vector3<float>& v)
+{
+	row0 = simd::cutoff1(v);
+	row1 = simd::and4(v, simd::constant4i<simd::float4, 0, -1, 0, 0>());
+	row2 = simd::and4(v, simd::constant4i<simd::float4, 0, 0, -1, 0>());
+	row3 = Vector4<float>::UNIT_W;
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotation(Axis axis, float angle)
+{
+	if (angle != 0.f)
+	{
+		float sinAngle = std::sin(angle);
+		float cosAngle = std::cos(angle);
+
+		switch (axis)
+		{
+			case Axis::X:
+				return set(1.f, 0.f, 0.f, 0.f, 0.f, cosAngle, sinAngle, 0.f, 0.f, -sinAngle, cosAngle, 0.f, 0.f, 0.f, 0.f, 1.f);
+			case Axis::Y:
+				return set(cosAngle, 0.f, -sinAngle, 0.f, 0.f, 1.f, 0.f, 0.f, sinAngle, 0.f, cosAngle, 0.f, 0.f, 0.f, 0.f, 1.f);
+			case Axis::Z:
+				return set(cosAngle, sinAngle, 0.f, 0.f, -sinAngle, cosAngle, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
+			default:
+				return setZero();
+		}
+	}
+
+	return setIdentity();
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotation(const Vector3<float>& axis, float angle)
+{
+	float m = axis.getMagnitude();
+	if ((m > 0.f) && (angle != 0.f))
+	{
+		Vector3<float> abc = axis/m;
+		float sinAngle = std::sin(angle);
+		float cosAngle = std::cos(angle);
+		float mCos = 1.f - cosAngle;
+		float aa = abc.x*abc.x, bb = abc.y*abc.y, cc = abc.z*abc.z;
+		float abm = abc.x*abc.y*mCos, acm = abc.x*abc.z*mCos, bcm = abc.y*abc.z*mCos;
+		float aSin = abc.x*sinAngle, bSin = abc.y*sinAngle, cSin = abc.z*sinAngle;
+
+		return set(aa*mCos + cosAngle, abm + cSin, acm - bSin, 0.f,
+			abm - cSin, bb*mCos + cosAngle, bcm + aSin, 0.f,
+			acm + bSin, bcm - aSin, cc*mCos + cosAngle, 0.f,
+			0.f, 0.f, 0.f, 1.f);
+	}
+
+	return setIdentity();
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotationTranslation(Axis axis, float angle, const Vector3<float>& t)
+{
+	setRotation(axis, angle);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotationTranslation(const Vector3<float>& axis, float angle, const Vector3<float>& t)
+{
+	setRotation(axis, angle);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScalingTranslation(const Vector3<float>& s, const Vector3<float>& t)
+{
+	row0 = simd::cutoff1(s);
+	row1 = simd::and4(s, simd::constant4i<simd::float4, 0, -1, 0, 0>());
+	row2 = simd::and4(s, simd::constant4i<simd::float4, 0, 0, -1, 0>());
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScalingRotationTranslation(const Vector3<float>& s, Axis axis, float angle,
+	const Vector3<float>& t)
+{
+	setRotation(axis, angle);
+	preScale(s);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScalingRotationTranslation(const Vector3<float>& s, const Vector3<float>& axis, float angle,
+	const Vector3<float>& t)
+{
+	setRotation(axis, angle);
+	preScale(s);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setShearing(float xy, float xz, float yx, float yz, float zx, float zy)
+{
+	row0 = simd::set3(1.f, xy, xz);
+	row1 = simd::set3(yx, 1.f, yz);
+	row2 = simd::set3(zx, zy, 1.f);
+	row3 = Vector4<float>::UNIT_W;
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setTranspose(const Matrix4<float>& m)
+{
+	simd::transpose4x4(m.row0, m.row1, m.row2, m.row3, row0, row1, row2, row3);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setInverse(const Matrix4<float>& m)
+{
+	// #TODO
+}
+
+inline Matrix4<float>& Matrix4<float>::setInverseTranspose(const Matrix4<float>& m)
+{
+	// #TODO
+}
+
+inline Matrix4<float>& Matrix4<float>::preConcatenate(const Matrix4<float>& m)
+{
+	auto result0 = simd::mul4(simd::broadcast<0>(m.row0), row0);
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(m.row0), row1));
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<2>(m.row0), row2));
+	result0 = simd::add4(result0, simd::mul4(simd::broadcast<3>(m.row0), row3));
+	auto result1 = simd::mul4(simd::broadcast<0>(m.row1), row0);
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<1>(m.row1), row1));
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<2>(m.row1), row2));
+	result1 = simd::add4(result1, simd::mul4(simd::broadcast<3>(m.row1), row3));
+	auto result2 = simd::mul4(simd::broadcast<0>(m.row2), row0);
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<1>(m.row2), row1));
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<2>(m.row2), row2));
+	result2 = simd::add4(result2, simd::mul4(simd::broadcast<3>(m.row2), row3));
+	auto result3 = simd::mul4(simd::broadcast<0>(m.row3), row0);
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<1>(m.row3), row1));
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<2>(m.row3), row2));
+	result3 = simd::add4(result3, simd::mul4(simd::broadcast<3>(m.row3), row3));
+	row0 = result0;
+	row1 = result1;
+	row2 = result2;
+	row3 = result3;
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::preScale(const Vector3<float>& v)
+{
+	row0 = simd::mul4(row0, simd::xxxx(v));
+	row1 = simd::mul4(row1, simd::yyyy(v));
+	row2 = simd::mul4(row2, simd::zzzz(v));
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::scale(const Vector3<float>& v)
+{
+	auto t = simd::insert3(v, Vector4<float>::UNIT_W);
+	row0 = simd::mul4(row0, t);
+	row1 = simd::mul4(row1, t);
+	row2 = simd::mul4(row2, t);
+	row3 = simd::mul4(row3, t);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::negate()
+{
+	row0 = simd::neg4(row0);
+	row1 = simd::neg4(row1);
+	row2 = simd::neg4(row2);
+	row3 = simd::neg4(row3);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::transpose()
+{
+	simd::transpose4x4(row0, row1, row2, row3, row0, row1, row2, row3);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::invert()
+{
+	// #TODO
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
@@ -1146,15 +1606,15 @@ inline Matrix4<T> adjoint(const Matrix4<T>& m) noexcept
 template<>
 inline Matrix4<float> transpose(const Matrix4<float>& m) noexcept
 {
-	Matrix4<float> n(m.row0, m.row1, m.row2, m.row3);
-	simd::transpose4x4(n.row0, n.row1, n.row2, n.row3);
+	Matrix4<float> n(Uninitialized());
+	simd::transpose4x4(m.row0, m.row1, m.row2, m.row3, n.row0, n.row1, n.row2, n.row3);
 	return n;
 }
 
 template<>
 inline Matrix4<float> transpose(Matrix4<float>&& m) noexcept
 {
-	simd::transpose4x4(m.row0, m.row1, m.row2, m.row3);
+	simd::transpose4x4(m.row0, m.row1, m.row2, m.row3, m.row0, m.row1, m.row2, m.row3);
 	return m;
 }
 
@@ -1177,14 +1637,208 @@ using Matrix4Result = templates::Matrix4<float>::ConstResult;
 
 } // namespace core::mathematics
 
+#include "Quaternion.hpp"
 #include "YawPitchRoll.hpp"
 #include "Euler.hpp"
-#include "Quaternion.hpp"
 #include "Plane.hpp"
 
 namespace core::mathematics::templates {
 
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotation(const YawPitchRoll<T>& r)
+{
+	// #TODO
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotation(const Euler<T>& e)
+{
+	// #TODO
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotation(const Quaternion<T>& q)
+{
+	// #TODO
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotationTranslation(const YawPitchRoll<T>& r, const Vector3<T>& t)
+{
+	setRotation(r);
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotationTranslation(const Euler<T>& e, const Vector3<T>& t)
+{
+	setRotation(e);
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setRotationTranslation(const Quaternion<T>& q, const Vector3<T>& t)
+{
+	setRotation(q);
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotation(const Vector3<T>& s, const YawPitchRoll<T>& r)
+{
+	setRotation(r);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotation(const Vector3<T>& s, const Euler<T>& e)
+{
+	setRotation(e);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotation(const Vector3<T>& s, const Quaternion<T>& q)
+{
+	setRotation(q);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotationTranslation(const Vector3<T>& s, const YawPitchRoll<T>& r, const Vector3<T>& t)
+{
+	setRotation(r);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotationTranslation(const Vector3<T>& s, const Euler<T>& e, const Vector3<T>& t)
+{
+	setRotation(e);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setScalingRotationTranslation(const Vector3<T>& s, const Quaternion<T>& q, const Vector3<T>& t)
+{
+	setRotation(q);
+	m00 *= s.x; m01 *= s.x; m02 *= s.x;
+	m10 *= s.y; m11 *= s.y; m12 *= s.y;
+	m20 *= s.z; m21 *= s.z; m22 *= s.z;
+	m30 = t.x; m31 = t.y; m32 = t.z;
+	return *this;
+}
+
+template<typename T>
+inline Matrix4<T>& Matrix4<T>::setReflection(const Plane<T>& plane)
+{
+	Plane<T> p(plane);
+	p.normalize();
+	m00 = T(-2)*p.a*p.a + T(1); m01 = T(-2)*p.b*p.a; m02 = T(-2)*p.c*p.a; m03 = T();
+	m10 = T(-2)*p.a*p.b; m11 = T(-2)*p.b*p.b + T(1); m12 = T(-2)*p.c*p.b; m13 = T();
+	m20 = T(-2)*p.a*p.c; m21 = T(-2)*p.b*p.c; m22 = T(-2)*p.c*p.c + T(1); m23 = T();
+	m30 = T(-2)*p.a*p.d; m31 = T(-2)*p.b*p.d; m32 = T(-2)*p.c*p.d; m33 = T(1);
+	return *this;
+}
+
 #if SIMD_HAS_FLOAT4
+
+inline Matrix4<float>& Matrix4<float>::setRotation(const YawPitchRoll<float>& r)
+{
+	// #TODO
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotation(const Euler<float>& e)
+{
+	// #TODO
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotation(const Quaternion<float>& q)
+{
+	// #TODO
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotationTranslation(const YawPitchRoll<float>& r, const Vector3<float>& t)
+{
+	setRotation(r);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotationTranslation(const Euler<float>& e, const Vector3<float>& t)
+{
+	setRotation(e);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setRotationTranslation(const Quaternion<float>& q, const Vector3<float>& t)
+{
+	setRotation(q);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScalingRotationTranslation(const Vector3<float>& s, const YawPitchRoll<float>& r, 
+	const Vector3<float>& t)
+{
+	setRotation(r);
+	preScale(s);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScalingRotationTranslation(const Vector3<float>& s, const Euler<float>& e, 
+	const Vector3<float>& t)
+{
+	setRotation(e);
+	preScale(s);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setScalingRotationTranslation(const Vector3<float>& s, const Quaternion<float>& q, 
+	const Vector3<float>& t)
+{
+	setRotation(q);
+	preScale(s);
+	row3 = simd::insert3(t, Vector4<float>::UNIT_W);
+	return *this;
+}
+
+inline Matrix4<float>& Matrix4<float>::setReflection(const Plane<float>& plane)
+{
+	Plane<float> p(plane);
+	p.normalize();
+	static const auto mTwo = simd::set4(-2.f);
+	auto n = simd::cutoff3(p);
+	auto t = simd::mul4(mTwo, p);
+	row0 = simd::mulAdd4(simd::xxxx(t), n, Vector4<float>::UNIT_X);
+	row1 = simd::mulAdd4(simd::yyyy(t), n, Vector4<float>::UNIT_Y);
+	row2 = simd::mulAdd4(simd::zzzz(t), n, Vector4<float>::UNIT_Z);
+	row3 = simd::mulAdd4(simd::wwww(t), n, Vector4<float>::UNIT_W);
+	return *this;
+}
 
 #endif /* SIMD_HAS_FLOAT4 */
 
