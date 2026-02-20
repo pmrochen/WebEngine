@@ -16,7 +16,6 @@
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
-#include "Scalar.hpp"
 #include "Vector3.hpp"
 #include "Matrix3.hpp"
 #include "AffineTransform.hpp"
@@ -26,6 +25,10 @@
 namespace core::mathematics {
 
 struct Normalized
+{
+};
+
+struct Unnormalized
 {
 };
 
@@ -91,10 +94,10 @@ struct HalfSpace
 	HalfSpace& normalize() noexcept;
 
 	// Distances
-	T getDistance(const Vector3<T>& point) const { return std::max(dot(getNormal(), point) + d, 0.f); }	// normalized half-space
-	template<typename U = void> T getDistance(const Vector3<T>& point) const;
+	T getDistance(const Vector3<T>& point) const { return std::max(dot(getNormal(), point) + d, 0.f); }		// normalized half-space
+	template<typename U> T getDistance(const Vector3<T>& point) const;
 	T getSignedDistance(const Vector3<T>& point) const noexcept { return (dot(getNormal(), point) + d); }	// normalized half-space
-	template<typename U = void> T getSignedDistance(const Vector3<T>& point) const noexcept;
+	template<typename U> T getSignedDistance(const Vector3<T>& point) const noexcept;
 
 	// Intersection
 	bool contains(const Vector3<T>& point) const noexcept { return (dot(getNormal(), point) <= -d); }
@@ -181,10 +184,10 @@ struct HalfSpace<float>
 	HalfSpace& normalize() noexcept;
 
 	// Distances
-	float getDistance(const Vector3<float>& point) const { return std::max(dot(getNormal(), point) + d, 0.f); }	// normalized half-space
-	template<typename U = void> float getDistance(const Vector3<float>& point) const;
+	float getDistance(const Vector3<float>& point) const { return std::max(dot(getNormal(), point) + d, 0.f); }		// normalized half-space
+	template<typename U> float getDistance(const Vector3<float>& point) const;
 	float getSignedDistance(const Vector3<float>& point) const noexcept { return (dot(getNormal(), point) + d); }	// normalized half-space
-	template<typename U = void> float getSignedDistance(const Vector3<float>& point) const noexcept;
+	template<typename U> float getSignedDistance(const Vector3<float>& point) const noexcept;
 
 	// Intersection
 	bool contains(const Vector3<float>& point) const noexcept { return (dot(getNormal(), point) <= -d); }
@@ -345,6 +348,7 @@ template<typename T>
 template<typename U>
 inline T HalfSpace<T>::getDistance<(const Vector3<T>& point) const
 {
+	static_assert(std::is_same_v<U, Normalized> || std::is_same_v<U, Unnormalized>);
 	if costexpr(std::is_same_v<U, Normalized>)
 		return std::max(dot(getNormal(), point) + d, T(0));
 	else
@@ -355,6 +359,7 @@ template<typename T>
 template<typename U> 
 inline T HalfSpace<T>::getSignedDistance(const Vector3<T>& point) const
 {
+	static_assert(std::is_same_v<U, Normalized> || std::is_same_v<U, Unnormalized>);
 	if costexpr(std::is_same_v<U, Normalized>)
 		return dot(getNormal(), point) + d;
 	else
@@ -485,6 +490,7 @@ inline HalfSpace<float>& HalfSpace<float>::normalize()
 template<typename U>
 inline float HalfSpace<float>::getDistance<(const Vector3<float>& point) const
 {
+	static_assert(std::is_same_v<U, Normalized> || std::is_same_v<U, Unnormalized>);
 	if costexpr(std::is_same_v<U, Normalized>)
 		return std::max(dot(getNormal(), point) + d, T(0));
 	else
@@ -494,6 +500,7 @@ inline float HalfSpace<float>::getDistance<(const Vector3<float>& point) const
 template<typename U>
 inline float HalfSpace<float>::getSignedDistance(const Vector3<float>& point) const
 {
+	static_assert(std::is_same_v<U, Normalized> || std::is_same_v<U, Unnormalized>);
 	if costexpr(std::is_same_v<U, Normalized>)
 		return dot(getNormal(), point) + d;
 	else
