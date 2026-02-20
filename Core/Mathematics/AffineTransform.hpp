@@ -428,18 +428,18 @@ inline AffineTransform<T>::AffineTransform(const Vector3<T>& forward, const Vect
 	T m = forward.getMagnitude();
 	if (m > T(0))
 	{
-		Vector3<T> at(forward/m);
+		Vector3<T> at = forward/m;
 		if ((T(1) - std::fabs(at.y)) >= Constants<T>::TOLERANCE)
 		{
 			Vector3<T> right(at.z, T(0), -at.x);
 			right.normalize();
-			Vector3<T> up(cross(at, right));
+			Vector3<T> up = cross(at, right);
 			set(right, up, at, origin);
 		}
 		else
 		{
 			Vector3<T> up((at.y > T(0)) ? -Vector3<T>::UNIT_Z : Vector3<T>::UNIT_Z);
-			Vector3<T> right(cross(up, at));
+			Vector3<T> right = cross(up, at);
 			right.normalize();
 			up = cross(at, right);
 			set(right, up, at, origin);
@@ -458,8 +458,8 @@ inline AffineTransform<T>::AffineTransform(const Vector3<T>& up, const Vector3<T
 	T m = forward.getMagnitude();
 	if ((m > T(0)) && (up.getMagnitude() > T(0)))
 	{
-		Vector3<T> at(forward/m);
-		Vector3<T> right(cross(up, at));
+		Vector3<T> at = forward/m;
+		Vector3<T> right = cross(up, at);
 		right.normalize();
 		set(right, cross(at, right), at, origin);
 	}
@@ -723,28 +723,66 @@ inline AffineTransform<T>& AffineTransform<T>::setShearing(T xy, T xz, T yx, T y
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::setInverse(const AffineTransform<T>& m)
 {
-	// #TODO
+	T a = m.m11*m.m22 - m.m12*m.m21;
+	T b = m.m12*m.m20 - m.m10*m.m22;
+	T c = m.m10*m.m21 - m.m11*m.m20;
+	T d = m.m02*m.m21 - m.m01*m.m22;
+	T e = m.m00*m.m22 - m.m02*m.m20;
+	T f = m.m01*m.m20 - m.m00*m.m21;
+	T g = m.m01*m.m12 - m.m02*m.m11;
+	T h = m.m02*m.m10 - m.m00*m.m12;
+	T i = m.m00*m.m11 - m.m01*m.m10;
+	T n = T(1)/(m.m00*a + m.m01*b + m.m02*c);
+	m00 = a*n; m01 = d*n; m02 = g*n;
+	m10 = b*n; m11 = e*n; m12 = h*n;
+	m20 = c*n; m21 = f*n; m22 = i*n;
+	setOrigin(-(m.getOrigin()*getBasis()));
 	return *this;
 }
 
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::setInverseOrthogonal(const AffineTransform<T>& m)
 {
-	// #TODO
+	m00 = m.m00; m01 = m.m10; m02 = m.m20;
+	m10 = m.m01; m11 = m.m11; m12 = m.m21;
+	m20 = m.m02; m21 = m.m12; m22 = m.m22;
+	setOrigin(-(m.getOrigin()*getBasis()));
 	return *this;
 }
 
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::preConcatenate(const AffineTransform<T>& m)
 {
-	// #TODO
+	set(m.m00*m00 + m.m01*m10 + m.m02*m20,
+		m.m00*m01 + m.m01*m11 + m.m02*m21,
+		m.m00*m02 + m.m01*m12 + m.m02*m22,
+		m.m10*m00 + m.m11*m10 + m.m12*m20,
+		m.m10*m01 + m.m11*m11 + m.m12*m21,
+		m.m10*m02 + m.m11*m12 + m.m12*m22,
+		m.m20*m00 + m.m21*m10 + m.m22*m20,
+		m.m20*m01 + m.m21*m11 + m.m22*m21,
+		m.m20*m02 + m.m21*m12 + m.m22*m22,
+		m.m30*m00 + m.m31*m10 + m.m32*m20 + m30,
+		m.m30*m01 + m.m31*m11 + m.m32*m21 + m31,
+		m.m30*m02 + m.m31*m12 + m.m32*m22 + m32);
 	return *this;
 }
 
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::concatenate(const AffineTransform<T>& m)
 {
-	// #TODO
+	set(m00*m.m00 + m01*m.m10 + m02*m.m20,
+		m00*m.m01 + m01*m.m11 + m02*m.m21,
+		m00*m.m02 + m01*m.m12 + m02*m.m22,
+		m10*m.m00 + m11*m.m10 + m12*m.m20,
+		m10*m.m01 + m11*m.m11 + m12*m.m21,
+		m10*m.m02 + m11*m.m12 + m12*m.m22,
+		m20*m.m00 + m21*m.m10 + m22*m.m20,
+		m20*m.m01 + m21*m.m11 + m22*m.m21,
+		m20*m.m02 + m21*m.m12 + m22*m.m22,
+		m30*m.m00 + m31*m.m10 + m32*m.m20 + m.m30,
+		m30*m.m01 + m31*m.m11 + m32*m.m21 + m.m31,
+		m30*m.m02 + m31*m.m12 + m32*m.m22 + m.m32);
 	return *this;
 }
 
@@ -789,13 +827,31 @@ inline AffineTransform<T>& AffineTransform<T>::scale(T f)
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::invert()
 {
-	// #TODO
+	T a = m11*m22 - m12*m21;
+	T b = m12*m20 - m10*m22;
+	T c = m10*m21 - m11*m20;
+	T d = m02*m21 - m01*m22;
+	T e = m00*m22 - m02*m20;
+	T f = m01*m20 - m00*m21;
+	T g = m01*m12 - m02*m11;
+	T h = m02*m10 - m00*m12;
+	T i = m00*m11 - m01*m10;
+	T n = T(1)/(m00*a + m01*b + m02*c);
+	m00 = a*n; m01 = d*n; m02 = g*n;
+	m10 = b*n; m11 = e*n; m12 = h*n;
+	m20 = c*n; m21 = f*n; m22 = i*n;
+	setOrigin(-(getOrigin()*getBasis()));
+	return *this;
 }
 
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::invertOrthogonal()
 {
-	// #TODO
+	T t = m01; m01 = m10; m10 = t;
+	t = m02; m02 = m20; m20 = t;
+	t = m12; m12 = m21; m21 = t;
+	setOrigin(-(getOrigin()*getBasis()));
+	return *this;
 }
 
 #if SIMD_HAS_FLOAT4
@@ -876,18 +932,18 @@ inline AffineTransform<float>::AffineTransform(const Vector3<float>& forward, co
 	float m = forward.getMagnitude();
 	if (m > 0.f)
 	{
-		Vector3<float> at(forward/m);
+		Vector3<float> at = forward/m;
 		if ((1.f - std::fabs(at.y)) >= Constants<float>::TOLERANCE)
 		{
 			Vector3<float> right(at.z, 0.f, -at.x);
 			right.normalize();
-			Vector3<float> up(cross(at, right));
+			Vector3<float> up = cross(at, right);
 			set(right, up, at, origin);
 		}
 		else
 		{
 			Vector3<float> up((at.y > 0.f) ? -Vector3<float>::UNIT_Z : Vector3<float>::UNIT_Z);
-			Vector3<float> right(cross(up, at));
+			Vector3<float> right = cross(up, at);
 			right.normalize();
 			up = cross(at, right);
 			set(right, up, at, origin);
@@ -905,8 +961,8 @@ inline AffineTransform<float>::AffineTransform(const Vector3<float>& up, const V
 	float m = forward.getMagnitude();
 	if ((m > 0.f) && (up.getMagnitude() > 0.f))
 	{
-		Vector3<float> at(forward/m);
-		Vector3<float> right(cross(up, at));
+		Vector3<float> at = forward/m;
+		Vector3<float> right = cross(up, at);
 		right.normalize();
 		set(right, cross(at, right), at, origin);
 	}
@@ -1193,25 +1249,85 @@ inline AffineTransform<float>& AffineTransform<float>::setShearing(float xy, flo
 
 inline AffineTransform<float>& AffineTransform<float>::setInverse(const AffineTransform<float>& m)
 {
-	// #TODO
+	float a = m.m11*m.m22 - m.m12*m.m21; // #TODO SIMD
+	float b = m.m12*m.m20 - m.m10*m.m22;
+	float c = m.m10*m.m21 - m.m11*m.m20;
+	float d = m.m02*m.m21 - m.m01*m.m22;
+	float e = m.m00*m.m22 - m.m02*m.m20;
+	float f = m.m01*m.m20 - m.m00*m.m21;
+	float g = m.m01*m.m12 - m.m02*m.m11;
+	float h = m.m02*m.m10 - m.m00*m.m12;
+	float i = m.m00*m.m11 - m.m01*m.m10;
+	auto n = simd::set4(1.f/(m.m00*a + m.m01*b + m.m02*c));
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	row0 = simd::mul4(simd::set4(a, d, g, g), n);
+	row1 = simd::mul4(simd::set4(b, e, h, h), n);
+	row2 = simd::mul4(simd::set4(c, f, i, i), n);
+#else
+	row0 = simd::mul4(simd::set3(a, d, g), n);
+	row1 = simd::mul4(simd::set3(b, e, h), n);
+	row2 = simd::mul4(simd::set3(c, f, i), n);
+#endif
+	setOrigin(-(m.getOrigin()*getBasis()));
 	return *this;
 }
 
 inline AffineTransform<float>& AffineTransform<float>::setInverseOrthogonal(const AffineTransform<float>& m)
 {
-	// #TODO
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	auto [r0, r1, r2] = simd::transpose3x3(m.row0, m.row1, m.row2);
+	row0 = simd::xyzz(r0);
+	row1 = simd::xyzz(r1);
+	row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(m.row0, m.row1, m.row2, row0, row1, row2);
+	std::tie(row0, row1, row2) = simd::transpose3x3(m.row0, m.row1, m.row2);
+#endif
+	setOrigin(-(m.getOrigin()*getBasis()));
 	return *this;
 }
 
 inline AffineTransform<float>& AffineTransform<float>::preConcatenate(const AffineTransform<float>& m)
 {
-	// #TODO
+	auto r0 = simd::mul4(simd::broadcast<0>(m.row0), row0);
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<1>(m.row0), row1));
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<2>(m.row0), row2));
+	auto r1 = simd::mul4(simd::broadcast<0>(m.row1), row0);
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<1>(m.row1), row1));
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<2>(m.row1), row2));
+	auto r2 = simd::mul4(simd::broadcast<0>(m.row2), row0);
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<1>(m.row2), row1));
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<2>(m.row2), row2));
+	auto r3 = simd::mul4(simd::broadcast<0>(m.row3), row0);
+	r3 = simd::add4(r3, simd::mul4(simd::broadcast<1>(m.row3), row1));
+	r3 = simd::add4(r3, simd::mul4(simd::broadcast<2>(m.row3), row2));
+	r3 = simd::add4(r3, row3);
+	row0 = r0;
+	row1 = r1;
+	row2 = r2;
+	row3 = r3;
 	return *this;
 }
 
 inline AffineTransform<float>& AffineTransform<float>::concatenate(const AffineTransform<float>& m)
 {
-	// #TODO
+	auto r0 = simd::mul4(simd::broadcast<0>(row0), m.row0);
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<1>(row0), m.row1));
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<2>(row0), m.row2));
+	auto r1 = simd::mul4(simd::broadcast<0>(row1), m.row0);
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<1>(row1), m.row1));
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<2>(row1), m.row2));
+	auto r2 = simd::mul4(simd::broadcast<0>(row2), m.row0);
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<1>(row2), m.row1));
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<2>(row2), m.row2));
+	auto r3 = simd::mul4(simd::broadcast<0>(row3), m.row0);
+	r3 = simd::add4(r3, simd::mul4(simd::broadcast<1>(row3), m.row1));
+	r3 = simd::add4(r3, simd::mul4(simd::broadcast<2>(row3), m.row2));
+	r3 = simd::add4(r3, m.row3);
+	row0 = r0;
+	row1 = r1;
+	row2 = r2;
+	row3 = r3;
 	return *this;
 }
 
@@ -1253,12 +1369,42 @@ inline AffineTransform<float>& AffineTransform<float>::scale(float f)
 
 inline AffineTransform<float>& AffineTransform<float>::invert()
 {
-	// #TODO
+	float a = m11*m22 - m12*m21; // #TODO SIMD
+	float b = m12*m20 - m10*m22;
+	float c = m10*m21 - m11*m20;
+	float d = m02*m21 - m01*m22;
+	float e = m00*m22 - m02*m20;
+	float f = m01*m20 - m00*m21;
+	float g = m01*m12 - m02*m11;
+	float h = m02*m10 - m00*m12;
+	float i = m00*m11 - m01*m10;
+	auto n = simd::set4(1.f/(m00*a + m01*b + m02*c));
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	row0 = simd::mul4(simd::set4(a, d, g, g), n);
+	row1 = simd::mul4(simd::set4(b, e, h, h), n);
+	row2 = simd::mul4(simd::set4(c, f, i, i), n);
+#else
+	row0 = simd::mul4(simd::set3(a, d, g), n);
+	row1 = simd::mul4(simd::set3(b, e, h), n);
+	row2 = simd::mul4(simd::set3(c, f, i), n);
+#endif
+	setOrigin(-(getOrigin()*getBasis()));
+	return *this;
 }
 
 inline AffineTransform<float>& AffineTransform<float>::invertOrthogonal()
 {
-	// #TODO
+#if MATHEMATICS_SIMD_EXPAND_LAST
+	auto [r0, r1, r2] = simd::transpose3x3(row0, row1, row2);
+	row0 = simd::xyzz(r0);
+	row1 = simd::xyzz(r1);
+	row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(row0, row1, row2, row0, row1, row2);
+	std::tie(row0, row1, row2) = simd::transpose3x3(row0, row1, row2);
+#endif
+	setOrigin(-(getOrigin()*getBasis()));
+	return *this;
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
@@ -1266,7 +1412,18 @@ inline AffineTransform<float>& AffineTransform<float>::invertOrthogonal()
 template<typename T>
 inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2) noexcept
 {
-	// #TODO
+	return AffineTransform<T>(m1.m00*m2.m00 + m1.m01*m2.m10 + m1.m02*m2.m20,
+		m1.m00*m2.m01 + m1.m01*m2.m11 + m1.m02*m2.m21,
+		m1.m00*m2.m02 + m1.m01*m2.m12 + m1.m02*m2.m22,
+		m1.m10*m2.m00 + m1.m11*m2.m10 + m1.m12*m2.m20,
+		m1.m10*m2.m01 + m1.m11*m2.m11 + m1.m12*m2.m21,
+		m1.m10*m2.m02 + m1.m11*m2.m12 + m1.m12*m2.m22,
+		m1.m20*m2.m00 + m1.m21*m2.m10 + m1.m22*m2.m20,
+		m1.m20*m2.m01 + m1.m21*m2.m11 + m1.m22*m2.m21,
+		m1.m20*m2.m02 + m1.m21*m2.m12 + m1.m22*m2.m22,
+		m1.m30*m2.m00 + m1.m31*m2.m10 + m1.m32*m2.m20 + m2.m30,
+		m1.m30*m2.m01 + m1.m31*m2.m11 + m1.m32*m2.m21 + m2.m31,
+		m1.m30*m2.m02 + m1.m31*m2.m12 + m1.m32*m2.m22 + m2.m32);
 }
 
 template<typename T>
@@ -1316,21 +1473,39 @@ inline AffineTransform<T> inverseOrthogonal(AffineTransform<T>&& m) noexcept
 	return m;
 }
 
-//template<typename U = void, typename T>
-//inline AffineTransform<T> inverse(const AffineTransform<T>& m) noexcept
-//{
-//	return Matrix4<T>(Uninitialized()).setInverse<U>(m);
-//}
-
 #if SIMD_HAS_FLOAT4
+
+template<>
+inline AffineTransform<float> concatenate(const AffineTransform<float>& m1, const AffineTransform<float>& m2) noexcept
+{
+	auto r0 = simd::mul4(simd::broadcast<0>(m1.row0), m2.row0);
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<1>(m1.row0), m2.row1));
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<2>(m1.row0), m2.row2));
+	auto r1 = simd::mul4(simd::broadcast<0>(m1.row1), m2.row0);
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<1>(m1.row1), m2.row1));
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<2>(m1.row1), m2.row2));
+	auto r2 = simd::mul4(simd::broadcast<0>(m1.row2), m2.row0);
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<1>(m1.row2), m2.row1));
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<2>(m1.row2), m2.row2));
+	auto r3 = simd::mul4(simd::broadcast<0>(m1.row3), m2.row0);
+	r3 = simd::add4(r3, simd::mul4(simd::broadcast<1>(m1.row3), m2.row1));
+	r3 = simd::add4(r3, simd::mul4(simd::broadcast<2>(m1.row3), m2.row2));
+	r3 = simd::add4(r3, m2.row3);
+	return AffineTransform<float>(r0, r1, r2, r3);
+}
 
 template<>
 inline AffineTransform<float> inverseOrthogonal(const AffineTransform<float>& m) noexcept
 {
 	AffineTransform<T> n(Uninitialized());
-	simd::transpose3x3(m.row0, m.row1, m.row2, n.row0, n.row1, n.row2);
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	// #TODO
+	auto [r0, r1, r2] = simd::transpose3x3(m.row0, m.row1, m.row2);
+	n.row0 = simd::xyzz(r0);
+	n.row1 = simd::xyzz(r1);
+	n.row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(m.row0, m.row1, m.row2, n.row0, n.row1, n.row2); 
+	std::tie(n.row0, n.row1, n.row2) = simd::transpose3x3(m.row0, m.row1, m.row2);
 #endif
 	n.setOrigin(-(m.getOrigin()*n.getBasis()));
 	return n;
@@ -1339,9 +1514,14 @@ inline AffineTransform<float> inverseOrthogonal(const AffineTransform<float>& m)
 template<>
 inline AffineTransform<float> inverseOrthogonal(AffineTransform<float>&& m) noexcept
 {
-	simd::transpose3x3(m.row0, m.row1, m.row2, m.row0, m.row1, m.row2);
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	// #TODO
+	auto [r0, r1, r2] = simd::transpose3x3(m.row0, m.row1, m.row2);
+	m.row0 = simd::xyzz(r0);
+	m.row1 = simd::xyzz(r1);
+	m.row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(m.row0, m.row1, m.row2, m.row0, m.row1, m.row2); 
+	std::tie(m.row0, m.row1, m.row2) = simd::transpose3x3(m.row0, m.row1, m.row2);
 #endif
 	m.setOrigin(-(m.getOrigin()*m.getBasis()));
 	return m;
@@ -1376,19 +1556,101 @@ namespace core::mathematics::templates {
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::setRotation(const YawPitchRoll<T>& r)
 {
-	// #TODO
+	if (!r.isZero())
+	{
+		T sy = std::sin(r.yaw), cy = std::cos(r.yaw);
+		T sp = std::sin(r.pitch), cp = std::cos(r.pitch);
+		T sr = std::sin(r.roll), cr = std::cos(r.roll);
+		T ss = sy*sp, cs = cy*sp;
+
+		return set(cr*cy + sr*ss, sr*cp, sr*cs - cr*sy,
+			cr*ss - sr*cy, cr*cp, cr*cs + sr*sy,
+			sy*cp, -sp, cy*cp,
+			T(), T(), T());
+	}
+
+	return setIdentity();
 }
 
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::setRotation(const Euler<T>& e)
 {
-	// #TODO
+	if (!e.isZero() && (e.order != EulerOrder::UNSPECIFIED))
+	{
+		static const int safe[] = { 0, 1, 2, 0 };
+		static const int next[] = { 1, 2, 0, 1 };
+		unsigned int o = (unsigned int)e.order;
+		int f = o & 1; o >>= 1;
+		int s = o & 1; o >>= 1;
+		int n = o & 1; o >>= 1;
+		int i = safe[o & 3];
+		int j = next[i + n];
+		int k = next[i + 1 - n];
+		T ti = e[f ? (s ? i : k) : i];
+		T tj = e[j];
+		T th = e[f ? i : (s ? i : k)];
+
+		if (f)
+		{
+			T t = ti;
+			ti = th;
+			th = t;
+		}
+
+		if (n)
+		{
+			ti = -ti;
+			tj = -tj;
+			th = -th;
+		}
+
+		T si = std::sin(ti), ci = std::cos(ti);
+		T sj = std::sin(tj), cj = std::cos(tj);
+		T sh = std::sin(th), ch = std::cos(th);
+		T cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+
+		T m[3][3];
+		if (s)
+		{
+			m[i][i] = cj; m[j][i] = sj*si; m[k][i] = sj*ci;
+			m[i][j] = sj*sh; m[j][j] = -cj*ss+cc; m[k][j] = -cj*cs-sc;
+			m[i][k] = -sj*ch; m[j][k] = cj*sc+cs; m[k][k] = cj*cc-ss;
+		}
+		else
+		{
+			m[i][i] = cj*ch; m[j][i] = sj*sc-cs; m[k][i] = sj*cc+ss;
+			m[i][j] = cj*sh; m[j][j] = sj*ss+cc; m[k][j] = sj*cs-sc;
+			m[i][k] = -sj; m[j][k] = cj*si; m[k][k] = cj*ci;
+		}
+
+		return set(m[0][0], m[0][1], m[0][2],
+			m[1][0], m[1][1], m[1][2],
+			m[2][0], m[2][1], m[2][2],
+			T(), T(), T());
+	}
+
+	return setIdentity();
 }
 
 template<typename T>
 inline AffineTransform<T>& AffineTransform<T>::setRotation(const Quaternion<T>& q)
 {
-	// #TODO
+	if (!q.isIdentity())
+	{
+		T nq = q.getNorm();
+		T s = (nq > T(0)) ? T(2)/nq : T(2);
+		T xs = q.x*s, ys = q.y*s, zs = q.z*s;
+		T wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
+		T xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
+		T yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
+
+		return set(T(1) - (yy + zz), xy + wz, xz - wy,
+			xy - wz, T(1) - (xx + zz), yz + wx,
+			xz + wy, yz - wx, T(1) - (xx + yy),
+			T(), T(), T());
+	}
+
+	return setIdentity();
 }
 
 template<typename T>
@@ -1407,17 +1669,99 @@ inline AffineTransform<T>& AffineTransform<T>::setReflection(const Plane<T>& pla
 
 inline AffineTransform<float>& AffineTransform<float>::setRotation(const YawPitchRoll<float>& r)
 {
-	// #TODO
+	if (!r.isZero())
+	{
+		float sy = std::sin(r.yaw), cy = std::cos(r.yaw);
+		float sp = std::sin(r.pitch), cp = std::cos(r.pitch);
+		float sr = std::sin(r.roll), cr = std::cos(r.roll);
+		float ss = sy*sp, cs = cy*sp;
+
+		return set(cr*cy + sr*ss, sr*cp, sr*cs - cr*sy,
+			cr*ss - sr*cy, cr*cp, cr*cs + sr*sy,
+			sy*cp, -sp, cy*cp,
+			0.f, 0.f, 0.f);
+	}
+
+	return setIdentity();
 }
 
 inline AffineTransform<float>& AffineTransform<float>::setRotation(const Euler<float>& e)
 {
-	// #TODO
+	if (!e.isZero() && (e.order != EulerOrder::UNSPECIFIED))
+	{
+		static const int safe[] = { 0, 1, 2, 0 };
+		static const int next[] = { 1, 2, 0, 1 };
+		unsigned int o = (unsigned int)e.order;
+		int f = o & 1; o >>= 1;
+		int s = o & 1; o >>= 1;
+		int n = o & 1; o >>= 1;
+		int i = safe[o & 3];
+		int j = next[i + n];
+		int k = next[i + 1 - n];
+		float ti = e[f ? (s ? i : k) : i];
+		float tj = e[j];
+		float th = e[f ? i : (s ? i : k)];
+
+		if (f)
+		{
+			float t = ti;
+			ti = th;
+			th = t;
+		}
+
+		if (n)
+		{
+			ti = -ti;
+			tj = -tj;
+			th = -th;
+		}
+
+		float si = std::sin(ti), ci = std::cos(ti);
+		float sj = std::sin(tj), cj = std::cos(tj);
+		float sh = std::sin(th), ch = std::cos(th);
+		float cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+
+		float m[3][3];
+		if (s)
+		{
+			m[i][i] = cj; m[j][i] = sj*si; m[k][i] = sj*ci;
+			m[i][j] = sj*sh; m[j][j] = -cj*ss+cc; m[k][j] = -cj*cs-sc;
+			m[i][k] = -sj*ch; m[j][k] = cj*sc+cs; m[k][k] = cj*cc-ss;
+		}
+		else
+		{
+			m[i][i] = cj*ch; m[j][i] = sj*sc-cs; m[k][i] = sj*cc+ss;
+			m[i][j] = cj*sh; m[j][j] = sj*ss+cc; m[k][j] = sj*cs-sc;
+			m[i][k] = -sj; m[j][k] = cj*si; m[k][k] = cj*ci;
+		}
+
+		return set(m[0][0], m[0][1], m[0][2],
+			m[1][0], m[1][1], m[1][2],
+			m[2][0], m[2][1], m[2][2],
+			0.f, 0.f, 0.f);
+	}
+
+	return setIdentity();
 }
 
 inline AffineTransform<float>& AffineTransform<float>::setRotation(const Quaternion<float>& q)
 {
-	// #TODO
+	if (!q.isIdentity())
+	{
+		float nq = q.getNorm();
+		float s = (nq > 0.f) ? 2.f/nq : 2.f;
+		float xs = q.x*s, ys = q.y*s, zs = q.z*s; // #TODO SIMD
+		float wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
+		float xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
+		float yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
+
+		return set(1.f - (yy + zz), xy + wz, xz - wy,
+			xy - wz, 1.f - (xx + zz), yz + wx,
+			xz + wy, yz - wx, 1.f - (xx + yy),
+			0.f, 0.f, 0.f);
+	}
+
+	return setIdentity();
 }
 
 inline AffineTransform<float>& AffineTransform<float>::setReflection(const Plane<float>& plane)

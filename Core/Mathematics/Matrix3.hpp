@@ -342,18 +342,18 @@ inline Matrix3<T>::Matrix3(const Vector3<T>& forward)
 	T m = forward.getMagnitude();
 	if (m > T(0))
 	{
-		Vector3<T> at(forward/m);
+		Vector3<T> at = forward/m;
 		if ((T(1) - std::fabs(at.y)) >= Constants<T>::TOLERANCE)
 		{
 			Vector3<T> right(at.z, T(0), -at.x);
 			right.normalize();
-			Vector3<T> up(cross(at, right));
+			Vector3<T> up = cross(at, right);
 			set(right, up, at);
 		}
 		else
 		{
 			Vector3<T> up((at.y > T(0)) ? -Vector3<T>::UNIT_Z : Vector3<T>::UNIT_Z);
-			Vector3<T> right(cross(up, at));
+			Vector3<T> right = cross(up, at);
 			right.normalize();
 			up = cross(at, right);
 			set(right, up, at);
@@ -371,8 +371,8 @@ inline Matrix3<T>::Matrix3(const Vector3<T>& up, const Vector3<T>& forward)
 	T m = forward.getMagnitude();
 	if ((m > T(0)) && (up.getMagnitude() > T(0)))
 	{
-		Vector3<T> at(forward/m);
-		Vector3<T> right(cross(up, at));
+		Vector3<T> at = forward/m;
+		Vector3<T> right = cross(up, at);
 		right.normalize();
 		set(right, cross(at, right), at);
 	}
@@ -907,18 +907,18 @@ inline Matrix3<float>::Matrix3(const Vector3<float>& forward)
 	float m = forward.getMagnitude();
 	if (m > 0.f)
 	{
-		Vector3<float> at(forward/m);
+		Vector3<float> at = forward/m;
 		if ((1.f - std::fabs(at.y)) >= Constants<float>::TOLERANCE)
 		{
 			Vector3<float> right(at.z, 0.f, -at.x);
 			right.normalize();
-			Vector3<float> up(cross(at, right));
+			Vector3<float> up = cross(at, right);
 			set(right, up, at);
 		}
 		else
 		{
 			Vector3<float> up((at.y > 0.f) ? -Vector3<float>::UNIT_Z : Vector3<float>::UNIT_Z);
-			Vector3<float> right(cross(up, at));
+			Vector3<float> right = cross(up, at);
 			right.normalize();
 			up = cross(at, right);
 			set(right, up, at);
@@ -935,8 +935,8 @@ inline Matrix3<float>::Matrix3(const Vector3<float>& up, const Vector3<float>& f
 	float m = forward.getMagnitude();
 	if ((m > 0.f) && (up.getMagnitude() > 0.f))
 	{
-		Vector3<float> at(forward/m);
-		Vector3<float> right(cross(up, at));
+		Vector3<float> at = forward/m;
+		Vector3<float> right = cross(up, at);
 		right.normalize();
 		set(right, cross(at, right), at);
 	}
@@ -1001,18 +1001,18 @@ inline Matrix3<float>& Matrix3<float>::operator*=(float f)
 
 inline Matrix3<float>& Matrix3<float>::operator*=(const Matrix3<float>& m)
 {
-	auto result0 = simd::mul4(simd::broadcast<0>(row0), m.row0);
-	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(row0), m.row1));
-	result0 = simd::add4(result0, simd::mul4(simd::broadcast<2>(row0), m.row2));
-	auto result1 = simd::mul4(simd::broadcast<0>(row1), m.row0);
-	result1 = simd::add4(result1, simd::mul4(simd::broadcast<1>(row1), m.row1));
-	result1 = simd::add4(result1, simd::mul4(simd::broadcast<2>(row1), m.row2));
-	auto result2 = simd::mul4(simd::broadcast<0>(row2), m.row0);
-	result2 = simd::add4(result2, simd::mul4(simd::broadcast<1>(row2), m.row1));
-	result2 = simd::add4(result2, simd::mul4(simd::broadcast<2>(row2), m.row2));
-	row0 = result0;
-	row1 = result1;
-	row2 = result2;
+	auto r0 = simd::mul4(simd::broadcast<0>(row0), m.row0);
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<1>(row0), m.row1));
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<2>(row0), m.row2));
+	auto r1 = simd::mul4(simd::broadcast<0>(row1), m.row0);
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<1>(row1), m.row1));
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<2>(row1), m.row2));
+	auto r2 = simd::mul4(simd::broadcast<0>(row2), m.row0);
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<1>(row2), m.row1));
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<2>(row2), m.row2));
+	row0 = r0;
+	row1 = r1;
+	row2 = r2;
 	return *this;
 }
 
@@ -1053,16 +1053,16 @@ inline Matrix3<float> operator*(const Matrix3<float>& m, float f) noexcept
 template<>
 inline Matrix3<float> operator*(const Matrix3<float>& m1, const Matrix3<float>& m2) noexcept
 {
-	auto result0 = simd::mul4(simd::broadcast<0>(m1.row0), m2.row0);
-	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(m1.row0), m2.row1));
-	result0 = simd::add4(result0, simd::mul4(simd::broadcast<2>(m1.row0), m2.row2));
-	auto result1 = simd::mul4(simd::broadcast<0>(m1.row1), m2.row0);
-	result1 = simd::add4(result1, simd::mul4(simd::broadcast<1>(m1.row1), m2.row1));
-	result1 = simd::add4(result1, simd::mul4(simd::broadcast<2>(m1.row1), m2.row2));
-	auto result2 = simd::mul4(simd::broadcast<0>(m1.row2), m2.row0);
-	result2 = simd::add4(result2, simd::mul4(simd::broadcast<1>(m1.row2), m2.row1));
-	result2 = simd::add4(result2, simd::mul4(simd::broadcast<2>(m1.row2), m2.row2));
-	return Matrix3<float>(result0, result1, result2);
+	auto r0 = simd::mul4(simd::broadcast<0>(m1.row0), m2.row0);
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<1>(m1.row0), m2.row1));
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<2>(m1.row0), m2.row2));
+	auto r1 = simd::mul4(simd::broadcast<0>(m1.row1), m2.row0);
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<1>(m1.row1), m2.row1));
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<2>(m1.row1), m2.row2));
+	auto r2 = simd::mul4(simd::broadcast<0>(m1.row2), m2.row0);
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<1>(m1.row2), m2.row1));
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<2>(m1.row2), m2.row2));
+	return Matrix3<float>(r0, r1, r2);
 }
 
 template<>
@@ -1305,9 +1305,14 @@ inline Matrix3<float>& Matrix3<float>::setShearing(float xy, float xz, float yx,
 
 inline Matrix3<float>& Matrix3<float>::setTranspose(const Matrix3<float>& m)
 {
-	simd::transpose3x3(m.row0, m.row1, m.row2, row0, row1, row2);
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	// #TODO
+	auto [r0, r1, r2] = simd::transpose3x3(m.row0, m.row1, m.row2);
+	row0 = simd::xyzz(r0);
+	row1 = simd::xyzz(r1);
+	row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(m.row0, m.row1, m.row2, row0, row1, row2);
+	std::tie(row0, row1, row2) = simd::transpose3x3(m.row0, m.row1, m.row2);
 #endif
 	return *this;
 }
@@ -1362,18 +1367,18 @@ inline Matrix3<float>& Matrix3<float>::setInverseTranspose(const Matrix3<float>&
 
 inline Matrix3<float>& Matrix3<float>::preConcatenate(const Matrix3<float>& m)
 {
-	auto result0 = simd::mul4(simd::broadcast<0>(m.row0), row0);
-	result0 = simd::add4(result0, simd::mul4(simd::broadcast<1>(m.row0), row1));
-	result0 = simd::add4(result0, simd::mul4(simd::broadcast<2>(m.row0), row2));
-	auto result1 = simd::mul4(simd::broadcast<0>(m.row1), row0);
-	result1 = simd::add4(result1, simd::mul4(simd::broadcast<1>(m.row1), row1));
-	result1 = simd::add4(result1, simd::mul4(simd::broadcast<2>(m.row1), row2));
-	auto result2 = simd::mul4(simd::broadcast<0>(m.row2), row0);
-	result2 = simd::add4(result2, simd::mul4(simd::broadcast<1>(m.row2), row1));
-	result2 = simd::add4(result2, simd::mul4(simd::broadcast<2>(m.row2), row2));
-	row0 = result0;
-	row1 = result1;
-	row2 = result2;
+	auto r0 = simd::mul4(simd::broadcast<0>(m.row0), row0);
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<1>(m.row0), row1));
+	r0 = simd::add4(r0, simd::mul4(simd::broadcast<2>(m.row0), row2));
+	auto r1 = simd::mul4(simd::broadcast<0>(m.row1), row0);
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<1>(m.row1), row1));
+	r1 = simd::add4(r1, simd::mul4(simd::broadcast<2>(m.row1), row2));
+	auto r2 = simd::mul4(simd::broadcast<0>(m.row2), row0);
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<1>(m.row2), row1));
+	r2 = simd::add4(r2, simd::mul4(simd::broadcast<2>(m.row2), row2));
+	row0 = r0;
+	row1 = r1;
+	row2 = r2;
 	return *this;
 }
 
@@ -1409,9 +1414,14 @@ inline Matrix3<float>& Matrix3<float>::negate()
 
 inline Matrix3<float>& Matrix3<float>::transpose()
 {
-	simd::transpose3x3(row0, row1, row2, row0, row1, row2);
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	// #TODO
+	auto [r0, r1, r2] = simd::transpose3x3(row0, row1, row2);
+	row0 = simd::xyzz(r0);
+	row1 = simd::xyzz(r1);
+	row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(row0, row1, row2, row0, row1, row2);
+	std::tie(row0, row1, row2) = simd::transpose3x3(row0, row1, row2); 
 #endif
 	return *this;
 }
@@ -1517,9 +1527,14 @@ template<>
 inline Matrix3<float> transpose(const Matrix3<float>& m) noexcept
 {
 	Matrix3<float> n(Uninitialized());
-	simd::transpose3x3(m.row0, m.row1, m.row2, n.row0, n.row1, n.row2);
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	// #TODO
+	auto [r0, r1, r2] = simd::transpose3x3(m.row0, m.row1, m.row2);
+	n.row0 = simd::xyzz(r0);
+	n.row1 = simd::xyzz(r1);
+	n.row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(m.row0, m.row1, m.row2, n.row0, n.row1, n.row2);
+	std::tie(n.row0, n.row1, n.row2) = simd::transpose3x3(m.row0, m.row1, m.row2);
 #endif
 	return n;
 }
@@ -1527,9 +1542,14 @@ inline Matrix3<float> transpose(const Matrix3<float>& m) noexcept
 template<>
 inline Matrix3<float> transpose(Matrix3<float>&& m) noexcept
 {
-	simd::transpose3x3(m.row0, m.row1, m.row2, m.row0, m.row1, m.row2);
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	// #TODO
+	auto [r0, r1, r2] = simd::transpose3x3(m.row0, m.row1, m.row2);
+	m.row0 = simd::xyzz(r0);
+	m.row1 = simd::xyzz(r1);
+	m.row2 = simd::xyzz(r2);
+#else
+	//simd::transpose3x3(m.row0, m.row1, m.row2, m.row0, m.row1, m.row2);
+	std::tie(m.row0, m.row1, m.row2) = simd::transpose3x3(m.row0, m.row1, m.row2);
 #endif
 	return m;
 }
@@ -1562,71 +1582,233 @@ namespace core::mathematics::templates {
 template<typename T>
 inline Matrix3<T>::Matrix3(const Quaternion<T>& q)
 {
-	//T nq = q.getNorm();
-	const T s = /*(nq > T(0)) ? T(2)/nq :*/ T(2);
-	T xs = q.x*s, ys = q.y*s, zs = q.z*s;
-	T wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
-	T xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
-	T yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
-	set(T(1) - (yy + zz), xy + wz, xz - wy, xy - wz, T(1) - (xx + zz), yz + wx, xz + wy, yz - wx, T(1) - (xx + yy));
+	if (!q.isIdentity())
+	{
+		//T nq = q.getNorm();
+		const T s = /*(nq > T(0)) ? T(2)/nq :*/ T(2);
+		T xs = q.x*s, ys = q.y*s, zs = q.z*s;
+		T wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
+		T xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
+		T yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
+
+		set(T(1) - (yy + zz), xy + wz, xz - wy,
+			xy - wz, T(1) - (xx + zz), yz + wx,
+			xz + wy, yz - wx, T(1) - (xx + yy));
+	}
+	else
+		setIdentity();
 }
 
 template<typename T>
 inline Matrix3<T>& Matrix3<T>::setRotation(const YawPitchRoll<T>& r)
 {
-	// #TODO
+	if (!r.isZero())
+	{
+		T sy = std::sin(r.yaw), cy = std::cos(r.yaw);
+		T sp = std::sin(r.pitch), cp = std::cos(r.pitch);
+		T sr = std::sin(r.roll), cr = std::cos(r.roll);
+		T ss = sy*sp, cs = cy*sp;
+
+		return set(cr*cy + sr*ss, sr*cp, sr*cs - cr*sy,
+			cr*ss - sr*cy, cr*cp, cr*cs + sr*sy,
+			sy*cp, -sp, cy*cp);
+	}
+
+	return setIdentity();
 }
 
 template<typename T>
 inline Matrix3<T>& Matrix3<T>::setRotation(const Euler<T>& e)
 {
-	// #TODO
+	if (!e.isZero() && (e.order != EulerOrder::UNSPECIFIED))
+	{
+		static const int safe[] = { 0, 1, 2, 0 };
+		static const int next[] = { 1, 2, 0, 1 };
+		unsigned int o = (unsigned int)e.order;
+		int f = o & 1; o >>= 1;
+		int s = o & 1; o >>= 1;
+		int n = o & 1; o >>= 1;
+		int i = safe[o & 3];
+		int j = next[i + n];
+		int k = next[i + 1 - n];
+		T ti = e[f ? (s ? i : k) : i];
+		T tj = e[j];
+		T th = e[f ? i : (s ? i : k)];
+
+		if (f)
+		{
+			T t = ti;
+			ti = th;
+			th = t;
+		}
+
+		if (n)
+		{
+			ti = -ti;
+			tj = -tj;
+			th = -th;
+		}
+
+		T si = std::sin(ti), ci = std::cos(ti);
+		T sj = std::sin(tj), cj = std::cos(tj);
+		T sh = std::sin(th), ch = std::cos(th);
+		T cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+		
+		T m[3][3];
+		if (s)
+		{
+			m[i][i] = cj; m[j][i] = sj*si; m[k][i] = sj*ci;
+			m[i][j] = sj*sh; m[j][j] = -cj*ss+cc; m[k][j] = -cj*cs-sc;
+			m[i][k] = -sj*ch; m[j][k] = cj*sc+cs; m[k][k] = cj*cc-ss;
+		}
+		else
+		{
+			m[i][i] = cj*ch; m[j][i] = sj*sc-cs; m[k][i] = sj*cc+ss;
+			m[i][j] = cj*sh; m[j][j] = sj*ss+cc; m[k][j] = sj*cs-sc;
+			m[i][k] = -sj; m[j][k] = cj*si; m[k][k] = cj*ci;
+		}
+
+		return set(m[0][0], m[0][1], m[0][2],
+			m[1][0], m[1][1], m[1][2],
+			m[2][0], m[2][1], m[2][2]);
+	}
+
+	return setIdentity();
 }
 
 template<typename T>
 inline Matrix3<T>& Matrix3<T>::setRotation(const Quaternion<T>& q)
 {
-	T nq = q.getNorm();
-	T s = (nq > T(0)) ? T(2)/nq : T(2);
-	T xs = q.x*s, ys = q.y*s, zs = q.z*s;
-	T wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
-	T xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
-	T yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
-	return set(T(1) - (yy + zz), xy + wz, xz - wy, xy - wz, T(1) - (xx + zz), yz + wx, xz + wy, yz - wx, T(1) - (xx + yy));
+	if (!q.isIdentity())
+	{
+		T nq = q.getNorm();
+		T s = (nq > T(0)) ? T(2)/nq : T(2);
+		T xs = q.x*s, ys = q.y*s, zs = q.z*s;
+		T wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
+		T xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
+		T yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
+
+		return set(T(1) - (yy + zz), xy + wz, xz - wy,
+			xy - wz, T(1) - (xx + zz), yz + wx,
+			xz + wy, yz - wx, T(1) - (xx + yy));
+	}
+
+	return setIdentity();
 }
 
 #if SIMD_HAS_FLOAT4
 
 inline Matrix3<float>::Matrix3(const Quaternion<float>& q)
 {
-	//float nq = q.getNorm();
-	const float s = /*(nq > 0.f) ? 2.f/nq :*/ 2.f;
-	float xs = q.x*s, ys = q.y*s, zs = q.z*s; // #TODO SIMD
-	float wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
-	float xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
-	float yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
-	set(1.f - (yy + zz), xy + wz, xz - wy, xy - wz, 1.f - (xx + zz), yz + wx, xz + wy, yz - wx, 1.f - (xx + yy));
+	if (!q.isIdentity())
+	{
+		//float nq = q.getNorm();
+		const float s = /*(nq > 0.f) ? 2.f/nq :*/ 2.f;
+		float xs = q.x*s, ys = q.y*s, zs = q.z*s; // #TODO SIMD
+		float wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
+		float xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
+		float yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
+
+		set(1.f - (yy + zz), xy + wz, xz - wy,
+			xy - wz, 1.f - (xx + zz), yz + wx,
+			xz + wy, yz - wx, 1.f - (xx + yy));
+	}
+	else
+		setIdentity();
 }
 
 inline Matrix3<float>& Matrix3<float>::setRotation(const YawPitchRoll<float>& r)
 {
-	// #TODO
+	if (!r.isZero())
+	{
+		float sy = std::sin(r.yaw), cy = std::cos(r.yaw);
+		float sp = std::sin(r.pitch), cp = std::cos(r.pitch);
+		float sr = std::sin(r.roll), cr = std::cos(r.roll);
+		float ss = sy*sp, cs = cy*sp;
+
+		return set(cr*cy + sr*ss, sr*cp, sr*cs - cr*sy,
+			cr*ss - sr*cy, cr*cp, cr*cs + sr*sy,
+			sy*cp, -sp, cy*cp);
+	}
+
+	return setIdentity();
 }
 
 inline Matrix3<float>& Matrix3<float>::setRotation(const Euler<float>& e)
 {
-	// #TODO
+	if (!e.isZero() && (e.order != EulerOrder::UNSPECIFIED))
+	{
+		static const int safe[] = { 0, 1, 2, 0 };
+		static const int next[] = { 1, 2, 0, 1 };
+		unsigned int o = (unsigned int)e.order;
+		int f = o & 1; o >>= 1;
+		int s = o & 1; o >>= 1;
+		int n = o & 1; o >>= 1;
+		int i = safe[o & 3];
+		int j = next[i + n];
+		int k = next[i + 1 - n];
+		float ti = e[f ? (s ? i : k) : i];
+		float tj = e[j];
+		float th = e[f ? i : (s ? i : k)];
+
+		if (f)
+		{
+			float t = ti;
+			ti = th;
+			th = t;
+		}
+
+		if (n)
+		{
+			ti = -ti;
+			tj = -tj;
+			th = -th;
+		}
+
+		float si = std::sin(ti), ci = std::cos(ti);
+		float sj = std::sin(tj), cj = std::cos(tj);
+		float sh = std::sin(th), ch = std::cos(th);
+		float cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+
+		float m[3][3];
+		if (s)
+		{
+			m[i][i] = cj; m[j][i] = sj*si; m[k][i] = sj*ci;
+			m[i][j] = sj*sh; m[j][j] = -cj*ss+cc; m[k][j] = -cj*cs-sc;
+			m[i][k] = -sj*ch; m[j][k] = cj*sc+cs; m[k][k] = cj*cc-ss;
+		}
+		else
+		{
+			m[i][i] = cj*ch; m[j][i] = sj*sc-cs; m[k][i] = sj*cc+ss;
+			m[i][j] = cj*sh; m[j][j] = sj*ss+cc; m[k][j] = sj*cs-sc;
+			m[i][k] = -sj; m[j][k] = cj*si; m[k][k] = cj*ci;
+		}
+
+		return set(m[0][0], m[0][1], m[0][2],
+			m[1][0], m[1][1], m[1][2],
+			m[2][0], m[2][1], m[2][2]);
+	}
+
+	return setIdentity();
 }
 
 inline Matrix3<float>& Matrix3<float>::setRotation(const Quaternion<float>& q)
 {
-	float nq = q.getNorm();
-	float s = (nq > 0.f) ? 2.f/nq : 2.f;
-	float xs = q.x*s, ys = q.y*s, zs = q.z*s; // #TODO SIMD
-	float wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
-	float xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
-	float yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
-	return set(1.f - (yy + zz), xy + wz, xz - wy, xy - wz, 1.f - (xx + zz), yz + wx, xz + wy, yz - wx, 1.f - (xx + yy));
+	if (!q.isIdentity())
+	{
+		float nq = q.getNorm();
+		float s = (nq > 0.f) ? 2.f/nq : 2.f;
+		float xs = q.x*s, ys = q.y*s, zs = q.z*s; // #TODO SIMD
+		float wx = q.w*xs, wy = q.w*ys, wz = q.w*zs;
+		float xx = q.x*xs, xy = q.x*ys, xz = q.x*zs;
+		float yy = q.y*ys, yz = q.y*zs, zz = q.z*zs;
+
+		return set(1.f - (yy + zz), xy + wz, xz - wy,
+			xy - wz, 1.f - (xx + zz), yz + wx,
+			xz + wy, yz - wx, 1.f - (xx + yy));
+	}
+
+	return setIdentity();
 }
 
 #endif /* SIMD_HAS_FLOAT4 */

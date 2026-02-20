@@ -47,7 +47,7 @@ struct Quaternion
 	constexpr explicit Quaternion(Vector3<T>::ConstArg vector) noexcept : x(vector.x), y(vector.y), z(vector.z), w() {}
 	constexpr Quaternion(Vector3<T>::ConstArg vector, T scalar) noexcept : x(vector.x), y(vector.y), z(vector.z), w(scalar) {}
 	explicit Quaternion(const Matrix3<T>& m) noexcept;
-	explicit Quaternion(const YawPitchRoll<T>& ypr) noexcept;
+	explicit Quaternion(const YawPitchRoll<T>& r) noexcept;
 	explicit Quaternion(const Euler<T>& e) noexcept;
 	explicit Quaternion(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
 	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
@@ -155,7 +155,7 @@ struct Quaternion<float>
 	/*constexpr*/ explicit Quaternion(Vector3<float>::ConstArg vector) noexcept : xyzw(simd::cutoff3(vector)) {}
 	/*constexpr*/ Quaternion(Vector3<float>::ConstArg vector, float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, vector)) {}
 	explicit Quaternion(const Matrix3<float>& m) noexcept;
-	explicit Quaternion(const YawPitchRoll<float>& ypr) noexcept;
+	explicit Quaternion(const YawPitchRoll<float>& r) noexcept;
 	explicit Quaternion(const Euler<float>& e) noexcept;
 	explicit Quaternion(const tuples::templates::Tuple4<float>& t) noexcept : xyzw(simd::set4(t.x, t.y, t.z, t.w)) {}
 	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : xyzw(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
@@ -258,7 +258,33 @@ const Quaternion<float> Quaternion<float>::TOLERANCE{ Constants<float>::TOLERANC
 template<typename T>
 inline Quaternion<T>::Quaternion(const Matrix3<T>& m)
 {
-	// #TODO
+	T tr = m[0][0] + m[1][1] + m[2][2];
+	if (tr > T(0))
+	{
+		T s = std::sqrt(tr + T(1));
+		T t = T(0.5)/s;
+		set((m[1][2] - m[2][1])*t, (m[2][0] - m[0][2])*t, (m[0][1] - m[1][0])*t, T(0.5)*s);
+	}
+	else
+	{
+		int i = 0;
+		if (m[1][1] > m[0][0])
+			i = 1;
+		if (m[2][2] > m[i][i])
+			i = 2;
+
+		static const int next[] = { 1, 2, 0 };
+		int j = next[i];
+		int k = next[j];
+		T s = std::sqrt(m[i][i] - (m[j][j] + m[k][k]) + T(1));
+		T t = T(0.5)/s;
+
+		T q[3];
+		q[i] = T(0.5)*s;
+		q[j] = (m[i][j] + m[j][i])*t;
+		q[k] = (m[i][k] + m[k][i])*t;
+		set(q[0], q[1], q[2], (m[j][k] - m[k][j])*t);
+	}
 }
 
 template<typename T>
@@ -540,7 +566,33 @@ inline Quaternion<T>& Quaternion<T>::normalize()
 
 inline Quaternion<float>::Quaternion(const Matrix3<float>& m)
 {
-	// #TODO
+	float tr = m[0][0] + m[1][1] + m[2][2];
+	if (tr > 0.f)
+	{
+		float s = std::sqrt(tr + 1.f);
+		float t = 0.5f/s;
+		set((m[1][2] - m[2][1])*t, (m[2][0] - m[0][2])*t, (m[0][1] - m[1][0])*t, 0.5f*s);
+	}
+	else
+	{
+		int i = 0;
+		if (m[1][1] > m[0][0])
+			i = 1;
+		if (m[2][2] > m[i][i])
+			i = 2;
+
+		static const int next[] = { 1, 2, 0 };
+		int j = next[i];
+		int k = next[j];
+		float s = std::sqrt(m[i][i] - (m[j][j] + m[k][k]) + 1.f);
+		float t = 0.5f/s;
+
+		float q[3];
+		q[i] = 0.5f*s;
+		q[j] = (m[i][j] + m[j][i])*t;
+		q[k] = (m[i][k] + m[k][i])*t;
+		set(q[0], q[1], q[2], (m[j][k] - m[k][j])*t);
+	}
 }
 
 inline Quaternion<float>& Quaternion<float>::operator*=(const Quaternion<float>& q)
@@ -1181,27 +1233,143 @@ struct hash<::core::mathematics::templates::Quaternion<T>>
 namespace core::mathematics::templates {
 
 template<typename T>
-inline Quaternion<T>::Quaternion(const YawPitchRoll<T>& ypr)
+inline Quaternion<T>::Quaternion(const YawPitchRoll<T>& r)
 {
-	// #TODO
+	if (!r.isZero())
+	{
+		T ti = r.roll*T(0.5), tj = r.pitch*T(0.5), th = r.yaw*T(0.5);
+		T si = std::sin(ti), ci = std::cos(ti);
+		T sj = std::sin(tj), cj = std::cos(tj);
+		T sh = std::sin(th), ch = std::cos(th);
+		T cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+		
+		set(cj*ss + sj*cc, cj*cs - sj*sc, cj*sc - sj*cs, cj*cc + sj*ss);
+	}
+	else
+		setIdentity();
 }
 
 template<typename T>
 inline Quaternion<T>::Quaternion(const Euler<T>& e)
 {
-	// #TODO
+	if (!e.isZero() && (e.order != EulerOrder::UNSPECIFIED))
+	{
+		static const int safe[] = { 0, 1, 2, 0 };
+		static const int next[] = { 1, 2, 0, 1 };
+		unsigned int o = (unsigned int)e.order;
+		int f = o & 1; o >>= 1;
+		int s = o & 1; o >>= 1;
+		int n = o & 1; o >>= 1;
+		int i = safe[o & 3];
+		int j = next[i + n];
+		int k = next[i + 1 - n];
+		T ti = e[f ? (s ? i : k) : i]*T(0.5);
+		T tj = e[j]*T(0.5);
+		T th = e[f ? i : (s ? i : k)]*T(0.5);
+
+		if (f)
+		{
+			T t = ti;
+			ti = th;
+			th = t;
+		}
+
+		if (n)
+			tj = -tj;
+
+		T si = std::sin(ti), ci = std::cos(ti);
+		T sj = std::sin(tj), cj = std::cos(tj);
+		T sh = std::sin(th), ch = std::cos(th);
+		T cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+
+		T q[3];
+		if (s)
+		{
+			q[i] = cj*(cs + sc);
+			q[j] = n ? -sj*(cc + ss) : sj*(cc + ss);
+			q[k] = sj*(cs - sc);
+			set(q[0], q[1], q[2], cj*(cc - ss));
+		}
+		else
+		{
+			q[i] = cj*sc - sj*cs;
+			q[j] = n ? -(cj*ss + sj*cc) : (cj*ss + sj*cc);
+			q[k] = cj*cs - sj*sc;
+			set(q[0], q[1], q[2], cj*cc + sj*ss);
+		}
+	}
+	else
+		setIdentity();
 }
 
 #if SIMD_HAS_FLOAT4
 
-inline Quaternion<float>::Quaternion(const YawPitchRoll<float>& ypr)
+inline Quaternion<float>::Quaternion(const YawPitchRoll<float>& r)
 {
-	// #TODO
+	if (!r.isZero())
+	{
+		float ti = r.roll*0.5f, tj = r.pitch*0.5f, th = r.yaw*0.5f;
+		float si = std::sin(ti), ci = std::cos(ti);
+		float sj = std::sin(tj), cj = std::cos(tj);
+		float sh = std::sin(th), ch = std::cos(th);
+		float cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+		
+		set(cj*ss + sj*cc, cj*cs - sj*sc, cj*sc - sj*cs, cj*cc + sj*ss);
+	}
+	else
+		setIdentity();
 }
 
 inline Quaternion<float>::Quaternion(const Euler<float>& e)
 {
-	// #TODO
+	if (!e.isZero() && (e.order != EulerOrder::UNSPECIFIED))
+	{
+		static const int safe[] = { 0, 1, 2, 0 };
+		static const int next[] = { 1, 2, 0, 1 };
+		unsigned int o = (unsigned int)e.order;
+		int f = o & 1; o >>= 1;
+		int s = o & 1; o >>= 1;
+		int n = o & 1; o >>= 1;
+		int i = safe[o & 3];
+		int j = next[i + n];
+		int k = next[i + 1 - n];
+		float ti = e[f ? (s ? i : k) : i]*0.5f;
+		float tj = e[j]*0.5f;
+		float th = e[f ? i : (s ? i : k)]*0.5f;
+
+		if (f)
+		{
+			float t = ti;
+			ti = th;
+			th = t;
+		}
+
+		if (n)
+			tj = -tj;
+
+		float si = std::sin(ti), ci = std::cos(ti);
+		float sj = std::sin(tj), cj = std::cos(tj);
+		float sh = std::sin(th), ch = std::cos(th);
+		float cc = ci*ch, cs = ci*sh, sc = si*ch, ss = si*sh;
+
+		float q[3];
+		if (s)
+		{
+			q[i] = cj*(cs + sc);
+			q[j] = n ? -sj*(cc + ss) : sj*(cc + ss);
+			q[k] = sj*(cs - sc);
+			set(q[0], q[1], q[2], cj*(cc - ss));
+		}
+		else
+		{
+			q[i] = cj*sc - sj*cs;
+			q[j] = n ? -(cj*ss + sj*cc) : (cj*ss + sj*cc);
+			q[k] = cj*cs - sj*sc;
+			set(q[0], q[1], q[2], cj*cc + sj*ss);
+		}
+	}
+	else
+		setIdentity();
 }
 
 #endif /* SIMD_HAS_FLOAT4 */
