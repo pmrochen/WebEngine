@@ -35,7 +35,7 @@ struct YawPitchRoll
 	explicit YawPitchRoll(Uninitialized) noexcept {}
 	constexpr YawPitchRoll(T yaw, T pitch, T roll) noexcept : yaw(yaw), pitch(pitch), roll(roll) {}
 	explicit YawPitchRoll(const Euler<T>& e) noexcept;
-	explicit YawPitchRoll(const Quaternion<T>& q) noexcept : YawPitchRoll(Matrix3<T>::makeRotation(q)) {}
+	explicit YawPitchRoll(const Quaternion<T>& q) noexcept;
 	explicit YawPitchRoll(const Matrix3<T>& m) noexcept;
 	//explicit YawPitchRoll(const Vector3<T>& direction) noexcept; // -> fromForward
 	//YawPitchRoll(const Vector3<T>& direction, T roll) noexcept;
@@ -83,6 +83,14 @@ struct YawPitchRoll
 };
 
 template<typename T> const YawPitchRoll<T> YawPitchRoll<T>::ZERO{};
+
+template<typename T>
+inline YawPitchRoll<T>::YawPitchRoll(const Quaternion<T>& q) : 
+	YawPitchRoll(Matrix3<T>::makeRotation(q)) // #FIXME Don't call converting constructor when q is identity
+{
+	if (q.isIdentity())
+		setZero();
+}
 
 template<typename T>
 inline YawPitchRoll<T> operator+(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2) noexcept
