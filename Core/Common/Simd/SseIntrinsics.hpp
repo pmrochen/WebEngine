@@ -34,7 +34,7 @@
 #include <smmintrin.h> // SSE 4.1
 #endif
 
-//#include <tuple>
+#include <tuple>
 #include <cstdint>
 
 #define SIMD_HAS_FLOAT4 1
@@ -191,48 +191,48 @@ struct YZW : public Mask<false, true, true, true> {};
 //constexpr int WZZZ = _MM_SHUFFLE(2, 2, 2, 3);
 //constexpr int WZYX = _MM_SHUFFLE(0, 1, 2, 3);
 
-template<int/*auto*/ A, int/*auto*/ B, int/*auto*/ C, int/*auto*/ D>
-struct Swizzle // #OBSOLETE
-{ 
-	static constexpr int X = A;
-	static constexpr int Y = B;
-	static constexpr int Z = C;
-	static constexpr int W = D;
-
-	static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D, C, B, A);
-	//static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D::INDEX, C::INDEX, B::INDEX, A::INDEX); 
-};
-
-struct XYYY : public Swizzle<X, Y, Y, Y> {}; // #OBSOLETE
-//struct XYXY : public Swizzle<X, Y, X, Y> {};
-//struct XXYY : public Swizzle<X, X, Y, Y> {};
-//struct XY00 : public Swizzle<X, Y, 0, 0> {};
-struct XZZZ : public Swizzle<X, Z, Z, Z> {};
-struct XWWW : public Swizzle<X, W, W, W> {};
-struct XYZZ : public Swizzle<X, Y, Z, Z> {};
-struct XYWW : public Swizzle<X, Y, W, W> {};
-struct XZWW : public Swizzle<X, Z, W, W> {};
-struct YXXX : public Swizzle<Y, X, X, X> {};
-struct YZZZ : public Swizzle<Y, Z, Z, Z> {};
-struct YZXX : public Swizzle<Y, Z, X, X> {};
-struct YZXW : public Swizzle<Y, Z, X, W> {};
-struct YZWW : public Swizzle<Y, Z, W, W> {};
-struct YWWW : public Swizzle<Y, W, W, W> {};
-struct YXZW : public Swizzle<Y, X, Z, W> {};
-struct YXWZ : public Swizzle<Y, X, W, Z> {};
-struct ZXXX : public Swizzle<Z, X, X, X> {};
-struct ZXYY : public Swizzle<Z, X, Y, Y> {};
-struct ZXYW : public Swizzle<Z, X, Y, W> {};
-struct ZYYY : public Swizzle<Z, Y, Y, Y> {};
-struct ZYWW : public Swizzle<Z, Y, W, W> {};
-//struct ZZWW : public Swizzle<Z, Z, W, W> {};
-struct ZWWW : public Swizzle<Z, W, W, W> {};
-struct ZWXY : public Swizzle<Z, W, X, Y> {};
-//struct ZWZW : public Swizzle<Z, W, Z, W> {};
-struct WXXX : public Swizzle<W, X, X, X> {};
-struct WYYY : public Swizzle<W, Y, Y, Y> {};
-struct WZZZ : public Swizzle<W, Z, Z, Z> {};
-struct WZYX : public Swizzle<W, Z, Y, X> {};
+//template<int/*auto*/ A, int/*auto*/ B, int/*auto*/ C, int/*auto*/ D>
+//struct Swizzle
+//{ 
+//	static constexpr int X = A;
+//	static constexpr int Y = B;
+//	static constexpr int Z = C;
+//	static constexpr int W = D;
+//
+//	static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D, C, B, A);
+//	//static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D::INDEX, C::INDEX, B::INDEX, A::INDEX); 
+//};
+//
+//struct XYYY : public Swizzle<X, Y, Y, Y> {};
+////struct XYXY : public Swizzle<X, Y, X, Y> {};
+////struct XXYY : public Swizzle<X, X, Y, Y> {};
+////struct XY00 : public Swizzle<X, Y, 0, 0> {};
+//struct XZZZ : public Swizzle<X, Z, Z, Z> {};
+//struct XWWW : public Swizzle<X, W, W, W> {};
+//struct XYZZ : public Swizzle<X, Y, Z, Z> {};
+//struct XYWW : public Swizzle<X, Y, W, W> {};
+//struct XZWW : public Swizzle<X, Z, W, W> {};
+//struct YXXX : public Swizzle<Y, X, X, X> {};
+//struct YZZZ : public Swizzle<Y, Z, Z, Z> {};
+//struct YZXX : public Swizzle<Y, Z, X, X> {};
+//struct YZXW : public Swizzle<Y, Z, X, W> {};
+//struct YZWW : public Swizzle<Y, Z, W, W> {};
+//struct YWWW : public Swizzle<Y, W, W, W> {};
+//struct YXZW : public Swizzle<Y, X, Z, W> {};
+//struct YXWZ : public Swizzle<Y, X, W, Z> {};
+//struct ZXXX : public Swizzle<Z, X, X, X> {};
+//struct ZXYY : public Swizzle<Z, X, Y, Y> {};
+//struct ZXYW : public Swizzle<Z, X, Y, W> {};
+//struct ZYYY : public Swizzle<Z, Y, Y, Y> {};
+//struct ZYWW : public Swizzle<Z, Y, W, W> {};
+////struct ZZWW : public Swizzle<Z, Z, W, W> {};
+//struct ZWWW : public Swizzle<Z, W, W, W> {};
+//struct ZWXY : public Swizzle<Z, W, X, Y> {};
+////struct ZWZW : public Swizzle<Z, W, Z, W> {};
+//struct WXXX : public Swizzle<W, X, X, X> {};
+//struct WYYY : public Swizzle<W, Y, Y, Y> {};
+//struct WZZZ : public Swizzle<W, Z, Z, Z> {};
+//struct WZYX : public Swizzle<W, Z, Y, X> {};
 
 template<typename T>
 inline T zero(); //{ static_assert(false); }
@@ -572,22 +572,22 @@ inline void pack4x3(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m
 	_mm_storeu_ps(&m[8], row2);
 }
 
-//inline std::tuple<__m128, __m128> unpack2x2(__m128 m)
-//{
-//	__m128 zero = _mm_setzero_ps();
-//	return { _mm_movelh_ps(m, zero), _mm_movehl_ps(zero, m) };
-//}
-//
-//inline std::tuple<__m128, __m128> unpack2x2(const float* m)
-//{
-//	__m128 t = _mm_loadu_ps(m);
-//	__m128 zero = _mm_setzero_ps();
-//	return { _mm_movelh_ps(t, zero), _mm_movehl_ps(zero, t) };
-//}
+inline std::tuple<__m128, __m128> unpack2x2(__m128 m)
+{
+	const __m128 zero = _mm_setzero_ps();
+	return { _mm_movelh_ps(m, zero), _mm_movehl_ps(zero, m) };
+}
+
+inline std::tuple<__m128, __m128> unpack2x2(const float* m)
+{
+	__m128 t = _mm_loadu_ps(m);
+	const __m128 zero = _mm_setzero_ps();
+	return { _mm_movelh_ps(t, zero), _mm_movehl_ps(zero, t) };
+}
 
 inline void unpack2x2(__m128 m, __m128& row0, __m128& row1)
 {
-	__m128 zero = _mm_setzero_ps();
+	const __m128 zero = _mm_setzero_ps();
 	row0 = _mm_movelh_ps(m, zero);
 	row1 = _mm_movehl_ps(zero, m);
 }
@@ -595,21 +595,21 @@ inline void unpack2x2(__m128 m, __m128& row0, __m128& row1)
 inline void unpack2x2(const float* m, __m128& row0, __m128& row1)
 {
 	__m128 t = _mm_loadu_ps(m);
-	__m128 zero = _mm_setzero_ps();
+	const __m128 zero = _mm_setzero_ps();
 	row0 = _mm_movelh_ps(t, zero);
 	row1 = _mm_movehl_ps(zero, t);
 }
 
-//inline std::tuple<__m128, __m128, __m128> unpack3x3(const float* m)
-//{
-//	__m128 t0 = _mm_loadu_ps(&m[0]);
-//	__m128 t1 = _mm_loadu_ps(&m[4]);
-//	__m128 mask3 = detail::MASK3;
-//	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
-//	return { _mm_and_ps(t0, mask3), 										// 0, m02, m01, m00
-//		_mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3),	// 0, m12, m11, m10
-//		_mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2)) };	// 0, m22, m21, m20
-//}
+inline std::tuple<__m128, __m128, __m128> unpack3x3(const float* m)
+{
+	__m128 t0 = _mm_loadu_ps(&m[0]);
+	__m128 t1 = _mm_loadu_ps(&m[4]);
+	__m128 mask3 = detail::MASK3;
+	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+	return { _mm_and_ps(t0, mask3), 										// 0, m02, m01, m00
+		_mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3),	// 0, m12, m11, m10
+		_mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2)) };	// 0, m22, m21, m20
+}
 
 inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
 {
@@ -622,18 +622,18 @@ inline void unpack3x3(const float* m, __m128& row0, __m128& row1, __m128& row2)
 	row2 = _mm_shuffle_ps(t1, _mm_load_ss(&m[8]), _MM_SHUFFLE(1, 0, 3, 2));		// 0, m22, m21, m20
 }
 
-//inline std::tuple<__m128, __m128, __m128, __m128> unpack4x3(const float* m)
-//{
-//	__m128 t0 = _mm_loadu_ps(&m[0]);
-//	__m128 t1 = _mm_loadu_ps(&m[4]);
-//	__m128 mask3 = detail::MASK3;
-//	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
-//	__m128 t3 = _mm_loadu_ps(&m[8]);
-//	return { _mm_and_ps(t0, mask3), 											// 0, m02, m01, m00
-//		_mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3),		// 0, m12, m11, m10
-//		_mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3), 	// 0, m22, m21, m20
-//		_mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3) }; 	// 0, m32, m31, m30
-//}
+inline std::tuple<__m128, __m128, __m128, __m128> unpack4x3(const float* m)
+{
+	__m128 t0 = _mm_loadu_ps(&m[0]);
+	__m128 t1 = _mm_loadu_ps(&m[4]);
+	__m128 mask3 = detail::MASK3;
+	__m128 t2 = _mm_shuffle_ps(t0, t1, _MM_SHUFFLE(1, 0, 3, 3));
+	__m128 t3 = _mm_loadu_ps(&m[8]);
+	return { _mm_and_ps(t0, mask3), 											// 0, m02, m01, m00
+		_mm_and_ps(_mm_shuffle_ps(t2, t2, _MM_SHUFFLE(3, 3, 2, 1)), mask3),		// 0, m12, m11, m10
+		_mm_and_ps(_mm_shuffle_ps(t1, t3, _MM_SHUFFLE(0, 0, 3, 2)), mask3), 	// 0, m22, m21, m20
+		_mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3) }; 	// 0, m32, m31, m30
+}
 
 inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
 {
@@ -648,63 +648,63 @@ inline void unpack4x3(const float* m, __m128& row0, __m128& row1, __m128& row2, 
 	row3 = _mm_and_ps(_mm_shuffle_ps(t3, t3, _MM_SHUFFLE(3, 3, 2, 1)), mask3); 	// 0, m32, m31, m30
 }
 
-//inline std::tuple<__m128, __m128> transpose2x2(__m128 row0, __m128 row1)
-//{
-//	__m128 t = _mm_unpacklo_ps(row0, row1);
-//	const __m128 zero = _mm_setzero_ps();
-//	return { _mm_movelh_ps(t, zero), _mm_movehl_ps(zero, t) };
-//}
-
-inline void transpose2x2(__m128 row0, __m128 row1, __m128& col0, __m128& col1)
+inline std::tuple<__m128, __m128> transpose2x2(__m128 row0, __m128 row1)
 {
 	__m128 t = _mm_unpacklo_ps(row0, row1);
 	const __m128 zero = _mm_setzero_ps();
-	col0 = _mm_movelh_ps(t, zero);
-	col1 = _mm_movehl_ps(zero, t);
+	return { _mm_movelh_ps(t, zero), _mm_movehl_ps(zero, t) };
 }
 
-//inline std::tuple<__m128, __m128, __m128> transpose3x3(__m128 row0, __m128 row1, __m128 row2)
+//inline void transpose2x2(__m128 row0, __m128 row1, __m128& col0, __m128& col1)
 //{
-//	const __m128 row3 = _mm_setzero_ps();
-//	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
-//	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
-//	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
-//	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
-//	return { _mm_shuffle_ps(t0, t1, 0x88), _mm_shuffle_ps(t0, t1, 0xDD), _mm_shuffle_ps(t2, t3, 0x88) };
+//	__m128 t = _mm_unpacklo_ps(row0, row1);
+//	const __m128 zero = _mm_setzero_ps();
+//	col0 = _mm_movelh_ps(t, zero);
+//	col1 = _mm_movehl_ps(zero, t);
 //}
 
-inline void transpose3x3(__m128 row0, __m128 row1, __m128 row2, __m128& col0, __m128& col1, __m128& col2)
+inline std::tuple<__m128, __m128, __m128> transpose3x3(__m128 row0, __m128 row1, __m128 row2)
 {
 	const __m128 row3 = _mm_setzero_ps();
 	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
 	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
 	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
 	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
-	col0 = _mm_shuffle_ps(t0, t1, 0x88);
-	col1 = _mm_shuffle_ps(t0, t1, 0xDD);
-	col2 = _mm_shuffle_ps(t2, t3, 0x88);
+	return { _mm_shuffle_ps(t0, t1, 0x88), _mm_shuffle_ps(t0, t1, 0xDD), _mm_shuffle_ps(t2, t3, 0x88) };
 }
 
-//inline std::tuple<__m128, __m128, __m128, __m128> transpose4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3)
+//inline void transpose3x3(__m128 row0, __m128 row1, __m128 row2, __m128& col0, __m128& col1, __m128& col2)
 //{
+//	const __m128 row3 = _mm_setzero_ps();
 //	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
 //	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
 //	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
 //	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
-//	return { _mm_shuffle_ps(t0, t1, 0x88), _mm_shuffle_ps(t0, t1, 0xDD), _mm_shuffle_ps(t2, t3, 0x88), _mm_shuffle_ps(t2, t3, 0xDD) };
+//	col0 = _mm_shuffle_ps(t0, t1, 0x88);
+//	col1 = _mm_shuffle_ps(t0, t1, 0xDD);
+//	col2 = _mm_shuffle_ps(t2, t3, 0x88);
 //}
 
-inline void transpose4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, __m128& col0, __m128& col1, __m128& col2, __m128& col3)
+inline std::tuple<__m128, __m128, __m128, __m128> transpose4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3)
 {
 	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
 	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
 	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
 	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
-	col0 = _mm_shuffle_ps(t0, t1, 0x88);
-	col1 = _mm_shuffle_ps(t0, t1, 0xDD);
-	col2 = _mm_shuffle_ps(t2, t3, 0x88);
-	col3 = _mm_shuffle_ps(t2, t3, 0xDD);
+	return { _mm_shuffle_ps(t0, t1, 0x88), _mm_shuffle_ps(t0, t1, 0xDD), _mm_shuffle_ps(t2, t3, 0x88), _mm_shuffle_ps(t2, t3, 0xDD) };
 }
+
+//inline void transpose4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, __m128& col0, __m128& col1, __m128& col2, __m128& col3)
+//{
+//	__m128 t0 = _mm_shuffle_ps(row0, row1, 0x44);
+//	__m128 t2 = _mm_shuffle_ps(row0, row1, 0xEE);
+//	__m128 t1 = _mm_shuffle_ps(row2, row3, 0x44);
+//	__m128 t3 = _mm_shuffle_ps(row2, row3, 0xEE);
+//	col0 = _mm_shuffle_ps(t0, t1, 0x88);
+//	col1 = _mm_shuffle_ps(t0, t1, 0xDD);
+//	col2 = _mm_shuffle_ps(t2, t3, 0x88);
+//	col3 = _mm_shuffle_ps(t2, t3, 0xDD);
+//}
 
 inline float toFloat/*extract*/(__m128 s)
 {
@@ -864,20 +864,36 @@ inline __m128 broadcast(__m128 v)
 //	return _mm_shuffle_ps(v, v, M);
 //}
 
-template<typename S>
-inline __m128 swizzle(__m128 v) // #OBSOLETE
+template<int M>
+inline __m128 swizzle(__m128 v)
 {
-	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 1, 0, 0))
+	static_assert((M & ~0xFF) == 0);
+	if constexpr (M == _MM_SHUFFLE(1, 1, 0, 0))
 		return _mm_unpacklo_ps(v, v);
-	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 3, 2, 2))
+	else if constexpr (M == _MM_SHUFFLE(3, 3, 2, 2))
 		return _mm_unpackhi_ps(v, v);
-	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 0, 1, 0))
+	if constexpr (M == _MM_SHUFFLE(1, 0, 1, 0))
 		return _mm_movelh_ps(v, v);
-	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 2, 3, 2))
+	else if constexpr (M == _MM_SHUFFLE(3, 2, 3, 2))
 		return _mm_movehl_ps(v, v);
 	else
-		return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
+		return _mm_shuffle_ps(v, v, M);
 }
+
+//template<typename S>
+//inline __m128 swizzle(__m128 v)
+//{
+//	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 1, 0, 0))
+//		return _mm_unpacklo_ps(v, v);
+//	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 3, 2, 2))
+//		return _mm_unpackhi_ps(v, v);
+//	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 0, 1, 0))
+//		return _mm_movelh_ps(v, v);
+//	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 2, 3, 2))
+//		return _mm_movehl_ps(v, v);
+//	else
+//		return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
+//}
 
 //template<int A, int B, int C, int D>
 //inline __m128 swizzle(__m128 v)
