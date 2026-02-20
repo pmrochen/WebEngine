@@ -18,7 +18,6 @@
 #include <Tuples/Tuple3.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
-#include "Scalar.hpp"
 #include "Vector2.hpp"
 
 namespace core::mathematics {

@@ -19,7 +19,6 @@
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
-#include "Scalar.hpp"
 #include "Vector3.hpp"
 #include "Matrix3.hpp"
 #include "Quaternion.hpp"

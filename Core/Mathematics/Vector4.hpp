@@ -18,7 +18,6 @@
 #include <Tuples/Tuple4.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
-#include "Scalar.hpp"
 #include "Vector2.hpp"
 #include "Vector3.hpp"
 

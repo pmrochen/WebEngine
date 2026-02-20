@@ -16,7 +16,6 @@
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
-#include "Scalar.hpp"
 #include "Vector3.hpp"
 #include "Matrix3.hpp"
 #include "Quaternion.hpp"
@@ -168,7 +167,7 @@ inline YawPitchRoll<T> YawPitchRoll<T>::fromForward(const Vector3<T>& forward, T
     T m = direction.getMagnitude();
     if (m > T(0))
     {
-        Vector3<T> direction(forward/m);
+        Vector3<T> direction = forward/m;
         p = std::asin(std::clamp(-direction.y, T(-1), T(1)));
         if ((T(1) - std::fabs(direction.y)) >= Constants<T>::TOLERANCE)
         {

@@ -16,7 +16,6 @@
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
-#include "Scalar.hpp"
 #include "Vector2.hpp"
 #include "Vector3.hpp"
 #include "Vector4.hpp"

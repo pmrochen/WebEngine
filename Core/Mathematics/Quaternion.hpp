@@ -16,7 +16,6 @@
 #include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple4.hpp>
 #include "Constants.hpp"
-#include "Scalar.hpp"
 #include "Vector3.hpp"
 #include "Matrix2.hpp"
 #include "Matrix3.hpp"

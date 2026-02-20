@@ -16,7 +16,6 @@
 #include <Simd/Intrinsics.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
-#include "Scalar.hpp"
 #include "Vector3.hpp"
 #include "Matrix2.hpp"
 
