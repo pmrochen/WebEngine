@@ -22,8 +22,6 @@ struct Float4
 
 		operator float4() const noexcept { return value; }
 		Bool4 operator!() const noexcept { return Bool4(not4(value)); }
-        //friend Bool4 operator&&(const Bool4 b1, const Bool4 b2) noexcept { return Bool4(and4(b1, b2)); }
-        //friend Bool4 operator||(const Bool4 b1, const Bool4 b2) noexcept { return Bool4(or4(b1, b2)); }
 
 		float4 value;
 	};
@@ -43,14 +41,6 @@ struct Float4
 	Float4& operator*=(float s) noexcept { value = mul4(value, set4(s)); return *this; }
 	Float4& operator/=(const Float4 v) noexcept { value = div4(value, v); return *this; }
 	Float4& operator/=(float s) noexcept { value = div4(value, set4(s)); return *this; }
-	//friend Float4 operator+(const Float4 v1, const Float4 v2) noexcept { return Float4(add4(v1, v2)); }
-	//friend Float4 operator-(const Float4 v1, const Float4 v2) noexcept { return Float4(sub4(v1, v2)); }
-	//friend Float4 operator*(const Float4 v1, const Float4 v2) noexcept { return Float4(mul4(v1, v2)); }
-	//friend Float4 operator*(float s, const Float4 v) noexcept { return Float4(mul4(set4(s), v)); }
-	//friend Float4 operator*(const Float4 v, float s) noexcept { return Float4(mul4(v, set4(s))); }
-	//friend Float4 operator/(const Float4 v1, const Float4 v2) noexcept { return Float4(div4(v1, v2)); }
-	//friend Float4 operator/(float s, const Float4 v) noexcept { return Float4(div4(set4(s), v)); }
-	//friend Float4 operator/(const Float4 v, float s) noexcept { return Float4(div4(v, set4(s))); }
 	Bool4 operator<(const Float4& v) const noexcept { return Bool4(less(value, v)); }
 	Bool4 operator<=(const Float4& v) const noexcept { return Bool4(lessEqual(value, v)); }
 	Bool4 operator>(const Float4& v) const noexcept { return Bool4(greater(value, v)); }
@@ -67,6 +57,8 @@ struct Float4
  	Float4 zzzz() const noexcept { return Float4(broadcast<Z>(value)); }
 	Float4 wwww() const noexcept { return Float4(broadcast<W>(value)); }
 	Float4 xyyy() const noexcept { return Float4(swizzle<X, Y, Y, Y>(value)); }
+	Float4 xyxy() const noexcept { return Float4(swizzle<X, Y, X, Y>(value)); }
+	Float4 xxyy() const noexcept { return Float4(swizzle<X, X, Y, Y>(value)); }
 	Float4 xzzz() const noexcept { return Float4(swizzle<X, Z, Z, Z>(value)); }
 	Float4 xwww() const noexcept { return Float4(swizzle<X, W, W, W>(value)); }
 	Float4 xyzz() const noexcept { return Float4(swizzle<X, Y, Z, Z>(value)); }
@@ -78,6 +70,7 @@ struct Float4
 	Float4 yzxw() const noexcept { return Float4(swizzle<Y, Z, X, W>(value)); }
 	Float4 yzww() const noexcept { return Float4(swizzle<Y, Z, W, W>(value)); }
 	Float4 ywww() const noexcept { return Float4(swizzle<Y, W, W, W>(value)); }
+	Float4 yxzz() const noexcept { return Float4(swizzle<Y, X, Z, Z>(value)); }
 	Float4 yxzw() const noexcept { return Float4(swizzle<Y, X, Z, W>(value)); }
 	Float4 yxwz() const noexcept { return Float4(swizzle<Y, X, W, Z>(value)); }
 	Float4 zxxx() const noexcept { return Float4(swizzle<Z, X, X, X>(value)); }
@@ -85,8 +78,10 @@ struct Float4
 	Float4 zxyw() const noexcept { return Float4(swizzle<Z, X, Y, W>(value)); }
 	Float4 zyyy() const noexcept { return Float4(swizzle<Z, Y, Y, Y>(value)); }
 	Float4 zyww() const noexcept { return Float4(swizzle<Z, Y, W, W>(value)); }
+	Float4 zzww() const noexcept { return Float4(swizzle<Z, Z, W, W>(value)); }
 	Float4 zwww() const noexcept { return Float4(swizzle<Z, W, W, W>(value)); }
 	Float4 zwxy() const noexcept { return Float4(swizzle<Z, W, X, Y>(value)); }
+	Float4 zwzw() const noexcept { return Float4(swizzle<Z, W, Z, W>(value)); }
 	Float4 wxxx() const noexcept { return Float4(swizzle<W, X, X, X>(value)); }
 	Float4 wyyy() const noexcept { return Float4(swizzle<W, Y, Y, Y>(value)); }
 	Float4 wzzz() const noexcept { return Float4(swizzle<W, Z, Z, Z>(value)); }

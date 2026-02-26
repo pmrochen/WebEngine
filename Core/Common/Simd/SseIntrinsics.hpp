@@ -165,77 +165,10 @@ struct XYW : public Mask<true, true, false, true> {};
 struct ZW : public Mask<false, false, true, true> {};
 struct XZW : public Mask<true, false, true, true> {};
 struct YZW : public Mask<false, true, true, true> {};
-//struct XYZW : public Mask<true, true, true, true> {};
-
-//constexpr int XYYY = _MM_SHUFFLE(1, 1, 1, 0);
-//constexpr int XZZZ = _MM_SHUFFLE(2, 2, 2, 0);
-//constexpr int XWWW = _MM_SHUFFLE(3, 3, 3, 0);
-//constexpr int XYZZ = _MM_SHUFFLE(2, 2, 1, 0);
-//constexpr int XYWW = _MM_SHUFFLE(3, 3, 1, 0);
-//constexpr int XZWW = _MM_SHUFFLE(3, 3, 2, 0);
-//constexpr int YXXX = _MM_SHUFFLE(0, 0, 0, 1);
-//constexpr int YZZZ = _MM_SHUFFLE(2, 2, 2, 1);
-//constexpr int YZXX = _MM_SHUFFLE(0, 0, 2, 1);
-//constexpr int YZWW = _MM_SHUFFLE(3, 3, 2, 1);
-//constexpr int YWWW = _MM_SHUFFLE(3, 3, 3, 1);
-//constexpr int YXZW = _MM_SHUFFLE(3, 2, 0, 1);
-//constexpr int YXWZ = _MM_SHUFFLE(2, 3, 0, 1);
-//constexpr int ZXXX = _MM_SHUFFLE(0, 0, 0, 2);
-//constexpr int ZXYY = _MM_SHUFFLE(1, 1, 0, 2);
-//constexpr int ZYYY = _MM_SHUFFLE(1, 1, 1, 2);
-//constexpr int ZYWW = _MM_SHUFFLE(3, 3, 1, 2);
-//constexpr int ZWWW = _MM_SHUFFLE(3, 3, 3, 2);
-//constexpr int ZWXY = _MM_SHUFFLE(1, 0, 3, 2);
-//constexpr int WXXX = _MM_SHUFFLE(0, 0, 0, 3);
-//constexpr int WYYY = _MM_SHUFFLE(1, 1, 1, 3);
-//constexpr int WZZZ = _MM_SHUFFLE(2, 2, 2, 3);
-//constexpr int WZYX = _MM_SHUFFLE(0, 1, 2, 3);
-
-//template<int/*auto*/ A, int/*auto*/ B, int/*auto*/ C, int/*auto*/ D>
-//struct Swizzle
-//{ 
-//	static constexpr int X = A;
-//	static constexpr int Y = B;
-//	static constexpr int Z = C;
-//	static constexpr int W = D;
-//
-//	static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D, C, B, A);
-//	//static constexpr int SWIZZLE_MASK = _MM_SHUFFLE(D::INDEX, C::INDEX, B::INDEX, A::INDEX); 
-//};
-//
-//struct XYYY : public Swizzle<X, Y, Y, Y> {};
-////struct XYXY : public Swizzle<X, Y, X, Y> {};
-////struct XXYY : public Swizzle<X, X, Y, Y> {};
-////struct XY00 : public Swizzle<X, Y, 0, 0> {};
-//struct XZZZ : public Swizzle<X, Z, Z, Z> {};
-//struct XWWW : public Swizzle<X, W, W, W> {};
-//struct XYZZ : public Swizzle<X, Y, Z, Z> {};
-//struct XYWW : public Swizzle<X, Y, W, W> {};
-//struct XZWW : public Swizzle<X, Z, W, W> {};
-//struct YXXX : public Swizzle<Y, X, X, X> {};
-//struct YZZZ : public Swizzle<Y, Z, Z, Z> {};
-//struct YZXX : public Swizzle<Y, Z, X, X> {};
-//struct YZXW : public Swizzle<Y, Z, X, W> {};
-//struct YZWW : public Swizzle<Y, Z, W, W> {};
-//struct YWWW : public Swizzle<Y, W, W, W> {};
-//struct YXZW : public Swizzle<Y, X, Z, W> {};
-//struct YXWZ : public Swizzle<Y, X, W, Z> {};
-//struct ZXXX : public Swizzle<Z, X, X, X> {};
-//struct ZXYY : public Swizzle<Z, X, Y, Y> {};
-//struct ZXYW : public Swizzle<Z, X, Y, W> {};
-//struct ZYYY : public Swizzle<Z, Y, Y, Y> {};
-//struct ZYWW : public Swizzle<Z, Y, W, W> {};
-////struct ZZWW : public Swizzle<Z, Z, W, W> {};
-//struct ZWWW : public Swizzle<Z, W, W, W> {};
-//struct ZWXY : public Swizzle<Z, W, X, Y> {};
-////struct ZWZW : public Swizzle<Z, W, Z, W> {};
-//struct WXXX : public Swizzle<W, X, X, X> {};
-//struct WYYY : public Swizzle<W, Y, Y, Y> {};
-//struct WZZZ : public Swizzle<W, Z, Z, Z> {};
-//struct WZYX : public Swizzle<W, Z, Y, X> {};
+struct XYZW : public Mask<true, true, true, true> {};
 
 template<typename T>
-inline T zero(); //{ static_assert(false); }
+inline T zero();
 
 template<>
 inline __m128 zero()
@@ -244,7 +177,7 @@ inline __m128 zero()
 }
 
 template<typename T, int S>
-inline T constant1(); //{ static_assert(false); }
+inline T constant1();
 
 template<int S>
 inline __m128 constant1()
@@ -260,7 +193,7 @@ inline __m128 constant1()
 }
 
 template<typename T, int S>
-inline T constant4(); //{ static_assert(false); }
+inline T constant4();
 
 template<int S>
 inline __m128 constant4()
@@ -276,7 +209,7 @@ inline __m128 constant4()
 }
 
 template<typename T, int X, int Y, int Z, int W>
-inline T constant4(); //{ static_assert(false); }
+inline T constant4();
 
 template<int X, int Y, int Z, int W>
 inline __m128 constant4()
@@ -292,7 +225,7 @@ inline __m128 constant4()
 }
 
 template<typename T, int S>
-inline T constant4i(); //{ static_assert(false); }
+inline T constant4i();
 
 template<int S>
 inline __m128 constant4i()
@@ -321,7 +254,7 @@ inline __m128i constant4i()
 }
 
 template <typename T, int X, int Y, int Z, int W>
-inline T constant4i(); //{ static_assert(false); }
+inline T constant4i();
 
 template<int X, int Y, int Z, int W>
 inline __m128 constant4i()
@@ -348,63 +281,6 @@ inline __m128i constant4i()
 	} u = { { X, Y, Z, W } };
 	return u.xmm;
 }
-
-//template<typename T, typename U>
-//inline T make(U s) { return T(); }
-//
-//template<>
-//inline __m128 make(float s)
-//{
-//	return _mm_set_ps1(s);
-//}
-//
-//template<>
-//inline __m128 make(bool s)
-//{
-//	return _mm_castsi128_ps(_mm_set1_epi32(-(int)s));
-//}
-
-//template<typename T, bool S>
-//inline T make() { return T(); }
-//
-//template<bool S>
-//inline __m128 make()
-//{
-//	return _mm_castsi128_ps(_mm_set1_epi32(-(int)S));
-//}
-
-//template<typename T, typename U>
-//inline T make(U x, U y, U z, U w) { return T(); }
-//
-//template<>
-//inline __m128 make(float x, float y, float z, float w)
-//{
-//	return _mm_setr_ps(x, y, z, w);
-//}
-//
-//template<>
-//inline __m128 make(bool x, bool y, bool z, bool w)
-//{
-//	return _mm_castsi128_ps(_mm_setr_epi32(-(int)x, -(int)y, -(int)z, -(int)w));
-//}
-
-//template<typename T, int X, int Y, int Z, int W>
-//inline T make() { return T(); }
-//
-//template<typename T, bool X, bool Y, bool Z, bool W>
-//inline T make() { return T(); }
-//
-//template<int X, int Y, int Z, int W>
-//inline __m128 make()
-//{
-//	return _mm_setr_ps(float(X), float(Y), float(X), float(W));
-//}
-//
-//template<bool X, bool Y, bool Z, bool W>
-//inline __m128 make()
-//{
-//	return _mm_castsi128_ps(_mm_setr_epi32(-(int)X, -(int)Y, -(int)Z, -(int)W));
-//}
 
 inline __m128 set1(float s)
 {
@@ -458,58 +334,15 @@ inline __m128 load2(const float* v)
 	return _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])); 
 }
 
-//inline __m128 load2Broadcast(const float* v) 
-//{
-//	__m128 v0 = _mm_load_ss(&v[0]);
-//	__m128 v1 = _mm_load_ss(&v[1]);
-//	return _mm_or_ps(v0, _mm_shuffle_ps(v1, v1, _MM_SHUFFLE(0, 0, 0, 1))); 
-//}
-//
-//inline __m128 load2ZeroOne(const float* v) 
-//{
-//	return _mm_or_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), detail::ZERO3_ONE1);
-//}
-//
-//inline __m128 unpack2(const float* v, __m128 remainder)
-//{
-//	return _mm_or_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), remainder/*_mm_andnot_ps(detail::MASK2, remainder)*/);
-//}
-
 inline __m128 load3(const float* v)
 {
 	return _mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), _mm_load_ss(&v[2]));
 }
 
-//inline __m128 load3Broadcast(const float* v)
-//{
-//	__m128 v01 = _mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1]));
-//	__m128 v2 = _mm_load_ss(&v[2]);
-//	return _mm_or_ps(v01, _mm_shuffle_ps(v2, v2, _MM_SHUFFLE(0, 0, 1, 1))); 
-//}
-//
-//inline __m128 load3One(const float* v) 
-//{ 
-//	return _mm_or_ps(_mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), _mm_load_ss(&v[2])), detail::ZERO3_ONE1);
-//}
-//
-//inline __m128 unpack3(const float* v, __m128 remainder)
-//{
-//	return _mm_or_ps(_mm_movelh_ps(_mm_unpacklo_ps(_mm_load_ss(&v[0]), _mm_load_ss(&v[1])), _mm_load_ss(&v[2])), 
-//		remainder/*_mm_andnot_ps(detail::MASK3, remainder)*/);
-//}
-
 inline __m128 load4(const float* v)
 { 
 	return _mm_loadu_ps(v); 
 }
-
-//inline void load4x4(const float* m, __m128& row0, __m128& row1, __m128& row2, __m128& row3)
-//{
-//	row0 = _mm_loadu_ps(&m[0]);
-//	row1 = _mm_loadu_ps(&m[4]);
-//	row2 = _mm_loadu_ps(&m[8]);
-//	row3 = _mm_loadu_ps(&m[12]);
-//}
 
 inline void store2(__m128 u, float* v) 
 { 
@@ -531,14 +364,6 @@ inline void store4(__m128 u, float* v)
 { 
 	_mm_storeu_ps(v, u); 
 }
-
-//inline void store4x4(__m128 row0, __m128 row1, __m128 row2, __m128 row3, float* m) 
-//{ 
-//	_mm_storeu_ps(&m[0], row0); 
-//	_mm_storeu_ps(&m[4], row1);
-//	_mm_storeu_ps(&m[8], row2);
-//	_mm_storeu_ps(&m[12], row3);
-//}
 
 inline __m128 pack2x2(__m128 row0, __m128 row1)
 {
@@ -880,21 +705,6 @@ inline __m128 swizzle(__m128 v)
 		return _mm_shuffle_ps(v, v, M);
 }
 
-//template<typename S>
-//inline __m128 swizzle(__m128 v)
-//{
-//	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 1, 0, 0))
-//		return _mm_unpacklo_ps(v, v);
-//	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 3, 2, 2))
-//		return _mm_unpackhi_ps(v, v);
-//	if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(1, 0, 1, 0))
-//		return _mm_movelh_ps(v, v);
-//	else if constexpr (S::SWIZZLE_MASK == _MM_SHUFFLE(3, 2, 3, 2))
-//		return _mm_movehl_ps(v, v);
-//	else
-//		return _mm_shuffle_ps(v, v, S::SWIZZLE_MASK);
-//}
-
 //template<int A, int B, int C, int D>
 //inline __m128 swizzle(__m128 v)
 //{
@@ -927,15 +737,6 @@ inline __m128 swizzle(__m128 v)
 	else
 		return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D, C, B, A));
 }
-
-//template<typename/*auto*/ A, typename/*auto*/ B /*= void*/, typename/*auto*/ C /*= void*/, typename/*auto*/ D /*= void*/>
-//inline __m128 swizzle(__m128 v) // #TODO Allow numeric arguments (used as constant values)
-//{
-//	//if constexpr (std::is_void_v<B>)
-//	//	return _mm_shuffle_ps(v, v, A::mask);
-//	//else
-//		return _mm_shuffle_ps(v, v, _MM_SHUFFLE(D::index, C::index, B::index, A::index));
-//}
 
 //inline __m128 swizzle(__m128 v, int mask)
 //{
@@ -1133,7 +934,7 @@ inline __m128 rcpSqrtApprox1(__m128 s)
 		return b; // preserve NaN/infinity result
 	//static const __m128 half = _mm_set_ps1(0.5f);
 	//static const __m128 three = _mm_set_ps1(3.f);
-	return _mm_mul_ss(_mm_mul_ss(/*half*/detail::HALF4, b), _mm_sub_ss(/*three*/detail::THREE4, _mm_mul_ss(_mm_mul_ss(s, b), b))); // Newton-Raphson step
+	return _mm_mul_ss(_mm_mul_ss(/*half*/detail::HALF4, b), _mm_sub_ss(/*three*/detail::THREE4, _mm_mul_ss(_mm_mul_ss(s, b), b)));
 }
 
 inline __m128 hMin2(__m128 v)
@@ -1218,15 +1019,6 @@ inline __m128 dot4(__m128 v1, __m128 v2)
 	return _mm_add_ss(t, _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1)));
 #endif
 }
-
-//inline float floor(float x) // pre SSE 4.1
-//{
-//	__m128 f = _mm_set_ss(x);
-//	//static const __m128 one = _mm_set_ss(1.0f);
-//	__m128 t = _mm_cvtepi32_ps(_mm_cvttps_epi32(f));
-//	__m128 r = _mm_sub_ps(t, _mm_and_ps(_mm_cmplt_ps(f, t), /*one*/detail::ONE1));
-//	return _mm_cvtss_f32(r);
-//}
 
 inline __m128 floor(__m128 v)
 {
