@@ -192,9 +192,6 @@
     <ClInclude Include="Euler.hpp" />
     <ClInclude Include="EulerOrder.hpp" />
     <ClInclude Include="HalfSpace.hpp" />
-    <ClInclude Include="IntVector2.hpp" />
-    <ClInclude Include="IntVector3.hpp" />
-    <ClInclude Include="IntVector4.hpp" />
     <ClInclude Include="Line2.hpp" />
     <ClInclude Include="Line3.hpp" />
     <ClInclude Include="Mathematics.hpp" />
