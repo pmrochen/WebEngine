@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <tuple>
 #include <optional>
@@ -29,6 +30,7 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Plane
 {
 	using Real = T;
@@ -38,9 +40,9 @@ struct Plane
 	constexpr Plane() noexcept : a(), b(), c(), d() {}
 	explicit Plane(Uninitialized) noexcept {}
 	constexpr Plane(T a, T b, T c, T d) noexcept : a(a), b(b), c(c), d(d) {}
-	constexpr Plane(Vector3<T>::ConstArg normal, T constant) noexcept : x(normal.x), y(normal.y), z(normal.z), w(constant) {}
-	Plane(Vector3<T>::ConstArg normal, Vector3<T>::ConstArg point) noexcept : a(normal.x), b(normal.y), c(normal.z), d(-dot(normal, point)) {}
-	Plane(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2) noexcept;
+	constexpr Plane(const Vector3<T>& normal, T constant) noexcept : x(normal.x), y(normal.y), z(normal.z), w(constant) {}
+	Plane(const Vector3<T>& normal, const Vector3<T>& point) noexcept : a(normal.x), b(normal.y), c(normal.z), d(-dot(normal, point)) {}
+	Plane(const Vector3<T>& p0, const Vector3<T>& p1, const Vector3<T>& p2) noexcept;
 	explicit Plane(const HalfSpace<T>& h) noexcept : a(h.a), b(h.b), c(h.c), d(h.d) {}
 	explicit Plane(const std::tuple<T, T, T, T>& t) noexcept : a(std::get<0>(t)), b(std::get<1>(t)), c(std::get<2>(t)), d(std::get<3>(t)) {}
 	template<typename U> explicit Plane(const std::tuple<U, U, U, U>& t) noexcept : a(T(std::get<0>(t))), b(T(std::get<1>(t))), c(T(std::get<2>(t))), d(T(std::get<3>(t))) {}
@@ -69,12 +71,12 @@ struct Plane
 	bool isApproxEqual(const Plane& p) const noexcept;
 	bool isApproxEqual(const Plane& p, T tolerance) const noexcept;
 	bool isFinite() const noexcept { return std::isfinite(a) && std::isfinite(b) && std::isfinite(c) && std::isfinite(d); }
-	Vector3<T>::ConstResult getNormal() const noexcept { return reinterpret_cast<const Vector3&>(*this); }
-	void setNormal(Vector3<T>::ConstArg normal) noexcept { a = normal.x; b = normal.y; c = normal.z; }
+	const Vector3<T>& getNormal() const noexcept { return reinterpret_cast<const Vector3&>(*this); }
+	void setNormal(const Vector3<T>& normal) noexcept { a = normal.x; b = normal.y; c = normal.z; }
 	T getConstant() const noexcept { return d; }
 	void setConstant(T constant) noexcept { d = constant; }
 	Plane& makeEmpty() noexcept { a = T(); b = T(); c = T(); d = T(); return *this; }
-	Plane& set(Vector3<T>::ConstArg normal, T constant) noexcept { a = normal.x; b = normal.y; c = normal.z; d = constant; return *this; }
+	Plane& set(const Vector3<T>& normal, T constant) noexcept { a = normal.x; b = normal.y; c = normal.z; d = constant; return *this; }
 	Plane& set(T a, T b, T c, T d) noexcept { this->a = a; this->b = b; this->c = c; this->d = d; return *this; }
 
 	// Transformation
@@ -131,9 +133,9 @@ struct Plane<float>
 	/*constexpr*/ Plane() noexcept : abcd(simd::zero<simd::float4>()) {}
 	explicit Plane(Uninitialized) noexcept {}
 	/*constexpr*/ Plane(float a, float b, float c, float d) noexcept : abcd(simd::set4(a, b, c, d)) {}
-	/*constexpr*/ Plane(Vector3<float>::ConstArg normal, float constant) noexcept : abcd(simd::insert<simd::W>(constant, normal)) {}
-	Plane(Vector3<float>::ConstArg normal, Vector3<float>::ConstArg point) noexcept : abcd(simd::insert<simd::W>(-dot(normal, point), normal)) {}
-	Plane(Vector3<float>::ConstArg p0, Vector3<float>::ConstArg p1, Vector3<float>::ConstArg p2) noexcept;
+	/*constexpr*/ Plane(const Vector3<float>& normal, float constant) noexcept : abcd(simd::insert<simd::W>(constant, normal)) {}
+	Plane(const Vector3<float>& normal, const Vector3<float>& point) noexcept : abcd(simd::insert<simd::W>(-dot(normal, point), normal)) {}
+	Plane(const Vector3<float>& p0, const Vector3<float>& p1, const Vector3<float>& p2) noexcept;
 	explicit Plane(const HalfSpace<float>& h) noexcept : abcd(h.abcd) {}
 	explicit Plane(const std::tuple<float, float, float, float>& t) noexcept : abcd(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
 	template<typename U> explicit Plane(const std::tuple<U, U, U, U>& t) noexcept : abcd(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
@@ -171,15 +173,15 @@ struct Plane<float>
 	bool isApproxEqual(const Plane& p, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(abcd, p)), simd::set4(tolerance))); }
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(abcd)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::xyzz(abcd)); }
+	const Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::xyzz(abcd)); }
 #else
-	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::cutoff3(abcd)); }
+	const Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::cutoff3(abcd)); }
 #endif
-	void setNormal(Vector3<float>::ConstArg normal) noexcept { abcd = simd::insert3(normal, abcd); }
+	void setNormal(const Vector3<float>& normal) noexcept { abcd = simd::insert3(normal, abcd); }
 	float getConstant() const noexcept { return simd::extract<simd::W>(abcd); }
 	void setConstant(float constant) noexcept { abcd = simd::insert<simd::W>(constant, abcd); }
 	Plane& makeEmpty() noexcept { abcd = simd::zero<simd::float4>(); return *this; }
-	Plane& set(Vector3<float>::ConstArg normal, float constant) noexcept { abcd = simd::insert<simd::W>(constant, normal); return *this; }
+	Plane& set(const Vector3<float>& normal, float constant) noexcept { abcd = simd::insert<simd::W>(constant, normal); return *this; }
 	Plane& set(float a, float b, float c, float d) noexcept { abcd = simd::set4(a, b, c, d); return *this; }
 
 	// Transformation
@@ -231,7 +233,7 @@ const Plane<float> Plane<float>::EMPTY{};
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline Plane<T>::Plane<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2)
+inline Plane<T>::Plane<T>(const Vector3<T>& p0, const Vector3<T>& p1, const Vector3<T>& p2)
 {
 	Vector3<T> normal(cross(p1 - p0, p2 - p0));
 	normal.normalize();
@@ -239,13 +241,15 @@ inline Plane<T>::Plane<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vect
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Plane<U>& p)
 { 
 	return s >> p.a >> std::ws >> p.b >> std::ws >> p.c >> std::ws >> p.d; 
 }
 
 template<typename C, typename T, typename U>
-inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Plane<U>& p) 
+	requires std::floating_point<U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Plane<U>& p)
 { 
 	constexpr C WS(0x20);
 	return s << p.a << WS << p.b << WS << p.c << WS << p.d;
@@ -466,7 +470,7 @@ inline std::optional<U> Plane<T>::findIntersection(const Segment3<T>& segment) c
 
 #if SIMD_HAS_FLOAT4
 
-inline Plane<float>::Plane<float>(Vector3<float>::ConstArg p0, Vector3<float>::ConstArg p1, Vector3<float>::ConstArg p2)
+inline Plane<float>::Plane<float>(const Vector3<float>& p0, const Vector3<float>& p1, const Vector3<float>& p2)
 {
 	Vector3<float> normal(cross(p1 - p0, p2 - p0));
 	normal.normalize();
@@ -474,7 +478,7 @@ inline Plane<float>::Plane<float>(Vector3<float>::ConstArg p0, Vector3<float>::C
 }
 
 template<typename C, typename T>
-inline std::basic_istream& operator>>(std::basic_istream& s, Plane<float>& p)
+inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Plane<float>& p)
 { 
 	float a, b, c, d;
 	s >> a >> std::ws >> b >> std::ws >> c >> std::ws >> d;
@@ -665,6 +669,7 @@ inline std::optional<U> Plane<float>::findIntersection(const Segment3<float>& se
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T& get(Plane<T>& p) noexcept
 {
 	if constexpr (I == 0)
@@ -679,6 +684,7 @@ inline T& get(Plane<T>& p) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T& get(const Plane<T>& p) noexcept
 {
 	if constexpr (I == 0)
@@ -693,6 +699,7 @@ inline const T& get(const Plane<T>& p) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T&& get(Plane<T>&& p) noexcept
 {
 	if constexpr (I == 0)
@@ -707,6 +714,7 @@ inline T&& get(Plane<T>&& p) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T&& get(const Plane<T>&& p) noexcept
 {
 	if constexpr (I == 0)
@@ -721,6 +729,7 @@ inline const T&& get(const Plane<T>&& p) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Plane<T> normalize(const Plane<T>& p) noexcept
 {
 	Plane<T> u(p);
@@ -728,10 +737,11 @@ inline Plane<T> normalize(const Plane<T>& p) noexcept
 	return u;
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Plane<T> normalize(Plane<T>&& p) noexcept
 {

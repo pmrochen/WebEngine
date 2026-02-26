@@ -9,12 +9,13 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <tuple>
 #include <cstddef>
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
-#include <Tuples/Tuple4.hpp>
+//#include <Tuples/Tuple4.hpp>
 #include "Constants.hpp"
 #include "Vector3.hpp"
 #include "Matrix2.hpp"
@@ -24,12 +25,15 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct YawPitchRoll;
 
 template<typename T>
+	requires std::floating_point<T>
 struct Euler;
 
 template<typename T>
+	requires std::floating_point<T>
 struct Quaternion
 {
 	using Real = T;
@@ -44,19 +48,19 @@ struct Quaternion
 	explicit Quaternion(Identity) noexcept : x(), y(), z(), w(1) {}
 	constexpr explicit Quaternion(T scalar) noexcept : x(), y(), z(), w(scalar) {}
 	constexpr Quaternion(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
-	constexpr explicit Quaternion(Vector3<T>::ConstArg vector) noexcept : x(vector.x), y(vector.y), z(vector.z), w() {}
-	constexpr Quaternion(Vector3<T>::ConstArg vector, T scalar) noexcept : x(vector.x), y(vector.y), z(vector.z), w(scalar) {}
+	constexpr explicit Quaternion(const Vector3<T>& vector) noexcept : x(vector.x), y(vector.y), z(vector.z), w() {}
+	constexpr Quaternion(const Vector3<T>& vector, T scalar) noexcept : x(vector.x), y(vector.y), z(vector.z), w(scalar) {}
 	explicit Quaternion(const Matrix3<T>& m) noexcept;
 	explicit Quaternion(const YawPitchRoll<T>& r) noexcept;
 	explicit Quaternion(const Euler<T>& e) noexcept;
-	explicit Quaternion(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
-	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
+	//explicit Quaternion(const tuples::templates::Tuple4<T>& t) noexcept : x(t.x), y(t.y), z(t.z), w(t.w) {}
+	//template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : x(T(t.x)), y(T(t.y)), z(T(t.z)), w(T(t.w)) {}
 	explicit Quaternion(const std::tuple<T, T, T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)), z(std::get<2>(t)), w(std::get<3>(t)) {}
 	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))), z(T(std::get<2>(t))), w(T(std::get<3>(t))) {}
 	explicit Quaternion(const T* q) noexcept : x(q[0]), y(q[1]), z(q[2]), w(q[3]) {}
 
-	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
-	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(x, y, z, w); }
+	//template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
 	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(x, y, z, w); }
 	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator T*() noexcept { return &x; }
@@ -91,19 +95,19 @@ struct Quaternion
 	bool isApproxEqual(const Quaternion& q) const noexcept;
 	bool isApproxEqual(const Quaternion& q, T tolerance) const noexcept;
 	bool isFinite() const noexcept { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z) && std::isfinite(w); }
-	Vector3<T>::ConstResult /*getImaginary*/getVector() const noexcept { return reinterpret_cast<const Vector3<T>&>(*this); }
-	void setVector(Vector3<T>::ConstArg vector) noexcept { x = vector.x; y = vector.y; z = vector.z; }
+	const Vector3<T>& /*getImaginary*/getVector() const noexcept { return reinterpret_cast<const Vector3<T>&>(*this); }
+	void setVector(const Vector3<T>& vector) noexcept { x = vector.x; y = vector.y; z = vector.z; }
 	T /*getReal*/getScalar() const noexcept { return w; }
 	void setScalar(T scalar) noexcept { w = scalar; }
-	Vector3<T> getAxis() const noexcept;	// quaternion must be normalized (rotation quaternion)
-	T getAngle() const;						// quaternion must be normalized (rotation quaternion)
+	Vector3<T> getAxis() const noexcept;	// quaternion must be normalized (i.e. a rotation quaternion)
+	T getAngle() const;						// quaternion must be normalized (i.e. a rotation quaternion)
 	T getAbsoluteValue() const noexcept { return std::sqrt(x*x + y*y + z*z + w*w); }
 	T getNorm() const noexcept { return (x*x + y*y + z*z + w*w); }
 	T getMagnitude() const noexcept { return getAbsoluteValue(); }
 	T getMagnitudeSquared() const noexcept { return getNorm(); }
 	Quaternion& setZero/*zero*/() noexcept { x = T(); y = T(); z = T(); w = T(); return *this; }
 	Quaternion& setIdentity/*makeIdentity*/() noexcept { x = T(); y = T(); z = T(); w = T(1); return *this; }
-	Quaternion& set(Vector3<T>::ConstArg vector, T scalar) noexcept { x = vector.x; y = vector.y; z = vector.z; w = scalar; return *this; }
+	Quaternion& set(const Vector3<T>& vector, T scalar) noexcept { x = vector.x; y = vector.y; z = vector.z; w = scalar; return *this; }
 	Quaternion& set(T x, T y, T z, T w) noexcept { this->x = x; this->y = y; this->z = z; this->w = w; return *this; }
 	Quaternion& setConjugate/*conjugateOf*/(const Quaternion& q) noexcept { x = -q.x; y = -q.y; z = -q.z; w = q.w; return *this; }
 	Quaternion& setInverse/*inverseOf*/(const Quaternion& q) noexcept;
@@ -152,13 +156,13 @@ struct Quaternion<float>
 	explicit Quaternion(Identity) noexcept : xyzw(IDENTITY) {}
 	/*constexpr*/ explicit Quaternion(float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, simd::zero<simd::float4>())) {}
 	/*constexpr*/ Quaternion(float x, float y, float z, float w) noexcept : xyzw(simd::set4(x, y, z, w)) {}
-	/*constexpr*/ explicit Quaternion(Vector3<float>::ConstArg vector) noexcept : xyzw(simd::cutoff3(vector)) {}
-	/*constexpr*/ Quaternion(Vector3<float>::ConstArg vector, float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, vector)) {}
+	/*constexpr*/ explicit Quaternion(const Vector3<float>& vector) noexcept : xyzw(simd::cutoff3(vector)) {}
+	/*constexpr*/ Quaternion(const Vector3<float>& vector, float scalar) noexcept : xyzw(simd::insert<simd::W>(scalar, vector)) {}
 	explicit Quaternion(const Matrix3<float>& m) noexcept;
 	explicit Quaternion(const YawPitchRoll<float>& r) noexcept;
 	explicit Quaternion(const Euler<float>& e) noexcept;
-	explicit Quaternion(const tuples::templates::Tuple4<float>& t) noexcept : xyzw(simd::set4(t.x, t.y, t.z, t.w)) {}
-	template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : xyzw(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
+	//explicit Quaternion(const tuples::templates::Tuple4<float>& t) noexcept : xyzw(simd::set4(t.x, t.y, t.z, t.w)) {}
+	//template<typename U> explicit Quaternion(const tuples::templates::Tuple4<U>& t) noexcept : xyzw(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
 	explicit Quaternion(const std::tuple<float, float, float, float>& t) noexcept : xyzw(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
 	template<typename U> explicit Quaternion(const std::tuple<U, U, U, U>& t) noexcept : xyzw(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
 	explicit Quaternion(const float* q) noexcept : xyzw(simd::load4(q)) {}
@@ -167,8 +171,8 @@ struct Quaternion<float>
 	Quaternion& operator=(const Quaternion& q) noexcept { xyzw = q.xyzw; return *this; }
 
 	operator simd::float4() const noexcept { return xyzw; }
-	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
-	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
+	//explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(x, y, z, w); }
+	//template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(x), U(y), U(z), U(w)); }
 	//explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(x, y, z, w); }
 	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(x), U(y), U(z), U(w)); }
 	explicit operator float* () noexcept { return &x; }
@@ -208,22 +212,22 @@ struct Quaternion<float>
 	bool isApproxEqual(const Quaternion& q, float tolerance) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(xyzw, q)), simd::set4(tolerance))); }
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(xyzw)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::xyzz(xyzw)); }
+	const Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::xyzz(xyzw)); }
 #else
-	Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::cutoff3(xyzw)); }
+	const Vector3<float> /*getImaginary*/getVector() const noexcept { return Vector3<float>(simd::cutoff3(xyzw)); }
 #endif
-	void setVector(Vector3<float>::ConstArg vector) noexcept { xyzw = simd::insert3(vector, xyzw); }
+	void setVector(const Vector3<float>& vector) noexcept { xyzw = simd::insert3(vector, xyzw); }
 	float /*getReal*/getScalar() const noexcept { return simd::extract<simd::W>(xyzw); }
 	void setScalar(float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, xyzw); }
-	Vector3<float> getAxis() const noexcept;	// quaternion must be normalized (rotation quaternion)
-	float getAngle() const;						// quaternion must be normalized (rotation quaternion)
+	Vector3<float> getAxis() const noexcept;	// quaternion must be normalized (i.e. a rotation quaternion)
+	float getAngle() const;						// quaternion must be normalized (i.e. a rotation quaternion)
 	float getAbsoluteValue() const noexcept { return simd::toFloat(simd::sqrt1(simd::dot4(xyzw, xyzw))); }
 	float getNorm() const noexcept { return simd::toFloat(simd::dot4(xyzw, xyzw)); }
 	float getMagnitude() const noexcept { return getAbsoluteValue(); }
 	float getMagnitudeSquared() const noexcept { return getNorm(); }
 	Quaternion& setZero/*zero*/() noexcept { xyzw = simd::zero<simd::float4>(); return *this; }
 	Quaternion& setIdentity/*makeIdentity*/() noexcept { *this = IDENTITY; return *this; }
-	Quaternion& set(Vector3<float>::ConstArg vector, float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, vector); return *this; }
+	Quaternion& set(const Vector3<float>& vector, float scalar) noexcept { xyzw = simd::insert<simd::W>(scalar, vector); return *this; }
 	Quaternion& set(float x, float y, float z, float w) noexcept { xyzw = simd::set4(x, y, z, w); return *this; }
 	Quaternion& setConjugate/*conjugateOf*/(const Quaternion& q) noexcept { xyzw = simd::neg3(q); return *this; }
 	Quaternion& setInverse/*inverseOf*/(const Quaternion& q) noexcept;
@@ -310,18 +314,21 @@ inline Quaternion<T>& Quaternion<T>::operator*=(const Vector3<T>& v)
 //}
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator+(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return Quaternion<T>(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator-(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return Quaternion<T>(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator*(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return Quaternion<T>(q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y, q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x,
@@ -329,6 +336,7 @@ inline Quaternion<T> operator*(const Quaternion<T>& q1, const Quaternion<T>& q2)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator*(const Vector3<T>& v, const Quaternion<T>& q) noexcept
 {
 	return Quaternion<T>(q.w*v.x + q.z*v.y - q.y*v.z, q.w*v.y + q.x*v.z - q.z*v.x, q.w*v.z + q.y*v.x - q.x*v.y,
@@ -336,6 +344,7 @@ inline Quaternion<T> operator*(const Vector3<T>& v, const Quaternion<T>& q) noex
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator*(const Quaternion<T>& q, const Vector3<T>& v) noexcept
 {
 	return Quaternion<T>(q.w*v.x + q.y*v.z - q.z*v.y, q.w*v.y + q.z*v.x - q.x*v.z, q.w*v.z + q.x*v.y - q.y*v.x,
@@ -343,24 +352,28 @@ inline Quaternion<T> operator*(const Quaternion<T>& q, const Vector3<T>& v) noex
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator*(T f, const Quaternion<T>& q) noexcept
 {
 	return Quaternion<T>(f*q.x, f*q.y, f*q.z, f*q.w);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator*(const Quaternion<T>& q, T f) noexcept
 {
 	return Quaternion<T>(q.x*f, q.y*f, q.z*f, q.w*f);
 }
 
 //template<typename T>
+//	requires std::floating_point<T>
 //inline Quaternion<T> operator/(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept 
 //{ 
 //	return q1*inverse(q2); 
 //}
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator/(T f, const Quaternion<T>& q) noexcept
 {
 	f /= q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
@@ -368,18 +381,21 @@ inline Quaternion<T> operator/(T f, const Quaternion<T>& q) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> operator/(const Quaternion<T>& q, T f) noexcept
 {
 	return operator*(q, T(1)/f);
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Quaternion<U>& q)
 {
 	return s >> q.x >> std::ws >> q.y >> std::ws >> q.z >> std::ws >> q.w;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Quaternion<U>& q)
 {
 	constexpr C WS(0x20);
@@ -851,6 +867,7 @@ inline Quaternion<float>& Quaternion<float>::normalize()
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T& get(Quaternion<T>& v) noexcept
 {
 	if constexpr (I == 0)
@@ -865,6 +882,7 @@ inline T& get(Quaternion<T>& v) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T& get(const Quaternion<T>& v) noexcept
 {
 	if constexpr (I == 0)
@@ -879,6 +897,7 @@ inline const T& get(const Quaternion<T>& v) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T&& get(Quaternion<T>&& v) noexcept
 {
 	if constexpr (I == 0)
@@ -893,6 +912,7 @@ inline T&& get(Quaternion<T>&& v) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T&& get(const Quaternion<T>&& v) noexcept
 {
 	if constexpr (I == 0)
@@ -907,12 +927,14 @@ inline const T&& get(const Quaternion<T>&& v) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T dot(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return q1.x*q2.x + q1.y*q2.y + q1.z*q2.z + q1.w*q2.w;
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> lerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t) noexcept
 {
 	T cosTheta = q1.x*q2.x + q1.y*q2.y + q1.z*q2.z + q1.w*q2.w;
@@ -925,6 +947,7 @@ inline Quaternion<T> lerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> slerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t)
 {
 	T cosTheta = q1.x*q2.x + q1.y*q2.y + q1.z*q2.z + q1.w*q2.w;
@@ -964,15 +987,17 @@ inline Quaternion<T> slerp(const Quaternion<T>& q1, const Quaternion<T>& q2, T t
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> conjugate(const Quaternion<T>& q) noexcept
 {
 	return Quaternion<T>(-q.x, -q.y, -q.z, q.w);
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Quaternion<T> conjugate(Quaternion<T>&& q) noexcept
 {
@@ -983,16 +1008,18 @@ inline Quaternion<T> conjugate(Quaternion<T>&& q) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> inverse(const Quaternion<T>& q) noexcept
 {
 	T f = T(1)/(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
 	return Quaternion<T>(-q.x*f, -q.y*f, -q.z*f, q.w*f);
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Quaternion<T> inverse(Quaternion<T>&& q) noexcept
 {
@@ -1079,24 +1106,28 @@ inline Quaternion<float> inverse(const Quaternion<float>& q) noexcept
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> rotate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return q2*q1*Quaternion<T>(-q2.x, -q2.y, -q2.z, q2.w);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2) noexcept
 {
 	return q2*q1;
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3) noexcept
 {
 	return concatenate(concatenate(q1, q2), q3);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q2, const Quaternion<T>& q3,
 	const Quaternion<T>& q4) noexcept
 {
@@ -1104,6 +1135,7 @@ inline Quaternion<T> concatenate(const Quaternion<T>& q1, const Quaternion<T>& q
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> normalize(const Quaternion<T>& q) noexcept
 {
 	Quaternion<T> r(q);
@@ -1111,10 +1143,11 @@ inline Quaternion<T> normalize(const Quaternion<T>& q) noexcept
 	return r;
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Quaternion<T> normalize(Quaternion<T>&& q) noexcept
 {
@@ -1123,6 +1156,7 @@ inline Quaternion<T> normalize(Quaternion<T>&& q) noexcept
 }
 
 //template<typename T>
+//	requires std::floating_point<T>
 //inline T angle(const Quaternion<T>& q1, const Quaternion<T>& q1)
 //{
 //	//T q = q1.getMagnitude()*q2.getMagnitude();
@@ -1135,6 +1169,7 @@ inline Quaternion<T> normalize(Quaternion<T>&& q) noexcept
 //}
 
 template<typename T>
+	requires std::floating_point<T>
 inline Quaternion<T> arc(const Vector3<T>& v1, const Vector3<T>& v2) noexcept
 {
 	Vector3<T> u(v1);

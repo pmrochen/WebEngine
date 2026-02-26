@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <algorithm>
 #include <utility>
 #include <tuple>
@@ -31,6 +32,7 @@ struct Identity
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Matrix2
 {
 	using Real = T;
@@ -282,30 +284,35 @@ inline Matrix2<T>& Matrix2<T>::operator*=(const Matrix2<T>& m)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> operator+(const Matrix2<T>& m1, const Matrix2<T>& m2) noexcept
 {
 	return Matrix2<T>(m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m10 + m2.m10, m1.m11 + m2.m11);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> operator-(const Matrix2<T>& m1, const Matrix2<T>& m2) noexcept
 {
 	return Matrix2<T>(m1.m00 - m2.m00, m1.m01 - m2.m01, m1.m10 - m2.m10, m1.m11 - m2.m11);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> operator*(T f, const Matrix2<T>& m) noexcept
 {
 	return Matrix2<T>(f*m.m00, f*m.m01, f*m.m10, f*m.m11);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> operator*(const Matrix2<T>& m, T f) noexcept
 {
 	return Matrix2<T>(m.m00*f, m.m01*f, m.m10*f, m.m11*f);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> operator*(const Matrix2<T>& m1, const Matrix2<T>& m2) noexcept
 {
 	return Matrix2<T>(m1.m00*m2.m00 + m1.m01*m2.m10, m1.m00*m2.m01 + m1.m01*m2.m11,
@@ -313,18 +320,21 @@ inline Matrix2<T> operator*(const Matrix2<T>& m1, const Matrix2<T>& m2) noexcept
 }
 
 template<typename T>
-inline Matrix2 operator/(const Matrix2& m, T f) noexcept 
+	requires std::floating_point<T>
+inline Matrix2 operator/(const Matrix2& m, T f) noexcept
 { 
 	return operator*(m, T(1)/f); 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Matrix2<U>& m)
 {
 	return s >> m.m00 >> std::ws >> m.m01 >> std::ws >> m.m10 >> std::ws >> m.m11;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Matrix2<U>& m)
 {
 	constexpr C WS(0x20);
@@ -951,30 +961,35 @@ inline Matrix2<float>& Matrix2<float>::orthonormalize()
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> concatenate(const Matrix2<T>& m1, const Matrix2<T>& m2) noexcept
 {
 	return m1*m2;
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> concatenate(const Matrix2<T>& m1, const Matrix2<T>& m2, const Matrix2<T>& m3) noexcept
 {
 	return concatenate(concatenate(m1, m2), m3);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> concatenate(const Matrix2<T>& m1, const Matrix2<T>& m2, const Matrix2<T>& m3, const Matrix2<T>& m4) noexcept
 {
 	return concatenate(concatenate(concatenate(m1, m2), m3), m4);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> transpose(const Matrix2<T>& m) noexcept
 {
 	return Matrix2<T>(m.m00, m.m10, m.m01, m.m11);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> transpose(Matrix2<T>&& m) noexcept
 {
 	m.transpose();
@@ -982,12 +997,14 @@ inline Matrix2<T> transpose(Matrix2<T>&& m) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> inverse(const Matrix2<T>& m) noexcept
 {
 	return Matrix2<T>(Uninitialized()).setInverse(m);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> inverse(Matrix2<T>&& m) noexcept
 {
 	m.invert();
@@ -995,6 +1012,7 @@ inline Matrix2<T> inverse(Matrix2<T>&& m) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Matrix2<T> adjoint(const Matrix2<T>& m) noexcept
 {
 	return Matrix2<T>(m.m11, -m.m10, -m.m01, m.m00);

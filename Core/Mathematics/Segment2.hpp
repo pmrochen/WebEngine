@@ -8,6 +8,7 @@
 #include <istream>
 #include <ostream>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <tuple>
 #include <optional>
@@ -23,6 +24,7 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Segment2
 {
 	using Real = T;
@@ -80,12 +82,14 @@ struct Segment2
 };
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Segment2<U>& segment)
 { 
 	return s >> segment.start >> std::ws >> segment.end;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Segment2<U>& segment)
 { 
 	constexpr C WS(0x20);
@@ -112,7 +116,7 @@ inline Vector2<T> Segment2<T>::getClosestPoint(const Vector2<T>& point) const
 }
 
 template<typename T>
-inline std::optional<T> findIntersection(const Line2<T>& line) const
+inline std::optional<T> Segment2<T>::findIntersection(const Line2<T>& line) const
 {
 	Vector2<T> direction = end - start;
 	T d1CrossD2 = cross(direction, line.direction);
@@ -131,7 +135,7 @@ inline std::optional<T> findIntersection(const Line2<T>& line) const
 }
 
 template<typename T>
-inline std::optional<T> findIntersection(const Segment2& segment) const
+inline std::optional<T> Segment2<T>::findIntersection(const Segment2& segment) const
 {
 	Vector2<T> direction = end - start;
 	T d1CrossD2 = cross(direction, segment.end - segment.start);
@@ -160,7 +164,7 @@ inline std::optional<T> findIntersection(const Segment2& segment) const
 
 template<typename T>
 template<typename U> 
-inline std::optional<U> findIntersection(const Line2<T>& line) const
+inline std::optional<U> Segment2<T>::findIntersection(const Line2<T>& line) const
 {
 	static_assert(std::is_same_v<U, T> || std::is_same_v<U, Vector3<T>>);
 	std::optional<T> result = findIntersection(line);
@@ -172,7 +176,7 @@ inline std::optional<U> findIntersection(const Line2<T>& line) const
 
 template<typename T>
 template<typename U> 
-inline std::optional<U> findIntersection(const Segment2& segment) const
+inline std::optional<U> Segment2<T>::findIntersection(const Segment2& segment) const
 {
 	static_assert(std::is_same_v<U, T> || std::is_same_v<U, Vector3<T>>);
 	std::optional<T> result = findIntersection(segment);

@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <tuple>
 #include <algorithm>
@@ -35,9 +36,11 @@ struct Unnormalized
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Plane;
 
 template<typename T>
+	requires std::floating_point<T>
 struct HalfSpace
 {
 	using Real = T;
@@ -47,9 +50,9 @@ struct HalfSpace
 	constexpr HalfSpace() noexcept : a(), b(), c(), d() {}
 	explicit HalfSpace(Uninitialized) noexcept {}
 	constexpr HalfSpace(T a, T b, T c, T d) noexcept : a(a), b(b), c(c), d(d) {}
-	constexpr HalfSpace(Vector3<T>::ConstArg normal, T constant) noexcept : x(normal.x), y(normal.y), z(normal.z), w(constant) {}
-	HalfSpace(Vector3<T>::ConstArg normal, Vector3<T>::ConstArg point) noexcept : a(normal.x), b(normal.y), c(normal.z), d(-dot(normal, point)) {}
-	HalfSpace(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2) noexcept;
+	constexpr HalfSpace(const Vector3<T>& normal, T constant) noexcept : x(normal.x), y(normal.y), z(normal.z), w(constant) {}
+	HalfSpace(const Vector3<T>& normal, const Vector3<T>& point) noexcept : a(normal.x), b(normal.y), c(normal.z), d(-dot(normal, point)) {}
+	HalfSpace(const Vector3<T>& p0, const Vector3<T>& p1, const Vector3<T>& p2) noexcept;
 	HalfSpace(const Plane<T>& p) noexcept;
 	explicit HalfSpace(const std::tuple<T, T, T, T>& t) noexcept : a(std::get<0>(t)), b(std::get<1>(t)), c(std::get<2>(t)), d(std::get<3>(t)) {}
 	template<typename U> explicit HalfSpace(const std::tuple<U, U, U, U>& t) noexcept : a(T(std::get<0>(t))), b(T(std::get<1>(t))), c(T(std::get<2>(t))), d(T(std::get<3>(t))) {}
@@ -78,12 +81,12 @@ struct HalfSpace
 	bool isApproxEqual(const HalfSpace& h) const noexcept;
 	bool isApproxEqual(const HalfSpace& h, T tolerance) const noexcept;
 	bool isFinite() const noexcept { return std::isfinite(a) && std::isfinite(b) && std::isfinite(c) && std::isfinite(d); }
-	Vector3<T>::ConstResult getNormal() const noexcept { return reinterpret_cast<const Vector3<T>&>(*this); }
-	void setNormal(Vector3<T>::ConstArg normal) noexcept { a = normal.x; b = normal.y; c = normal.z; }
+	const Vector3<T>& getNormal() const noexcept { return reinterpret_cast<const Vector3<T>&>(*this); }
+	void setNormal(const Vector3<T>& normal) noexcept { a = normal.x; b = normal.y; c = normal.z; }
 	T getConstant() const noexcept { return d; }
 	void setConstant(T constant) noexcept { d = constant; }
 	HalfSpace& makeEmpty() noexcept { a = T(); b = T(); c = T(); d = T(); return *this; }
-	HalfSpace& set(Vector3<T>::ConstArg normal, T constant) noexcept { a = normal.x; b = normal.y; c = normal.z; d = constant; return *this; }
+	HalfSpace& set(const Vector3<T>& normal, T constant) noexcept { a = normal.x; b = normal.y; c = normal.z; d = constant; return *this; }
 	HalfSpace& set(T a, T b, T c, T d) noexcept { this->a = a; this->b = b; this->c = c; this->d = d; return *this; }
 
 	// Transformation
@@ -116,6 +119,9 @@ template<typename T> const HalfSpace<T> HalfSpace<T>::EMPTY{};
 #if SIMD_HAS_FLOAT4
 
 template<>
+struct Plane<float>;
+
+template<>
 struct HalfSpace<float>
 {
 	using Real = float;
@@ -125,9 +131,9 @@ struct HalfSpace<float>
 	/*constexpr*/ HalfSpace() noexcept : abcd(simd::zero<simd::float4>()) {}
 	explicit HalfSpace(Uninitialized) noexcept {}
 	/*constexpr*/ HalfSpace(float a, float b, float c, float d) noexcept : abcd(simd::set4(a, b, c, d)) {}
-	/*constexpr*/ HalfSpace(Vector3<float>::ConstArg normal, float constant) noexcept : abcd(simd::insert<simd::W>(constant, normal)) {}
-	HalfSpace(Vector3<float>::ConstArg normal, Vector3<float>::ConstArg point) noexcept : abcd(simd::insert<simd::W>(-dot(normal, point), normal)) {}
-	HalfSpace(Vector3<float>::ConstArg p0, Vector3<float>::ConstArg p1, Vector3<float>::ConstArg p2) noexcept;
+	/*constexpr*/ HalfSpace(const Vector3<float>& normal, float constant) noexcept : abcd(simd::insert<simd::W>(constant, normal)) {}
+	HalfSpace(const Vector3<float>& normal, const Vector3<float>& point) noexcept : abcd(simd::insert<simd::W>(-dot(normal, point), normal)) {}
+	HalfSpace(const Vector3<float>& p0, const Vector3<float>& p1, const Vector3<float>& p2) noexcept;
 	HalfSpace(const Plane<float>& p) noexcept;
 	explicit HalfSpace(const std::tuple<float, float, float, float>& t) noexcept : abcd(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
 	template<typename U> explicit HalfSpace(const std::tuple<U, U, U, U>& t) noexcept : abcd(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
@@ -165,15 +171,15 @@ struct HalfSpace<float>
 	bool isApproxEqual(const HalfSpace& h, float tolerance) const noexcept { simd::all4(simd::lessThan(simd::abs4(simd::sub4(abcd, h)), simd::set4(tolerance))); }
 	bool isFinite() const noexcept { return simd::all4(simd::isFinite(abcd)); }
 #if MATHEMATICS_SIMD_EXPAND_LAST
-	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::xyzz(abcd)); }
+	const Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::xyzz(abcd)); }
 #else
-	Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::cutoff3(abcd)); }
+	const Vector3<float> getNormal() const noexcept { return Vector3<float>(simd::cutoff3(abcd)); }
 #endif
-	void setNormal(Vector3<float>::ConstArg normal) noexcept { abcd = simd::insert3(normal, abcd); }
+	void setNormal(const Vector3<float>& normal) noexcept { abcd = simd::insert3(normal, abcd); }
 	float getConstant() const noexcept { return simd::extract<simd::W>(abcd); }
 	void setConstant(float constant) noexcept { abcd = simd::insert<simd::W>(constant, abcd); }
 	HalfSpace& makeEmpty() noexcept { abcd = simd::zero<simd::float4>(); return *this; }
-	HalfSpace& set(Vector3<float>::ConstArg normal, float constant) noexcept { abcd = simd::insert<simd::W>(constant, normal); return *this; }
+	HalfSpace& set(const Vector3<float>& normal, float constant) noexcept { abcd = simd::insert<simd::W>(constant, normal); return *this; }
 	HalfSpace& set(float a, float b, float c, float d) noexcept { abcd = simd::set4(a, b, c, d); return *this; }
 
 	// Transformation
@@ -210,7 +216,7 @@ const HalfSpace<float> HalfSpace<float>::EMPTY{};
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline HalfSpace<T>::HalfSpace<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg p1, Vector3<T>::ConstArg p2)
+inline HalfSpace<T>::HalfSpace<T>(const Vector3<T>& p0, const Vector3<T>& p1, const Vector3<T>& p2)
 {
 	Vector3<T> normal(cross(p1 - p0, p2 - p0));
 	normal.normalize();
@@ -218,13 +224,15 @@ inline HalfSpace<T>::HalfSpace<T>(Vector3<T>::ConstArg p0, Vector3<T>::ConstArg 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, HalfSpace<U>& h)
 { 
 	return s >> h.a >> std::ws >> h.b >> std::ws >> h.c >> std::ws >> h.d; 
 }
 
 template<typename C, typename T, typename U>
-inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const HalfSpace<U>& h) 
+	requires std::floating_point<U>
+inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const HalfSpace<U>& h)
 { 
 	constexpr C WS(0x20);
 	return s << h.a << WS << h.b << WS << h.c << WS << h.d;
@@ -380,7 +388,7 @@ inline bool HalfSpace<T>::testIntersection(const Triangle3<T>& triangle) const
 
 #if SIMD_HAS_FLOAT4
 
-inline HalfSpace<float>::HalfSpace<float>(Vector3<float>::ConstArg p0, Vector3<float>::ConstArg p1, Vector3<float>::ConstArg p2)
+inline HalfSpace<float>::HalfSpace<float>(const Vector3<float>& p0, const Vector3<float>& p1, const Vector3<float>& p2)
 {
 	Vector3<float> normal(cross(p1 - p0, p2 - p0));
 	normal.normalize();
@@ -520,6 +528,7 @@ inline bool HalfSpace<float>::testIntersection(const Triangle3<float>& triangle)
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T& get(HalfSpace<T>& h) noexcept
 {
 	if constexpr (I == 0)
@@ -534,6 +543,7 @@ inline T& get(HalfSpace<T>& h) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T& get(const HalfSpace<T>& h) noexcept
 {
 	if constexpr (I == 0)
@@ -548,6 +558,7 @@ inline const T& get(const HalfSpace<T>& h) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T&& get(HalfSpace<T>&& h) noexcept
 {
 	if constexpr (I == 0)
@@ -562,6 +573,7 @@ inline T&& get(HalfSpace<T>&& h) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T&& get(HalfSpace<T>&& h) noexcept
 {
 	if constexpr (I == 0)
@@ -576,6 +588,7 @@ inline const T&& get(HalfSpace<T>&& h) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline HalfSpace<T> normalize(const HalfSpace<T>& h) noexcept
 {
 	HalfSpace<T> u(h);
@@ -583,10 +596,11 @@ inline HalfSpace<T> normalize(const HalfSpace<T>& h) noexcept
 	return u;
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline HalfSpace<T> normalize(HalfSpace<T>&& h) noexcept
 {
@@ -656,7 +670,7 @@ inline HalfSpace<T>::HalfSpace(const Plane<T>& p) : a(p.a), b(p.b), c(p.c), d(p.
 }
 
 template<typename T>
-inline const Plane<T>& asPlane() const 
+inline const Plane<T>& HalfSpace<T>::asPlane() const 
 { 
 	return reinterpret_cast<const Plane<T>&>(*this); 
 }

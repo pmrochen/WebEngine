@@ -10,6 +10,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <tuple>
 #include <string>
 #include <algorithm>
@@ -27,6 +28,7 @@
 namespace core::mathematics::templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Euler;
 
 } // namespace core::mathematics::templates
@@ -62,9 +64,11 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Matrix3;
 
 template<typename T>
+	requires std::floating_point<T>
 struct Euler
 {
 	using Real = T;
@@ -249,6 +253,7 @@ inline Euler<T>& Euler<T>::operator-=(const Euler<T>& e)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Euler<T> operator+(const Euler<T>& e1, const Euler<T>& e2) // throw (std::invalid_argument);
 {
 	if (e1.order != e2.order)
@@ -257,6 +262,7 @@ inline Euler<T> operator+(const Euler<T>& e1, const Euler<T>& e2) // throw (std:
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Euler<T> operator-(const Euler<T>& e1, const Euler<T>& e2) // throw (std::invalid_argument);
 {
 	if (e1.order != e2.order) 
@@ -265,30 +271,35 @@ inline Euler<T> operator-(const Euler<T>& e1, const Euler<T>& e2) // throw (std:
 }
 
 template<typename T>
-inline Euler<T> operator*(T f, const Euler<T>& e) noexcept 
+	requires std::floating_point<T>
+inline Euler<T> operator*(T f, const Euler<T>& e) noexcept
 { 
 	return Euler(f*e.x, f*e.y, f*e.z, e.order); 
 }
 
 template<typename T>
-inline Euler<T> operator*(const Euler<T>& e, T f) noexcept 
+	requires std::floating_point<T>
+inline Euler<T> operator*(const Euler<T>& e, T f) noexcept
 { 
 	return Euler(e.x*f, e.y*f, e.z*f, e.order); 
 }
 
 template<typename T>
-inline Euler<T> operator/(T f, const Euler<T>& e) noexcept 
+	requires std::floating_point<T>
+inline Euler<T> operator/(T f, const Euler<T>& e) noexcept
 { 
 	return Euler(f/e.x, f/e.y, f/e.z, e.order); 
 }
 
 template<typename T>
-inline Euler<T> operator/(const Euler<T>& e, T f) noexcept 
+	requires std::floating_point<T>
+inline Euler<T> operator/(const Euler<T>& e, T f) noexcept
 { 
 	return operator*(e, T(1)/f); 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Euler<U>& e)
 {
 	std::basic_string<C, T> order;
@@ -313,6 +324,7 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Euler<U
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Euler<U>& e)
 {
 	const C* order = "Unspecified";
@@ -402,6 +414,7 @@ inline bool Euler<T>::isApproxEqual(const Euler<T>& e, T tolerance) const
 //}
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline typename std::tuple_element<I, Euler<T>>::type& get(Euler<T>& e) noexcept
 {
 	if constexpr (I == 0)
@@ -416,6 +429,7 @@ inline typename std::tuple_element<I, Euler<T>>::type& get(Euler<T>& e) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const typename std::tuple_element<I, Euler<T>>::type& get(const Euler<T>& e) noexcept
 {
 	if constexpr (I == 0)
@@ -430,6 +444,7 @@ inline const typename std::tuple_element<I, Euler<T>>::type& get(const Euler<T>&
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline typename std::tuple_element<I, Euler<T>>::type&& get(Euler<T>&& e) noexcept
 {
 	if constexpr (I == 0)
@@ -444,6 +459,7 @@ inline typename std::tuple_element<I, Euler<T>>::type&& get(Euler<T>&& e) noexce
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const typename std::tuple_element<I, Euler<T>>::type&& get(const Euler<T>&& e) noexcept
 {
 	if constexpr (I == 0)

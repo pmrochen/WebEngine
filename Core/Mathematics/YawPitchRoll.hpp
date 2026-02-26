@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <algorithm>
 #include <utility>
 #include <tuple>
@@ -24,9 +25,11 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Euler;
 
 template<typename T>
+	requires std::floating_point<T>
 struct YawPitchRoll
 {
 	using Real = T;
@@ -93,48 +96,56 @@ inline YawPitchRoll<T>::YawPitchRoll(const Quaternion<T>& q) :
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline YawPitchRoll<T> operator+(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2) noexcept
 {
 	return YawPitchRoll<T>(r1.yaw + r2.yaw, r1.pitch + r2.pitch, r1.roll + r2.roll);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline YawPitchRoll<T> operator-(const YawPitchRoll<T>& r1, const YawPitchRoll<T>& r2) noexcept
 {
 	return YawPitchRoll<T>(r1.yaw - r2.yaw, r1.pitch - r2.pitch, r1.roll - r2.roll);
 }
 
 template<typename T>
-inline YawPitchRoll<T> operator*(T f, const YawPitchRoll<T>& r) noexcept 
+	requires std::floating_point<T>
+inline YawPitchRoll<T> operator*(T f, const YawPitchRoll<T>& r) noexcept
 { 
 	return YawPitchRoll(f*r.yaw, f*r.pitch, f*r.roll); 
 }
 
 template<typename T>
-inline YawPitchRoll<T> operator*(const YawPitchRoll<T>& r, T f) noexcept 
+	requires std::floating_point<T>
+inline YawPitchRoll<T> operator*(const YawPitchRoll<T>& r, T f) noexcept
 { 
 	return YawPitchRoll(r.yaw*f, r.pitch*f, r.roll*f); 
 }
 
 template<typename T>
-inline YawPitchRoll<T> operator/(T f, const YawPitchRoll<T>& r) noexcept 
+	requires std::floating_point<T>
+inline YawPitchRoll<T> operator/(T f, const YawPitchRoll<T>& r) noexcept
 { 
 	return YawPitchRoll(f/r.yaw, f/r.pitch, f/r.roll); 
 }
 
 template<typename T>
-inline YawPitchRoll<T> operator/(const YawPitchRoll<T>& r, T f) noexcept 
+	requires std::floating_point<T>
+inline YawPitchRoll<T> operator/(const YawPitchRoll<T>& r, T f) noexcept
 { 
 	return operator*(r, T(1)/f); 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, YawPitchRoll<U>& r)
 { 
 	return s >> r.yaw >> std::ws >> r.pitch >> std::ws >> r.roll; 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const YawPitchRoll<U>& r)
 { 
 	constexpr C WS(0x20);
@@ -230,6 +241,7 @@ inline bool YawPitchRoll<T>::isApproxEqual(const YawPitchRoll<T>& r, T tolerance
 //}
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T& get(YawPitchRoll<T>& r) noexcept
 {
 	if constexpr (I == 0)
@@ -242,6 +254,7 @@ inline T& get(YawPitchRoll<T>& r) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T& get(const YawPitchRoll<T>& r) noexcept
 {
 	if constexpr (I == 0)
@@ -254,6 +267,7 @@ inline const T& get(const YawPitchRoll<T>& r) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline T&& get(YawPitchRoll<T>&& r) noexcept
 {
 	if constexpr (I == 0)
@@ -266,6 +280,7 @@ inline T&& get(YawPitchRoll<T>&& r) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires std::floating_point<T>
 inline const T&& get(const YawPitchRoll<T>&& r) noexcept
 {
 	if constexpr (I == 0)

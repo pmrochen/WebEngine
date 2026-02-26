@@ -8,6 +8,7 @@
 #include <istream>
 #include <ostream>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <algorithm>
 #include <cstddef>
@@ -21,6 +22,7 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Ray3
 {
 	using Real = T;
@@ -70,12 +72,14 @@ struct Ray3
 };
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Ray3<U>& ray)
 { 
 	return s >> ray.origin >> std::ws >> ray.direction;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Ray3<U>& ray)
 { 
 	constexpr C WS(0x20);
@@ -126,6 +130,7 @@ inline Vector3<T> Ray3<T>::getClosestPoint(const Vector3<T>& point) const
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Ray3<T> normalize(const Ray3<T>& ray) noexcept
 {
 	Ray3<T> r(ray);
@@ -134,6 +139,7 @@ inline Ray3<T> normalize(const Ray3<T>& ray) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Ray3<T> normalize(Ray3<T>&& ray) noexcept
 {
 	ray.normalize();

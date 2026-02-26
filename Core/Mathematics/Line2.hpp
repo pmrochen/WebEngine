@@ -8,6 +8,7 @@
 #include <istream>
 #include <ostream>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <optional>
 #include <algorithm>
@@ -20,9 +21,11 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Ray2;
 
 template<typename T>
+	requires std::floating_point<T>
 struct Line2
 {
 	using Real = T;
@@ -99,12 +102,14 @@ inline Line2<T>::Line2(const Vector2<T>& origin, T inclinationAngle) :
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Line2<U>& line)
 { 
 	return s >> line.origin >> std::ws >> line.direction;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Line2<U>& line)
 { 
 	constexpr C WS(0x20);
@@ -168,7 +173,7 @@ inline T Line2<T>::getSignedDistance(const Line2& line) const
 }
 
 template<typename T>
-inline std::optional<T> findIntersection(const Line2& line) const
+inline std::optional<T> Line2<T>::findIntersection(const Line2& line) const
 {
 	T d1CrossD2 = cross(direction, line.direction);
 	if (std::fabs(d1CrossD2) < Constants<T>::TOLERANCE)
@@ -184,7 +189,7 @@ inline std::optional<T> findIntersection(const Line2& line) const
 }
 
 template<typename T>
-inline std::optional<T> findIntersection(const Segment2<T>& segment) const
+inline std::optional<T> Line2<T>::findIntersection(const Segment2<T>& segment) const
 {
 	T d1CrossD2 = cross(direction, segment.end - segment.start);
 	if (std::fabs(d1CrossD2) < Constants<T>::TOLERANCE)
@@ -203,7 +208,7 @@ inline std::optional<T> findIntersection(const Segment2<T>& segment) const
 
 template<typename T>
 template<typename U> 
-inline std::optional<U> findIntersection(const Line2& line) const
+inline std::optional<U> Line2<T>::findIntersection(const Line2& line) const
 {
 	static_assert(std::is_same_v<U, T> || std::is_same_v<U, Vector3<T>>);
 	std::optional<T> result = findIntersection(line);
@@ -215,7 +220,7 @@ inline std::optional<U> findIntersection(const Line2& line) const
 
 template<typename T>
 template<typename U> 
-inline std::optional<U> findIntersection(const Segment2<T>& segment) const
+inline std::optional<U> Line2<T>::findIntersection(const Segment2<T>& segment) const
 {
 	static_assert(std::is_same_v<U, T> || std::is_same_v<U, Vector3<T>>);
 	std::optional<T> result = findIntersection(segment);
@@ -226,6 +231,7 @@ inline std::optional<U> findIntersection(const Segment2<T>& segment) const
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Line2<T> normalize(const Line2<T>& line) noexcept
 {
 	Line2<T> l(line);
@@ -234,6 +240,7 @@ inline Line2<T> normalize(const Line2<T>& line) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Line2<T> normalize(Line2<T>&& line) noexcept
 {
 	line.normalize();
@@ -283,7 +290,7 @@ inline Line2<T>::Line2(const Ray2<T>& ray) : origin(ray.origin), direction(ray.d
 }
 
 template<typename T>
-inline const Ray2<T>& asRay() const
+inline const Ray2<T>& Line2<T>::asRay() const
 { 
 	return reinterpret_cast<const Ray2<T>&>(*this);
 }

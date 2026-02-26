@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <algorithm>
 #include <utility>
 #include <tuple>
@@ -27,13 +28,29 @@ struct Uninitialized
 
 constexpr Uninitialized UNINITIALIZED{};
 
+template<typename T>
+struct Constants;
+
+template<>
+struct Constants<float>
+{
+	static constexpr float TOLERANCE = 1e-6f;
+};
+
+template<>
+struct Constants<double>
+{
+	static constexpr double TOLERANCE = 1e-15;
+};
+
 namespace templates {
 
-//template<typename T>
-//struct IntColor3;
-
 template<typename T>
-struct Color3
+	requires (std::floating_point<T> || std::integral<T>)
+struct Color3;
+
+template<std::floating_point T>
+struct Color3<T>
 {
 	using Real = T;
 	using ComponentType = T;
@@ -46,12 +63,12 @@ struct Color3
 	explicit Color3(Uninitialized) noexcept {}
 	constexpr explicit Color3(T scalar) noexcept : r(scalar), g(scalar), b(scalar) {}
 	constexpr Color3(T r, T g, T b) noexcept : r(r), g(g), b(b) {}
-	//template<typename U> explicit Color3(const IntColor3<U>&/*IntColor3<U>::ConstArg*/ c) noexcept;
 	explicit Color3(const tuples::templates::Tuple3<T>& t) noexcept : r(t.x), g(t.y), b(t.z) {}
 	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)) {}
 	explicit Color3(const std::tuple<T, T, T>& t) noexcept : r(std::get<0>(t)), g(std::get<1>(t)), b(std::get<2>(t)) {}
 	template<typename U> explicit Color3(const std::tuple<U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))) {}
 	explicit Color3(const T* c) noexcept : r(c[0]), g(c[1]), b(c[2]) {}
+	template<typename U> explicit Color3(const Color3<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)) {}
 
 	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(r, g, b); }
 	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(r), U(g), U(b)); }
@@ -145,16 +162,92 @@ struct Color3
 	T r, g, b;
 };
 
-template<typename T> const Color3<T> Color3<T>::ZERO{};
-template<typename T> const Color3<T> Color3<T>::UNIT_R{ T(1), T(0), T(0) };
-template<typename T> const Color3<T> Color3<T>::UNIT_G{ T(0), T(1), T(0) };
-template<typename T> const Color3<T> Color3<T>::UNIT_B{ T(0), T(0), T(1) };
-template<typename T> const Color3<T> Color3<T>::ONE{ T(1), T(1), T(1) };
-template<typename T> const Color3<T> Color3<T>::HALF{ T(0.5), T(0.5), T(0.5) };
-template<typename T> const Color3<T> Color3<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
-template<typename T> const Color3<T> Color3<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
-template<typename T> const Color3<T> Color3<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
-template<typename T> const Color3<T> Color3<T>::LUMINANCE{ T(0.2126), T(0.7152), T(0.0722) };
+template<std::floating_point T> const Color3<T> Color3<T>::ZERO{};
+template<std::floating_point T> const Color3<T> Color3<T>::UNIT_R{ T(1), T(0), T(0) };
+template<std::floating_point T> const Color3<T> Color3<T>::UNIT_G{ T(0), T(1), T(0) };
+template<std::floating_point T> const Color3<T> Color3<T>::UNIT_B{ T(0), T(0), T(1) };
+template<std::floating_point T> const Color3<T> Color3<T>::ONE{ T(1), T(1), T(1) };
+template<std::floating_point T> const Color3<T> Color3<T>::HALF{ T(0.5), T(0.5), T(0.5) };
+template<std::floating_point T> const Color3<T> Color3<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
+template<std::floating_point T> const Color3<T> Color3<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
+template<std::floating_point T> const Color3<T> Color3<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+template<std::floating_point T> const Color3<T> Color3<T>::LUMINANCE{ T(0.2126), T(0.7152), T(0.0722) };
+
+template<std::integral T>
+struct Color3<T>
+{
+	using ComponentType = T;
+	using ConstArg = const Color3&;
+	using ConstResult = const Color3&;
+
+	static constexpr int NUM_COMPONENTS = 3;
+
+	constexpr Color3() noexcept : r(), g(), b() {}
+	explicit Color3(Uninitialized) noexcept {}
+	constexpr explicit Color3(T scalar) noexcept : r(scalar), g(scalar), b(scalar) {}
+	constexpr Color3(T r, T g, T b) noexcept : r(r), g(g), b(b) {}
+	explicit Color3(const tuples::templates::Tuple3<T>& t) noexcept : r(t.x), g(t.y), b(t.z) {}
+	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)) {}
+	explicit Color3(const std::tuple<T, T, T>& t) noexcept : r(std::get<0>(t)), g(std::get<1>(t)), b(std::get<2>(t)) {}
+	template<typename U> explicit Color3(const std::tuple<U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))) {}
+	explicit Color3(const T* c) noexcept : r(c[0]), g(c[1]), b(c[2]) {}
+	template<typename U> explicit Color3(const Color3<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)) {}
+
+	explicit operator tuples::templates::Tuple3<T>() noexcept { return tuples::templates::Tuple3<T>(r, g, b); }
+	template<typename U> explicit operator tuples::templates::Tuple3<U>() noexcept { return tuples::templates::Tuple3<U>(U(r), U(g), U(b)); }
+	//explicit operator std::tuple<T, T, T>() { return std::tuple<T, T, T>(r, g, b); }
+	//template<typename U> explicit operator std::tuple<U, U, U>() { return std::tuple<U, U, U>(U(r), U(g), U(b)); }
+	explicit operator T* () noexcept { return &r; }
+	explicit operator const T* () const noexcept { return &r; }
+	T& operator[](int i) noexcept { return (&r)[i]; }
+	const T& operator[](int i) const noexcept { return (&r)[i]; }
+
+	Color3 operator+() const noexcept { return *this; }
+	Color3 operator-() const noexcept { return Color3(-r, -g, -b); }
+	Color3& operator+=(const Color3& c) noexcept { r += c.r; g += c.g; b += c.b; return *this; }
+	Color3& operator-=(const Color3& c) noexcept { r -= c.r; g -= c.g; b -= c.b; return *this; }
+	Color3& operator*=(const Color3& c) noexcept { r *= c.r; g *= c.g; b *= c.b; return *this; }
+	Color3& operator*=(T f) noexcept { r *= f; g *= f; b *= f; return *this; }
+	Color3& operator/=(const Color3& c) noexcept { r /= c.r; g /= c.g; b /= c.b; return *this; }
+	Color3& operator/=(T f) noexcept { r /= f; g /= f; b /= f; return *this; }
+	bool operator==(const Color3& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b); }
+	bool operator!=(const Color3& c) const noexcept { return !(*this == c); }
+
+	template<typename A> void load(A& ar) { ar(r, g, b); }
+	template<typename A> void save(A& ar) const { ar(r, g, b); }
+
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
+	// #TODO from/toPacked
+
+	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()); }
+	bool isApproxZero() const noexcept;
+	bool isApproxEqual(const Color3& c) const noexcept;
+	bool isApproxEqual(const Color3& c, T tolerance) const noexcept;
+	bool allLessThan(const Color3& c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b); }
+	bool allLessThanEqual(const Color3& c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b); }
+	bool allGreaterThan(const Color3& c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b); }
+	bool allGreaterThanEqual(const Color3& c) const noexcept { return (r >= c.r) && (g >= c.g) && (b >= c.b); }
+	bool anyLessThan(const Color3& c) const noexcept { return (r < c.r) || (g < c.g) || (b < c.b); }
+	bool anyLessThanEqual(const Color3& c) const noexcept { return (r <= c.r) || (g <= c.g) || (b <= c.b); }
+	bool anyGreaterThan(const Color3& c) const noexcept { return (r > c.r) || (g > c.g) || (b > c.b); }
+	bool anyGreaterThanEqual(const Color3& c) const noexcept { return (r >= c.r) || (g >= c.g) || (b >= c.b); }
+	T getMinComponent() const { return std::min(std::min(r, g), b); }
+	T getMaxComponent() const { return std::max(std::max(r, g), b); }
+	Color3& setZero() noexcept { r = T(); g = T(); b = T(); return *this; }
+	Color3& set(T r, T g, T b) noexcept { this->r = r; this->g = g; this->b = b; return *this; }
+	Color3& setMinimum(const Color3& c1, const Color3& c2);
+	Color3& setMaximum(const Color3& c1, const Color3& c2);
+
+	//static const Color3& getZero() noexcept { return ZERO; }
+
+	static const Color3 ZERO;
+
+	T r, g, b;
+};
+
+template<std::integral T> const Color3<T> Color3<T>::ZERO{};
 
 #if SIMD_HAS_FLOAT4
 
@@ -173,7 +266,6 @@ struct Color3<float>
 #if IMAGING_SIMD_EXPAND_LAST
 	/*constexpr*/ explicit Color3(float scalar) noexcept : rgb(simd::set4(scalar)) {}
 	/*constexpr*/ Color3(float r, float g, float b) noexcept : rgb(simd::set4(r, g, b, b)) {}
-	//template<typename U> explicit Color3(const IntColor3<U>&/*IntColor3<U>::ConstArg*/ c) noexcept;
 	explicit Color3(const tuples::templates::Tuple3<float>& t) noexcept : rgb(simd::set4(t.x, t.y, t.z, t.z)) {}
 	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept : Color3((float)t.x, (float)t.y, (float)t.z)) {}
 	explicit Color3(const std::tuple<float, float, float>& t) noexcept : Color3(std::get<0>(t), std::get<1>(t), std::get<2>(t))) {}
@@ -182,7 +274,6 @@ struct Color3<float>
 #else
 	/*constexpr*/ explicit Color3(float scalar) noexcept : rgb(simd::set3(scalar)) {}
 	/*constexpr*/ Color3(float r, float g, float b) noexcept : rgb(simd::set3(r, g, b)) {}
-	//template<typename U> explicit Color3(const IntColor3<U>&/*IntColor3<U>::ConstArg*/ c) noexcept;
 	explicit Color3(const tuples::templates::Tuple3<float>& t) noexcept : rgb(simd::set3(t.x, t.y, t.z)) {}
 	template<typename U> explicit Color3(const tuples::templates::Tuple3<U>& t) noexcept : rgb(simd::set3((float)t.x, (float)t.y, (float)t.z)) {}
 	explicit Color3(const std::tuple<float, float, float>& t) noexcept : rgb(simd::set3(std::get<0>(t), std::get<1>(t), std::get<2>(t))) {}
@@ -191,6 +282,7 @@ struct Color3<float>
 #endif
 	explicit Color3(simd::float4 c) noexcept : rgb(c) {}
 	Color3(const Color3& c) noexcept : rgb(c.rgb) {}
+	template<typename U> explicit Color3(const Color3<U>& c) noexcept : Color3((float)c.r, (float)c.g, (float)c.b) {}
 	Color3& operator=(const Color3& c) noexcept { rgb = c.rgb; return *this; }
 
 	operator simd::float4() const noexcept { return rgb; }
@@ -320,67 +412,80 @@ const Color3<float> Color3<float>::LUMINANCE{ 0.2126f, 0.7152f, 0.0722f };
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline Color3<T> operator+(const Color3<T>& c1, const Color3<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator+(const Color3<T>& c1, const Color3<T>& c2) noexcept
 { 
 	return Color3<T>(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b); 
 }
 
 template<typename T>
-inline Color3<T> operator-(const Color3<T>& c1, const Color3<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator-(const Color3<T>& c1, const Color3<T>& c2) noexcept
 { 
 	return Color3<T>(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b); 
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Color3<T> operator*(const Color3<T>& c1, const Color3<T>& c2) noexcept
 { 
 	return Color3<T>(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b); 
 }
 
 template<typename T>
-inline Color3<T> operator*(T f, const Color3<T>& c) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator*(T f, const Color3<T>& c) noexcept
 { 
 	return Color3<T>(f*c.r, f*c.g, f*c.b); 
 }
 
 template<typename T>
-inline Color3<T> operator*(const Color3<T>& c, T f) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator*(const Color3<T>& c, T f) noexcept
 { 
 	return Color3<T>(c.r*f, c.g*f, c.b*f); 
 }
 
 template<typename T>
-inline Color3<T> operator/(const Color3<T>& c1, const Color3<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator/(const Color3<T>& c1, const Color3<T>& c2) noexcept
 { 
 	return Color3<T>(c1.r/c2.r, c1.g/c2.g, c1.b/c2.b); 
 }
 
 template<typename T>
-inline Color3<T> operator/(T f, const Color3<T>& c) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator/(T f, const Color3<T>& c) noexcept
 { 
 	return Color3<T>(f/c.r, f/c.g, f/c.b); 
 }
 
 template<typename T>
-inline Color3<T> operator/(const Color3<T>& c, T f) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> operator/(const Color3<T>& c, T f) noexcept
 { 
-	return operator*(c, T(1)/f); 
+	if constexpr (std::is_floating_point_v<T>)
+		return operator*(c, T(1)/f);
+	else
+		return Color3<T>(c.r/f, c.g/f, c.b/f);
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U> || std::integral<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Color3<U>& c)
 { 
 	return s >> c.r >> std::ws >> c.g >> std::ws >> c.b; 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U> || std::integral<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Color3<U>& c)
 { 
 	constexpr C WS(0x20);
 	return s << c.r << WS << c.g << WS << c.b;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<std::size_t I>
 inline T& Color3<T>::get()
 {
@@ -393,7 +498,7 @@ inline T& Color3<T>::get()
 	static_assert(false);
 }
 
-template<typename T>
+template<std::floating_point T>
 template<std::size_t I>
 inline const T& Color3<T>::get() const
 {
@@ -406,7 +511,7 @@ inline const T& Color3<T>::get() const
 	static_assert(false);
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline Color3<T> Color3<T>::fromPackedRgb(U c)
 {
@@ -415,7 +520,7 @@ inline Color3<T> Color3<T>::fromPackedRgb(U c)
 	return result;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline U Color3<T>::toPackedRgb() const
 {
@@ -424,7 +529,7 @@ inline U Color3<T>::toPackedRgb() const
 		saturate<int, detail::Rgb<U>::B_MAX>(c.b));
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline Color3<T> Color3<T>::fromPackedBgr(U c)
 {
@@ -433,7 +538,7 @@ inline Color3<T> Color3<T>::fromPackedBgr(U c)
 	return result;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline U Color3<T>::toPackedBgr() const
 {
@@ -442,28 +547,28 @@ inline U Color3<T>::toPackedBgr() const
 		saturate<int, detail::Bgr<U>::B_MAX>(c.b));
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Color3<T>::isApproxZero() const
 { 
 	return (std::fabs(r) < Constants<T>::TOLERANCE) && (std::fabs(g) < Constants<T>::TOLERANCE) &&
 		(std::fabs(b) < Constants<T>::TOLERANCE); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Color3<T>::isApproxEqual(const Color3<T>& c) const
 { 
 	return (std::fabs(c.r - r) < Constants<T>::TOLERANCE) && (std::fabs(c.g - g) < Constants<T>::TOLERANCE) &&
 		(std::fabs(c.b - b) < Constants<T>::TOLERANCE);
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Color3<T>::isApproxEqual(const Color3<T>& c, T tolerance) const
 { 
 	return (std::fabs(c.r - r) < tolerance) && (std::fabs(c.g - g) < tolerance) && 
 		(std::fabs(c.b - b) < tolerance); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color3<T>& Color3<T>::setMinimum(const Color3<T>& c1, const Color3<T>& c2)
 { 
 	r = std::min(c1.r, c2.r); 
@@ -472,7 +577,7 @@ inline Color3<T>& Color3<T>::setMinimum(const Color3<T>& c1, const Color3<T>& c2
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color3<T>& Color3<T>::setMaximum(const Color3<T>& c1, const Color3<T>& c2)
 { 
 	r = std::max(c1.r, c2.r); 
@@ -481,7 +586,7 @@ inline Color3<T>& Color3<T>::setMaximum(const Color3<T>& c1, const Color3<T>& c2
 	return *this; 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color3<T>& Color3<T>::saturate()
 { 
 	r = std::clamp(r, T(0), T(1)); 
@@ -490,7 +595,7 @@ inline Color3<T>& Color3<T>::saturate()
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color3<T>& Color3<T>::makeLinear()
 { 
 	r = makeLinear(r);
@@ -499,12 +604,56 @@ inline Color3<T>& Color3<T>::makeLinear()
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color3<T>& Color3<T>::makeSrgb()
 { 
 	r = makeSrgb(r);
 	g = makeSrgb(g);
 	b = makeSrgb(b);
+	return *this;
+}
+
+template<std::integral T>
+template<std::size_t I>
+inline T& Color3<T>::get()
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	static_assert(false);
+}
+
+template<std::integral T>
+template<std::size_t I>
+inline const T& Color3<T>::get() const
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	static_assert(false);
+}
+
+template<std::integral T>
+inline Color3<T>& Color3<T>::setMinimum(const Color3<T>& c1, const Color3<T>& c2)
+{
+	r = std::min(c1.r, c2.r);
+	g = std::min(c1.g, c2.g);
+	b = std::min(c1.b, c2.b);
+	return *this;
+}
+
+template<std::integral T>
+inline Color3<T>& Color3<T>::setMaximum(const Color3<T>& c1, const Color3<T>& c2)
+{
+	r = std::max(c1.r, c2.r);
+	g = std::max(c1.g, c2.g);
+	b = std::max(c1.b, c2.b);
 	return *this;
 }
 
@@ -644,6 +793,7 @@ inline U Color3<float>::toPackedBgr() const
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline T& get(Color3<T>& c) noexcept
 {
 	if constexpr (I == 0)
@@ -656,6 +806,7 @@ inline T& get(Color3<T>& c) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline const T& get(const Color3<T>& c) noexcept
 {
 	if constexpr (I == 0)
@@ -668,6 +819,7 @@ inline const T& get(const Color3<T>& c) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline T&& get(Color3<T>&& c) noexcept
 {
 	if constexpr (I == 0)
@@ -680,6 +832,7 @@ inline T&& get(Color3<T>&& c) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline const T&& get(const Color3<T>&& c) noexcept
 {
 	if constexpr (I == 0)
@@ -698,39 +851,45 @@ inline const T&& get(const Color3<T>&& c) noexcept
 //inline const T& get(const Color3<U>& c) noexcept;
 
 template<typename T>
+	requires std::floating_point<T>
 inline T luminance(T r, T g, T b) noexcept
 {
 	return r*T(0.2126) + g*T(0.7152) + b*T(0.0722);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T luminance(const Color3<T>& c) noexcept
 {
 	return c.r*T(0.2126) + c.g*T(0.7152) + c.b*T(0.0722);
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Color3<T> minimum(const Color3<T>& c1, const Color3<T>& c2)
 {
 	return Color3<T>(std::min(c1.r, c2.r), std::min(c1.g, c2.g), std::min(c1.b, c2.b));
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Color3<T> maximum(const Color3<T>& c1, const Color3<T>& c2)
 {
 	return Color3<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b));
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color3<T> saturate(const Color3<T>& c)
 {
 	return Color3<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)));
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Color3<T> saturate(Color3<T>&& c)
 {
@@ -741,21 +900,24 @@ inline Color3<T> saturate(Color3<T>&& c)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color3<T> lerp(const Color3<T>& c1, const Color3<T>& c2, T t) noexcept
 {
 	return Color3<T>(c1.r + t*(c2.r - c1.r), c1.g + t*(c2.g - c1.g), c1.b + t*(c2.b - c1.b));
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color3<T> makeLinear(const Color3<T>& c) noexcept
 {
 	return Color3<T>(makeLinear(c.r), makeLinear(c.g), makeLinear(c.b));
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Color3<T> makeLinear(Color3<T>&& c) noexcept
 {
@@ -766,15 +928,17 @@ inline Color3<T> makeLinear(Color3<T>&& c) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color3<T> makeSrgb(const Color3<T>& c) noexcept
 {
 	return Color3<T>(makeSrgb(c.r), makeSrgb(c.g), makeSrgb(c.b));
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Color3<T> makeSrgb(Color3<T>&& c) noexcept
 {

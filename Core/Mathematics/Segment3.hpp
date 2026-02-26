@@ -8,6 +8,7 @@
 #include <istream>
 #include <ostream>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <tuple>
 #include <algorithm>
@@ -23,6 +24,7 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Segment3
 {
 	using Real = T;
@@ -72,12 +74,14 @@ struct Segment3
 };
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Segment3<U>& segment)
 { 
 	return s >> segment.start >> std::ws >> segment.end;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Segment3<U>& segment)
 { 
 	constexpr C WS(0x20);

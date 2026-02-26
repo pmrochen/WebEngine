@@ -8,6 +8,7 @@
 #include <istream>
 #include <ostream>
 #include <type_traits>
+#include <concepts>
 #include <utility>
 #include <optional>
 #include <algorithm>
@@ -21,6 +22,7 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Ray2
 {
 	using Real = T;
@@ -77,12 +79,14 @@ struct Ray2
 };
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Ray2<U>& ray)
 { 
 	return s >> ray.origin >> std::ws >> ray.direction;
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Ray2<U>& ray)
 { 
 	constexpr C WS(0x20);
@@ -119,7 +123,7 @@ inline Vector2<T> Ray2<T>::getClosestPoint(const Vector2<T>& point) const
 }
 
 template<typename T>
-inline std::optional<T> findIntersection(const Line2<T>& line) const
+inline std::optional<T> Ray2<T>::findIntersection(const Line2<T>& line) const
 {
 	T d1CrossD2 = cross(direction, line.direction);
 	if (std::fabs(d1CrossD2) < Constants<T>::TOLERANCE)
@@ -138,7 +142,7 @@ inline std::optional<T> findIntersection(const Line2<T>& line) const
 
 template<typename T>
 template<typename U> 
-inline std::optional<U> findIntersection(const Line2<T>& line) const
+inline std::optional<U> Ray2<T>::findIntersection(const Line2<T>& line) const
 {
 	static_assert(std::is_same_v<U, T> || std::is_same_v<U, Vector3<T>>);
 	std::optional<T> result = findIntersection(line);
@@ -149,6 +153,7 @@ inline std::optional<U> findIntersection(const Line2<T>& line) const
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Ray2<T> normalize(const Ray2<T>& ray) noexcept
 {
 	Ray2<T> r(ray);
@@ -157,6 +162,7 @@ inline Ray2<T> normalize(const Ray2<T>& ray) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Ray2<T> normalize(Ray2<T>&& ray) noexcept
 {
 	ray.normalize();

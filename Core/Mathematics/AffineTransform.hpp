@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <algorithm>
 #include <tuple>
 #include <cstddef>
@@ -31,18 +32,23 @@ namespace core::mathematics {
 namespace templates {
 
 template<typename T>
+	requires std::floating_point<T>
 struct Quaternion;
 
 template<typename T>
+	requires std::floating_point<T>
 struct YawPitchRoll;
 
 template<typename T>
+	requires std::floating_point<T>
 struct Euler;
 
 template<typename T>
+	requires std::floating_point<T>
 struct Plane;
 
 template<typename T>
+	requires std::floating_point<T>
 struct AffineTransform
 {
 	using Real = T;
@@ -379,10 +385,6 @@ const AffineTransform<float> AffineTransform<float>::IDENTITY{ 1.f, 0.f, 0.f, 0.
 
 #endif /* SIMD_HAS_FLOAT4 */
 
-#if SIMD_HAS_FLOAT4
-
-#endif /* SIMD_HAS_FLOAT4 */
-
 template<typename T>
 inline AffineTransform<T>::AffineTransform(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22, T m30, T m31, T m32) :
 	m00(m00), m01(m01), m02(m02), m10(m10), m11(m11), m12(m12), m20(m20), m21(m21), m22(m22), m30(m30), m31(m31), m32(m32)
@@ -485,6 +487,7 @@ inline bool AffineTransform<T>::operator==(const AffineTransform<T>& m) const
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, AffineTransform<U>& m)
 {
 	return s >> m.m00 >> std::ws >> m.m01 >> std::ws >> m.m02 >> std::ws >>
@@ -494,6 +497,7 @@ inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, AffineT
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const AffineTransform<U>& m)
 {
 	constexpr C WS(0x20);
@@ -1410,6 +1414,7 @@ inline AffineTransform<float>& AffineTransform<float>::invertOrthogonal()
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
+	requires std::floating_point<T>
 inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2) noexcept
 {
 	return AffineTransform<T>(m1.m00*m2.m00 + m1.m01*m2.m10 + m1.m02*m2.m20,
@@ -1427,25 +1432,29 @@ inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const Affine
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2, const AffineTransform<T>& m3) noexcept
 {
 	return concatenate(concatenate(m1, m2), m3);
 }
 
 template<typename T>
-inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2, const AffineTransform<T>& m3, 
+	requires std::floating_point<T>
+inline AffineTransform<T> concatenate(const AffineTransform<T>& m1, const AffineTransform<T>& m2, const AffineTransform<T>& m3,
 	const AffineTransform<T>& m4) noexcept
 {
 	return concatenate(concatenate(concatenate(m1, m2), m3), m4);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline AffineTransform<T> inverse(const AffineTransform<T>& m) noexcept
 {
 	return AffineTransform<T>(Uninitialized()).setInverse(m);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline AffineTransform<T> inverse(AffineTransform<T>&& m) noexcept
 {
 	m.invert();
@@ -1453,6 +1462,7 @@ inline AffineTransform<T> inverse(AffineTransform<T>&& m) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline AffineTransform<T> inverseOrthogonal(const AffineTransform<T>& m) noexcept
 {
 	AffineTransform<T> n(Uninitialized());
@@ -1464,6 +1474,7 @@ inline AffineTransform<T> inverseOrthogonal(const AffineTransform<T>& m) noexcep
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline AffineTransform<T> inverseOrthogonal(AffineTransform<T>&& m) noexcept
 {
 	T t = m.m01; m.m01 = m.m10; m.m10 = t;

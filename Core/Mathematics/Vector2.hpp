@@ -9,13 +9,14 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <algorithm>
 #include <utility>
 #include <tuple>
 #include <cstddef>
 #include <cmath>
 #include <Simd/Intrinsics.hpp>
-#include <Tuples/Tuple2.hpp>
+//#include <Tuples/Tuple2.hpp>
 #include "Constants.hpp"
 #include "Axis.hpp"
 
@@ -30,13 +31,15 @@ constexpr Uninitialized UNINITIALIZED{};
 namespace templates {
 
 template<typename T>
-struct IntVector2;
-
-template<typename T>
+	requires std::floating_point<T>
 struct Matrix2;
 
 template<typename T>
-struct Vector2
+	requires (std::floating_point<T> || std::integral<T>)
+struct Vector2;
+
+template<std::floating_point T>
+struct Vector2<T>
 {
 	using Real = T;
 	using ComponentType = T;
@@ -49,18 +52,18 @@ struct Vector2
 	explicit Vector2(Uninitialized) noexcept {}
 	constexpr explicit Vector2(T scalar) noexcept : x(scalar), y(scalar) {}
 	constexpr Vector2(T x, T y) noexcept : x(x), y(y) {}
-	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
-	explicit Vector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
-	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
+	//explicit Vector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
+	//template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
 	explicit Vector2(const std::pair<T, T>& t) noexcept : x(t.first), y(t.second) {}
 	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : x(T(t.first)), y(T(t.second)) {}
 	explicit Vector2(const std::tuple<T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)) {}
 	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))) {}
 	explicit Vector2(const T* v) noexcept : x(v[0]), y(v[1]) {}
 	explicit Vector2(Axis axis) noexcept : x((axis == Axis::X) ? T(1) : T(0)), y((axis == Axis::Y) ? T(1) : T(0)) {}
+	template<typename U> explicit Vector2(const Vector2<U>& v) noexcept : x(T(t.x)), y(T(t.y)) {}
 
-	explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
-	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	//explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
+	//template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	//explicit operator std::pair<T, T>() { return std::pair<T, T>(x, y); }
 	//template<typename U> explicit operator std::pair<U, U>() { return std::pair<U, U>(U(x), U(y)); }
 	//explicit operator std::tuple<T, T>() { return std::tuple<T, T>(x, y); }
@@ -117,7 +120,7 @@ struct Vector2
 	Vector2& negate() noexcept { x = -x; y = -y; return *this; }
 	Vector2& normalize() noexcept;
 	Vector2& rotate(T angle) noexcept;
-	//Vector2& scale(ConstArg v) noexcept { x *= v.x; y *= v.y; return *this; }
+	//Vector2& scale(const Vector2& v) noexcept { x *= v.x; y *= v.y; return *this; }
 	Vector2& transform(const Matrix2<T>& m) noexcept;
 
 	//static const Vector2& getZero() noexcept { return ZERO; }
@@ -135,13 +138,88 @@ struct Vector2
 	T x, y;
 };
 
-template<typename T> const Vector2<T> Vector2<T>::ZERO{};
-template<typename T> const Vector2<T> Vector2<T>::UNIT_X{ T(1), T(0) };
-template<typename T> const Vector2<T> Vector2<T>::UNIT_Y{ T(0), T(1) };
-template<typename T> const Vector2<T> Vector2<T>::ONE{ T(1), T(1) };
-template<typename T> const Vector2<T> Vector2<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
-template<typename T> const Vector2<T> Vector2<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
-template<typename T> const Vector2<T> Vector2<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+template<std::floating_point T> const Vector2<T> Vector2<T>::ZERO{};
+template<std::floating_point T> const Vector2<T> Vector2<T>::UNIT_X{ T(1), T(0) };
+template<std::floating_point T> const Vector2<T> Vector2<T>::UNIT_Y{ T(0), T(1) };
+template<std::floating_point T> const Vector2<T> Vector2<T>::ONE{ T(1), T(1) };
+template<std::floating_point T> const Vector2<T> Vector2<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
+template<std::floating_point T> const Vector2<T> Vector2<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
+template<std::floating_point T> const Vector2<T> Vector2<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+
+template<std::integral T>
+struct Vector2<T>
+{
+	using ComponentType = T;
+	using ConstArg = const Vector2&;
+	using ConstResult = const Vector2&;
+
+	static constexpr int NUM_COMPONENTS = 2;
+
+	constexpr Vector2() noexcept : x(), y() {}
+	explicit Vector2(Uninitialized) noexcept {}
+	constexpr explicit Vector2(T scalar) noexcept : x(scalar), y(scalar) {}
+	constexpr Vector2(T x, T y) noexcept : x(x), y(y) {}
+	//explicit Vector2(const tuples::templates::Tuple2<T>& t) noexcept : x(t.x), y(t.y) {}
+	//template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : x(T(t.x)), y(T(t.y)) {}
+	explicit Vector2(const std::pair<T, T>& t) noexcept : x(t.first), y(t.second) {}
+	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : x(T(t.first)), y(T(t.second)) {}
+	explicit Vector2(const std::tuple<T, T>& t) noexcept : x(std::get<0>(t)), y(std::get<1>(t)) {}
+	template<typename U> explicit Vector2(const std::tuple<U, U>& t) noexcept : x(T(std::get<0>(t))), y(T(std::get<1>(t))) {}
+	explicit Vector2(const T* v) noexcept : x(v[0]), y(v[1]) {}
+	template<typename U> explicit Vector2(const Vector2<U>& v) noexcept : x(T(v.x)), y(T(v.y)) {}
+
+	//explicit operator tuples::templates::Tuple2<T>() noexcept { return tuples::templates::Tuple2<T>(x, y); }
+	//template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	//explicit operator std::pair<T, T>() { return std::pair<T, T>(x, y); }
+	//template<typename U> explicit operator std::pair<U, U>() { return std::pair<U, U>(U(x), U(y)); }
+	//explicit operator std::tuple<T, T>() { return std::tuple<T, T>(x, y); }
+	//template<typename U> explicit operator std::tuple<U, U>() { return std::tuple<U, U>(U(x), U(y)); }
+	explicit operator T* () noexcept { return &x; }
+	explicit operator const T* () const noexcept { return &x; }
+	T& operator[](int i) noexcept { return (&x)[i]; }
+	const T& operator[](int i) const noexcept { return (&x)[i]; }
+
+	Vector2 operator+() const noexcept { return *this; }
+	Vector2 operator-() const noexcept { return Vector2(-x, -y); }
+	Vector2& operator+=(const Vector2& v) noexcept { x += v.x; y += v.y; return *this; }
+	Vector2& operator-=(const Vector2& v) noexcept { x -= v.x; y -= v.y; return *this; }
+	Vector2& operator*=(const Vector2& v) noexcept { x *= v.x; y *= v.y; return *this; }
+	Vector2& operator*=(T f) noexcept { x *= f; y *= f; return *this; }
+	Vector2& operator/=(const Vector2& v) noexcept { x /= v.x; y /= v.y; return *this; }
+	Vector2& operator/=(T f) noexcept { x /= f; y /= f; return *this; }
+	bool operator==(const Vector2& v) const noexcept { return (x == v.x) && (y == v.y); }
+	bool operator!=(const Vector2& v) const noexcept { return !(*this == v); }
+
+	template<typename A> void serialize(A& ar) { ar(x, y); }
+
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
+	bool isZero() const noexcept { return (x == T()) && (y == T()); }
+	bool allLessThan(const Vector2& v) const noexcept { return (x < v.x) && (y < v.y); }
+	bool allLessThanEqual(const Vector2& v) const noexcept { return (x <= v.x) && (y <= v.y); }
+	bool allGreaterThan(const Vector2& v) const noexcept { return (x > v.x) && (y > v.y); }
+	bool allGreaterThanEqual(const Vector2& v) const noexcept { return (x >= v.x) && (y >= v.y); }
+	bool anyLessThan(const Vector2& v) const noexcept { return (x < v.x) || (y < v.y); }
+	bool anyLessThanEqual(const Vector2& v) const noexcept { return (x <= v.x) || (y <= v.y); }
+	bool anyGreaterThan(const Vector2& v) const noexcept { return (x > v.x) || (y > v.y); }
+	bool anyGreaterThanEqual(const Vector2& v) const noexcept { return (x >= v.x) || (y >= v.y); }
+	T getMinComponent() const { return std::min(x, y); }
+	T getMaxComponent() const { return std::max(x, y); }
+	Vector2& setZero/*zero*/() noexcept { x = T(); y = T(); return *this; }
+	Vector2& set(T x, T y) noexcept { this->x = x; this->y = y; return *this; }
+	Vector2& setMinimum(const Vector2& v1, const Vector2& v2);
+	Vector2& setMaximum(const Vector2& v1, const Vector2& v2);
+	Vector2& negate() noexcept { x = -x; y = -y; return *this; }
+
+	//static const Vector2& getZero() noexcept { return ZERO; }
+
+	static const Vector2 ZERO;
+
+	T x, y;
+};
+
+template<std::integral T> const Vector2<T> Vector2<T>::ZERO{};
 
 #if SIMD_HAS_FLOAT4
 
@@ -163,9 +241,8 @@ struct Vector2<float>
 #if MATHEMATICS_SIMD_EXPAND_LAST
 	/*constexpr*/ explicit Vector2(float scalar) noexcept : xy(simd::set4(scalar)) {}
 	/*constexpr*/ Vector2(float x, float y) noexcept : xy(simd::set4(x, y, y, y)) {}
-	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
-	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept : xy(simd::set4(t.x, t.y, t.y, t.y)) {}
-	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) : Vector2((float)t.x, (float)t.y) {}
+	//explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept : xy(simd::set4(t.x, t.y, t.y, t.y)) {}
+	//template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) : Vector2((float)t.x, (float)t.y) {}
 	explicit Vector2(const std::pair<float, float>& t) noexcept : xy(simd::set4(t.first, t.second, t.second, t.second)) {}
 	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : Vector2((float)t.first, (float)t.second) {}
 	explicit Vector2(const std::tuple<float, float>& t) noexcept : Vector2(std::get<0>(t), std::get<1>(t)) {}
@@ -174,9 +251,8 @@ struct Vector2<float>
 #else
 	/*constexpr*/ explicit Vector2(float scalar) noexcept : xy(simd::set2(scalar)) {}
 	/*constexpr*/ Vector2(float x, float y) noexcept : xy(simd::set2(x, y)) {}
-	template<typename U> explicit Vector2(const IntVector2<U>& v) noexcept;
-	explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept : xy(simd::set2(t.x, t.y)) {}
-	template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : xy(simd::set2((float)t.x, (float)t.y)) {}
+	//explicit Vector2(const tuples::templates::Tuple2<float>& t) noexcept : xy(simd::set2(t.x, t.y)) {}
+	//template<typename U> explicit Vector2(const tuples::templates::Tuple2<U>& t) noexcept : xy(simd::set2((float)t.x, (float)t.y)) {}
 	explicit Vector2(const std::pair<float, float>& t) noexcept : xy(simd::set2(t.first, t.second)) {}
 	template<typename U> explicit Vector2(const std::pair<U, U>& t) noexcept : xy(simd::set2((float)t.first, (float)t.second)) {}
 	explicit Vector2(const std::tuple<float, float>& t) noexcept : xy(simd::set2(std::get<0>(t), std::get<1>(t))) {}
@@ -186,11 +262,12 @@ struct Vector2<float>
 	explicit Vector2(Axis axis) noexcept : Vector2((axis == Axis::X) ? 1.f : 0.f, (axis == Axis::Y) ? 1.f : 0.f) {}
 	explicit Vector2(simd::float4 v) noexcept : xy(v) {}
 	Vector2(const Vector2& v) noexcept : xy(v.xy) {}
+	template<typename U> explicit Vector2(const Vector2<U>& v) noexcept : Vector2((float)v.x, (float)v.y)) {}
 	Vector2& operator=(const Vector2& v) noexcept { xy = v.xy; return *this; }
 
 	operator simd::float4() const noexcept { return xy; }
-	explicit operator tuples::templates::Tuple2<float>() noexcept { return tuples::templates::Tuple2<float>(x, y); }
-	template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
+	//explicit operator tuples::templates::Tuple2<float>() noexcept { return tuples::templates::Tuple2<float>(x, y); }
+	//template<typename U> explicit operator tuples::templates::Tuple2<U>() noexcept { return tuples::templates::Tuple2<U>(U(x), U(y)); }
 	//explicit operator std::pair<float, float>() { return std::pair<float, float>(x, y); }
 	//template<typename U> explicit operator std::pair<U, U>() { return std::pair<U, U>(U(x), U(y)); }
 	//explicit operator std::tuple<float, float>() { return std::tuple<float, float>(x, y); }
@@ -267,7 +344,7 @@ struct Vector2<float>
 #endif
 	Vector2& normalize() noexcept;
 	Vector2& rotate(float angle) noexcept;
-	//Vector2& scale(ConstArg v) noexcept { xy = simd::mul4(xy, v); return *this; }
+	//Vector2& scale(const Vector2& v) noexcept { xy = simd::mul4(xy, v); return *this; }
 	Vector2& transform(const Matrix2<float>& m) noexcept;
 
 	//static const Vector2& getZero() noexcept { return ZERO; }
@@ -300,67 +377,80 @@ const Vector2<float> Vector2<float>::MINUS_INF{ -std::numeric_limits<float>::inf
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline Vector2<T> operator+(const Vector2<T>& v1, const Vector2<T>& v2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator+(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 { 
 	return Vector2<T>(v1.x + v2.x, v1.y + v2.y);
 }
 
 template<typename T>
-inline Vector2<T> operator-(const Vector2<T>& v1, const Vector2<T>& v2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator-(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 { 
 	return Vector2<T>(v1.x - v2.x, v1.y - v2.y);
 }
 
 template<typename T>
-inline Vector2<T> operator*(const Vector2<T>& v1, const Vector2<T>& v2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator*(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 { 
 	return Vector2<T>(v1.x*v2.x, v1.y*v2.y);
 }
 
 template<typename T>
-inline Vector2<T> operator*(T f, const Vector2<T>& v) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator*(T f, const Vector2<T>& v) noexcept
 { 
 	return Vector2<T>(f*v.x, f*v.y);
 }
 
 template<typename T>
-inline Vector2<T> operator*(const Vector2<T>& v, T f) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator*(const Vector2<T>& v, T f) noexcept
 { 
 	return Vector2<T>(v.x*f, v.y*f);
 }
 
 template<typename T>
-inline Vector2<T> operator/(const Vector2<T>& v1, const Vector2<T>& v2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator/(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 { 
 	return Vector2<T>(v1.x/v2.x, v1.y/v2.y);
 }
 
 template<typename T>
-inline Vector2<T> operator/(T f, const Vector2<T>& v) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator/(T f, const Vector2<T>& v) noexcept
 { 
 	return Vector2<T>(f/v.x, f/v.y);
 }
 
 template<typename T>
-inline Vector2<T> operator/(const Vector2<T>& v, T f) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Vector2<T> operator/(const Vector2<T>& v, T f) noexcept
 { 
-	return operator*(v, T(1)/f); 
+	if constexpr (std::is_floating_point_v<T>)
+		return operator*(v, T(1)/f);
+	else
+		return Vector2<T>(v.x/f, v.y/f);
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U> || std::integral<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Vector2<U>& v)
 { 
 	return s >> v.x >> std::ws >> v.y; 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U> || std::integral<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Vector2<U>& v)
 { 
 	constexpr C WS(0x20);
 	return s << v.x << WS << v.y;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<std::size_t I>
 inline T& Vector2<T>::get()
 {
@@ -371,7 +461,7 @@ inline T& Vector2<T>::get()
 	static_assert(false);
 }
 
-template<typename T>
+template<std::floating_point T>
 template<std::size_t I>
 inline const T& Vector2<T>::get() const
 {
@@ -382,25 +472,25 @@ inline const T& Vector2<T>::get() const
 	static_assert(false);
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Vector2<T>::isApproxZero() const
 { 
 	return (std::fabs(x) < Constants<T>::TOLERANCE) && (std::fabs(y) < Constants<T>::TOLERANCE); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Vector2<T>::isApproxEqual(const Vector2<T>& v) const
 { 
 	return (std::fabs(v.x - x) < Constants<T>::TOLERANCE) && (std::fabs(v.y - y) < Constants<T>::TOLERANCE); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Vector2<T>::isApproxEqual(const Vector2<T>& v, T tolerance) const
 { 
 	return (std::fabs(v.x - x) < tolerance) && (std::fabs(v.y - y) < tolerance); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline void Vector2<T>::setMagnitude(T magnitude) 
 { 
 	T m = getMagnitude(); 
@@ -408,7 +498,7 @@ inline void Vector2<T>::setMagnitude(T magnitude)
 		*this *= magnitude/m;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Vector2<T>& Vector2<T>::setMinimum(const Vector2<T>& v1, const Vector2<T>& v2)
 { 
 	x = std::min(v1.x, v2.x); 
@@ -416,7 +506,7 @@ inline Vector2<T>& Vector2<T>::setMinimum(const Vector2<T>& v1, const Vector2<T>
 	return *this; 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Vector2<T>& Vector2<T>::setMaximum(const Vector2<T>& v1, const Vector2<T>& v2)
 { 
 	x = std::max(v1.x, v2.x); 
@@ -424,7 +514,7 @@ inline Vector2<T>& Vector2<T>::setMaximum(const Vector2<T>& v1, const Vector2<T>
 	return *this; 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Vector2<T>& Vector2<T>::normalize()
 {
 //#if MATHEMATICS_FAST_NORMALIZE
@@ -444,7 +534,7 @@ inline Vector2<T>& Vector2<T>::normalize()
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Vector2<T>& Vector2<T>::rotate(T angle)
 {
 	if (angle != T(0))
@@ -454,6 +544,44 @@ inline Vector2<T>& Vector2<T>::rotate(T angle)
 		set(x*cosAngle - y*sinAngle, y*cosAngle + x*sinAngle);
 	}
 
+	return *this;
+}
+
+template<std::integral T>
+template<std::size_t I>
+inline T& Vector2<T>::get()
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
+
+template<std::integral T>
+template<std::size_t I>
+inline const T& Vector2<T>::get() const
+{
+	if constexpr (I == 0)
+		return x;
+	else if constexpr (I == 1)
+		return y;
+	static_assert(false);
+}
+
+template<std::integral T>
+inline Vector2<T>& Vector2<T>::setMinimum(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+	x = std::min(v1.x, v2.x);
+	y = std::min(v1.y, v2.y);
+	return *this;
+}
+
+template<std::integral T>
+inline Vector2<T>& Vector2<T>::setMaximum(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+	x = std::max(v1.x, v2.x);
+	y = std::max(v1.y, v2.y);
 	return *this;
 }
 
@@ -588,6 +716,7 @@ inline Vector2<float>& Vector2<float>::rotate(float angle)
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline T& get(Vector2<T>& v) noexcept
 {
 	if constexpr (I == 0)
@@ -598,6 +727,7 @@ inline T& get(Vector2<T>& v) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline const T& get(const Vector2<T>& v) noexcept
 {
 	if constexpr (I == 0)
@@ -608,6 +738,7 @@ inline const T& get(const Vector2<T>& v) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline T&& get(Vector2<T>&& v) noexcept
 {
 	if constexpr (I == 0)
@@ -618,6 +749,7 @@ inline T&& get(Vector2<T>&& v) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline const T&& get(const Vector2<T>&& v) noexcept
 {
 	if constexpr (I == 0)
@@ -628,18 +760,21 @@ inline const T&& get(const Vector2<T>&& v) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T dot(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 {
 	return v1.x*v2.x + v1.y*v2.y;
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T cross(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 {
 	return v1.x*v2.y - v1.y*v2.x;
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 {
 	T x = v2.x - v1.x;
@@ -648,6 +783,7 @@ inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T distanceSquared(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 {
 	T x = v2.x - v1.x;
@@ -656,36 +792,42 @@ inline T distanceSquared(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T length(const Vector2<T>& v) noexcept
 {
 	return std::sqrt(v.x*v.x + v.y*v.y);
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T lengthSquared(const Vector2<T>& v) noexcept
 {
 	return v.x*v.x + v.y*v.y;
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Vector2<T> minimum(const Vector2<T>& v1, const Vector2<T>& v2)
 {
 	return Vector2<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y));
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Vector2<T> maximum(const Vector2<T>& v1, const Vector2<T>& v2)
 {
 	return Vector2<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y));
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> lerp(const Vector2<T>& v1, const Vector2<T>& v2, T t) noexcept
 {
 	return Vector2<T>(v1.x + t*(v2.x - v1.x), v1.y + t*(v2.y - v1.y));
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> slerp(const Vector2<T>& v1, const Vector2<T>& v2, T t)
 {
 	T dp = v1.x*v2.x + v1.y*v2.y;
@@ -706,6 +848,7 @@ inline Vector2<T> slerp(const Vector2<T>& v1, const Vector2<T>& v2, T t)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> perpendicular(const Vector2<T>& v) noexcept
 {
 	return Vector2<T>(-v.y, v.x);
@@ -802,6 +945,7 @@ inline Vector2<float> perpendicular(const Vector2<float>& v) noexcept
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> normalize(const Vector2<T>& v) noexcept
 {
 	Vector2<T> u(v);
@@ -809,10 +953,11 @@ inline Vector2<T> normalize(const Vector2<T>& v) noexcept
 	return u;
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Vector2<T> normalize(Vector2<T>&& v) noexcept
 {
@@ -821,6 +966,7 @@ inline Vector2<T> normalize(Vector2<T>&& v) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> project(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 {
 	T m = v2.getMagnitudeSquared();
@@ -828,6 +974,7 @@ inline Vector2<T> project(const Vector2<T>& v1, const Vector2<T>& v2) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline T angle(const Vector2<T>& v1, const Vector2<T>& v2)
 {
 #if MATHEMATICS_FAST_NORMALIZE
@@ -859,6 +1006,10 @@ using Vector2 = templates::Vector2<float>;
 using Vector2Arg = templates::Vector2<float>::ConstArg;
 using Vector2Result = templates::Vector2<float>::ConstResult;
 #endif
+
+using IntVector2 = templates::Vector2<int>;
+using IntVector2Arg = templates::Vector2<int>::ConstArg;
+using IntVector2Result = templates::Vector2<int>::ConstResult;
 
 } // namespace core::mathematics
 
@@ -898,16 +1049,9 @@ struct hash<::core::mathematics::templates::Vector2<T>>
 
 } // namespace std
 
-#include "IntVector2.hpp"
 #include "Matrix2.hpp"
 
 namespace core::mathematics::templates {
-
-template<typename T>
-template<typename U> 
-inline Vector2<T>::Vector2(const IntVector2<U>& v) : x(T(v.x)), y(T(v.y))
-{
-}
 
 template<typename T>
 inline Vector2<T>& Vector2<T>::operator*=(const Matrix2<T>& m)
@@ -917,12 +1061,14 @@ inline Vector2<T>& Vector2<T>::operator*=(const Matrix2<T>& m)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> operator*(const Vector2<T>& v, const Matrix2<T>& m) noexcept
 {
 	return Vector2<T>(v.x*m.m00 + v.y*m.m10, v.x*m.m01 + v.y*m.m11);
 }
 
 //template<typename T>
+//	requires std::floating_point<T>
 //inline Vector2<T> operator*(const Matrix2<T>& m, const Vector2<T>& v) noexcept; // valid for column vectors only
 
 template<typename T>
@@ -933,17 +1079,13 @@ inline Vector2<T>& Vector2<T>::transform(const Matrix2<T>& m)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Vector2<T> transform(const Vector2<T>& v, const Matrix2<T>& m) noexcept
 {
 	return v*m;
 }
 
 #if SIMD_HAS_FLOAT4
-
-template<typename U>
-inline Vector2<float>::Vector2(const IntVector2<U>& v) : Vector2((float)v.x, (float)v.y)
-{
-}
 
 inline Vector2<float>& Vector2<float>::operator*=(const Matrix2<float>& m)
 {

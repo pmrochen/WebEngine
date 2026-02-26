@@ -9,6 +9,7 @@
 #include <ostream>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 #include <algorithm>
 #include <utility>
 #include <tuple>
@@ -23,11 +24,12 @@
 namespace core::imaging {
 namespace templates {
 
-//template<typename T>
-//struct IntColor4;
-
 template<typename T>
-struct Color4
+	requires (std::floating_point<T> || std::integral<T>)
+struct Color4;
+
+template<std::floating_point T>
+struct Color4<T>
 {
 	using Real = T;
 	using ComponentType = T;
@@ -40,14 +42,14 @@ struct Color4
 	explicit Color4(Uninitialized) noexcept {}
 	constexpr explicit Color4(T scalar) noexcept : r(scalar), g(scalar), b(scalar), a(scalar) {}
 	constexpr Color4(T r, T g, T b, T a) noexcept : r(r), g(g), b(b), a(a) {}
-	constexpr Color4(Color3<T>::ConstArg c) noexcept : r(c.r), g(c.g), b(c.b), a(T(1)) {}
-	constexpr Color4(Color3<T>::ConstArg c, T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
-	//template<typename U> explicit Color4(const IntColor4<U>&/*IntColor4<U>::ConstArg*/ c) noexcept;
+	constexpr Color4(const Color3<T>& c) noexcept : r(c.r), g(c.g), b(c.b), a(T(1)) {}
+	constexpr Color4(const Color3<T>& c, T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
 	explicit Color4(const tuples::templates::Tuple4<T>& t) noexcept : r(t.x), g(t.y), b(t.z), a(t.w) {}
 	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
 	explicit Color4(const std::tuple<T, T, T, T>& t) noexcept : r(std::get<0>(t)), g(std::get<1>(t)), b(std::get<2>(t)), a(std::get<3>(t)) {}
 	template<typename U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))), a(T(std::get<3>(t))) {}
 	explicit Color4(const T* c) noexcept : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
+	template<typename U> explicit Color4(const Color4<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)), a(T(c.a)) {}
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
 	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
@@ -91,8 +93,8 @@ struct Color4
 	template<typename U> U toPacked/*Native*/() const noexcept { return toPackedBgra<U>(); }
 #endif
 
-	Color3<T>::ConstResult rgb/*getRgb*/() const noexcept { return reinterpret_cast<const Color3&>(*this); }
-	//void setRgb(Color3<T>::ConstArg c) noexcept { r = c.r; g = c.g; b = c.b; }
+	const Color3<T>& rgb/*getRgb*/() const noexcept { return reinterpret_cast<const Color3&>(*this); }
+	//void setRgb(const Color3<T>& c) noexcept { r = c.r; g = c.g; b = c.b; }
 	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()) && (a == T()); }
 	bool isApproxZero() const noexcept;
 	bool isApproxEqual(const Color4& c) const noexcept;
@@ -138,17 +140,97 @@ struct Color4
 	T r, g, b, a;
 };
 
-template<typename T> const Color4<T> Color4<T>::ZERO{};
-template<typename T> const Color4<T> Color4<T>::UNIT_R{ T(1), T(0), T(0), T(0) };
-template<typename T> const Color4<T> Color4<T>::UNIT_G{ T(0), T(1), T(0), T(0) };
-template<typename T> const Color4<T> Color4<T>::UNIT_B{ T(0), T(0), T(1), T(0) };
-template<typename T> const Color4<T> Color4<T>::UNIT_A{ T(0), T(0), T(0), T(1) };
-template<typename T> const Color4<T> Color4<T>::ONE{ T(1), T(1), T(1), T(1) };
-template<typename T> const Color4<T> Color4<T>::HALF{ T(0.5), T(0.5), T(0.5), T(0.5) };
-template<typename T> const Color4<T> Color4<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
-template<typename T> const Color4<T> Color4<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
-template<typename T> const Color4<T> Color4<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
-template<typename T> const Color4<T> Color4<T>::LUMINANCE{ T(0.2126), T(0.7152), T(0.0722), T(0) };
+template<std::floating_point T> const Color4<T> Color4<T>::ZERO{};
+template<std::floating_point T> const Color4<T> Color4<T>::UNIT_R{ T(1), T(0), T(0), T(0) };
+template<std::floating_point T> const Color4<T> Color4<T>::UNIT_G{ T(0), T(1), T(0), T(0) };
+template<std::floating_point T> const Color4<T> Color4<T>::UNIT_B{ T(0), T(0), T(1), T(0) };
+template<std::floating_point T> const Color4<T> Color4<T>::UNIT_A{ T(0), T(0), T(0), T(1) };
+template<std::floating_point T> const Color4<T> Color4<T>::ONE{ T(1), T(1), T(1), T(1) };
+template<std::floating_point T> const Color4<T> Color4<T>::HALF{ T(0.5), T(0.5), T(0.5), T(0.5) };
+template<std::floating_point T> const Color4<T> Color4<T>::TOLERANCE{ Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE, Constants<T>::TOLERANCE };
+template<std::floating_point T> const Color4<T> Color4<T>::INF{ std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity() };
+template<std::floating_point T> const Color4<T> Color4<T>::MINUS_INF{ -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity() };
+template<std::floating_point T> const Color4<T> Color4<T>::LUMINANCE{ T(0.2126), T(0.7152), T(0.0722), T(0) };
+
+template<std::integral T>
+struct Color4<T>
+{
+	using ComponentType = T;
+	using ConstArg = const Color4&;
+	using ConstResult = const Color4&;
+
+	static constexpr int NUM_COMPONENTS = 4;
+
+	constexpr Color4() noexcept : r(), g(), b(), a() {}
+	explicit Color4(Uninitialized) noexcept {}
+	constexpr explicit Color4(T scalar) noexcept : r(scalar), g(scalar), b(scalar), a(scalar) {}
+	constexpr Color4(T r, T g, T b, T a) noexcept : r(r), g(g), b(b), a(a) {}
+	constexpr Color4(const Color3<T>& c) noexcept : r(c.r), g(c.g), b(c.b), a(std::numeric_limits<T>::max()) {}
+	constexpr Color4(const Color3<T>& c, T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
+	explicit Color4(const tuples::templates::Tuple4<T>& t) noexcept : r(t.x), g(t.y), b(t.z), a(t.w) {}
+	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
+	explicit Color4(const std::tuple<T, T, T, T>& t) noexcept : r(std::get<0>(t)), g(std::get<1>(t)), b(std::get<2>(t)), a(std::get<3>(t)) {}
+	template<typename U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))), a(T(std::get<3>(t))) {}
+	explicit Color4(const T* c) noexcept : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
+	template<typename U> explicit Color4(const Color4<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)), a(T(c.a)) {}
+
+	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
+	template<typename U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
+	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(r, g, b, a); }
+	//template<typename U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
+	explicit operator T* () noexcept { return &r; }
+	explicit operator const T* () const noexcept { return &r; }
+	T& operator[](int i) noexcept { return (&r)[i]; }
+	const T& operator[](int i) const noexcept { return (&r)[i]; }
+
+	Color4 operator+() const noexcept { return *this; }
+	Color4 operator-() const noexcept { return Color4(-r, -g, -b, -a); }
+	Color4& operator+=(const Color4& c) noexcept { r += c.r; g += c.g; b += c.b; a += c.a; return *this; }
+	Color4& operator-=(const Color4& c) noexcept { r -= c.r; g -= c.g; b -= c.b; a -= c.a; return *this; }
+	Color4& operator*=(const Color4& c) noexcept { r *= c.r; g *= c.g; b *= c.b; a *= c.a; return *this; }
+	Color4& operator*=(T f) noexcept { r *= f; g *= f; b *= f; a *= f; return *this; }
+	Color4& operator/=(const Color4& c) noexcept { r /= c.r; g /= c.g; b /= c.b; a /= c.a; return *this; }
+	Color4& operator/=(T f) noexcept { r /= f; g /= f; b /= f; a /= f; return *this; }
+	bool operator==(const Color4& c) const noexcept { return (r == c.r) && (g == c.g) && (b == c.b) && (a == c.a); }
+	bool operator!=(const Color4& c) const noexcept { return !(*this == c); }
+
+	template<typename A> void load(A& ar) { ar(r, g, b, a); }
+	template<typename A> void save(A& ar) const { ar(r, g, b, a); }
+
+	template<std::size_t I> T& get() noexcept;
+	template<std::size_t I> const T& get() const noexcept;
+
+	// #TODO from/toPacked
+
+	const Color3<T>& rgb/*getRgb*/() const noexcept { return reinterpret_cast<const Color3&>(*this); }
+	//void setRgb(const Color3<T>& c) noexcept { r = c.r; g = c.g; b = c.b; }
+	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()) && (a == T()); }
+	bool isApproxZero() const noexcept;
+	bool isApproxEqual(const Color4& c) const noexcept;
+	bool isApproxEqual(const Color4& c, T tolerance) const noexcept;
+	bool allLessThan(const Color4& c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b) && (a < c.a); }
+	bool allLessThanEqual(const Color4& c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b) && (a <= c.a); }
+	bool allGreaterThan(const Color4& c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b) && (a > c.a); }
+	bool allGreaterThanEqual(const Color4& c) const noexcept { return (r >= c.r) && (g >= c.g) && (b >= c.b) && (a >= c.a); }
+	bool anyLessThan(const Color4& c) const noexcept { return (r < c.r) || (g < c.g) || (b < c.b) || (a < c.a); }
+	bool anyLessThanEqual(const Color4& c) const noexcept { return (r <= c.r) || (g <= c.g) || (b <= c.b) || (a <= c.a); }
+	bool anyGreaterThan(const Color4& c) const noexcept { return (r > c.r) || (g > c.g) || (b > c.b) || (a > c.a); }
+	bool anyGreaterThanEqual(const Color4& c) const noexcept { return (r >= c.r) || (g >= c.g) || (b >= c.b) || (a >= c.a); }
+	T getMinComponent() const { return std::min(std::min(std::min(r, g), b), a); }
+	T getMaxComponent() const { return std::max(std::max(std::max(r, g), b), a); }
+	Color4& setZero() noexcept { r = T(); g = T(); b = T(); a = T(); return *this; }
+	Color4& set(T r, T g, T b, T a) noexcept { this->r = r; this->g = g; this->b = b; this->a = a; return *this; }
+	Color4& setMinimum(const Color4& c1, const Color4& c2);
+	Color4& setMaximum(const Color4& c1, const Color4& c2);
+
+	//static const Color4& getZero() noexcept { return ZERO; }
+
+	static const Color4 ZERO;
+
+	T r, g, b, a;
+};
+
+template<std::integral T> const Color4<T> Color4<T>::ZERO{};
 
 #if SIMD_HAS_FLOAT4
 
@@ -166,9 +248,8 @@ struct Color4<float>
 	explicit Color4(Uninitialized) noexcept {}
 	/*constexpr*/ explicit Color4(float scalar) noexcept : rgba(simd::set4(scalar)) {}
 	/*constexpr*/ Color4(float r, float g, float b, float a) noexcept : rgba(simd::set4(r, g, b, a)) {}
-	/*constexpr*/ Color4(Color3<float>::ConstArg c) noexcept : rgba(simd::insert3(c, UNIT_A)) {}
-	/*constexpr*/ Color4(Color3<float>::ConstArg c, float a) noexcept : rgba(simd::insert<3>(a, c)) {}
-	//template<typename U> explicit Color4(const IntColor4<U>&/*IntColor4<U>::ConstArg*/ c) noexcept;
+	/*constexpr*/ Color4(const Color3<float>& c) noexcept : rgba(simd::insert3(c, UNIT_A)) {}
+	/*constexpr*/ Color4(const Color3<float>& c, float a) noexcept : rgba(simd::insert<3>(a, c)) {}
 	explicit Color4(const tuples::templates::Tuple4<float>& t) noexcept : rgba(simd::set4(t.x, t.y, t.z, t.w)) {}
 	template<typename U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : rgba(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
 	explicit Color4(const std::tuple<float, float, float, float>& t) noexcept : rgba(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
@@ -176,6 +257,7 @@ struct Color4<float>
 	explicit Color4(const float* c) noexcept : rgba(simd::load4(c)) {}
 	explicit Color4(simd::float4 c) noexcept : rgba(c) {}
 	Color4(const Color4& c) noexcept : rgba(c.rgba) {}
+	template<typename U> explicit Color4(const Color4<U>& c) noexcept : rgba(simd::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a)) {}
 	Color4& operator=(const Color4& c) noexcept { rgba = c.rgba; return *this; }
 
 	operator simd::float4() const noexcept { return rgba; }
@@ -226,11 +308,11 @@ struct Color4<float>
 #endif
 
 #if IMAGING_SIMD_EXPAND_LAST
-	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::xyzz(rgba)); }
+	const Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::xyzz(rgba)); }
 #else
-	Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::cutoff3(rgba)); }
+	const Color3<float> rgb/*getRgb*/() const noexcept { return Color3<float>(simd::cutoff3(rgba)); }
 #endif
-	//void setRgb(Color3<float>::ConstArg c) noexcept { rgba = simd::insert3(c, rgba); }
+	//void setRgb(const Color3<float>& c) noexcept { rgba = simd::insert3(c, rgba); }
 	bool isZero() const noexcept { return simd::all4(simd::equal(rgba, simd::zero<simd::float4>())); }
 	bool isApproxZero() const noexcept { return simd::all4(simd::lessThan(simd::abs4(rgba), TOLERANCE)); }
 	bool isApproxEqual(const Color4& c) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), TOLERANCE)); }
@@ -295,67 +377,80 @@ const Color4<float> Color4<float>::LUMINANCE{ 0.2126f, 0.7152f, 0.0722f, 0.f };
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<typename T>
-inline Color4<T> operator+(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator+(const Color4<T>& c1, const Color4<T>& c2) noexcept
 { 
 	return Color4<T>(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b, c1.a + c2.a); 
 }
 
 template<typename T>
-inline Color4<T> operator-(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator-(const Color4<T>& c1, const Color4<T>& c2) noexcept
 { 
 	return Color4<T>(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b, c1.a - c2.a);
 }
 
 template<typename T>
-inline Color4<T> operator*(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator*(const Color4<T>& c1, const Color4<T>& c2) noexcept
 { 
 	return Color4<T>(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b, c1.a*c2.a); 
 }
 
 template<typename T>
-inline Color4<T> operator*(T f, const Color4<T>& c) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator*(T f, const Color4<T>& c) noexcept
 { 
 	return Color4<T>(f*c.r, f*c.g, f*c.b, f*c.a);
 }
 
 template<typename T>
-inline Color4<T> operator*(const Color4<T>& c, T f) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator*(const Color4<T>& c, T f) noexcept
 { 
 	return Color4<T>(c.r*f, c.g*f, c.b*f, c.a*f); 
 }
 
 template<typename T>
-inline Color4<T> operator/(const Color4<T>& c1, const Color4<T>& c2) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator/(const Color4<T>& c1, const Color4<T>& c2) noexcept
 { 
 	return Color4<T>(c1.r/c2.r, c1.g/c2.g, c1.b/c2.b, c1.a/c2.a);
 }
 
 template<typename T>
-inline Color4<T> operator/(T f, const Color4<T>& c) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator/(T f, const Color4<T>& c) noexcept
 { 
 	return Color4<T>(f/c.r, f/c.g, f/c.b, f/c.a); 
 }
 
 template<typename T>
-inline Color4<T> operator/(const Color4<T>& c, T f) noexcept 
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color4<T> operator/(const Color4<T>& c, T f) noexcept
 { 
-	return operator*(c, T(1)/f); 
+	if constexpr (std::is_floating_point_v<T>)
+		return operator*(c, T(1)/f);
+	else
+		return Color4<T>(c.r/f, c.g/f, c.b/f, c.a/f);
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U> || std::integral<U>
 inline std::basic_istream<C, T>& operator>>(std::basic_istream<C, T>& s, Color4<U>& c)
 { 
 	return s >> c.r >> std::ws >> c.g >> std::ws >> c.b >> std::ws >> c.a; 
 }
 
 template<typename C, typename T, typename U>
+	requires std::floating_point<U> || std::integral<U>
 inline std::basic_ostream<C, T>& operator<<(std::basic_ostream<C, T>& s, const Color4<U>& c)
 { 
 	constexpr C WS(0x20);
 	return s << c.r << WS << c.g << WS << c.b << WS << c.a;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<std::size_t I>
 inline T& Color4<T>::get()
 {
@@ -370,7 +465,7 @@ inline T& Color4<T>::get()
 	static_assert(false);
 }
 
-template<typename T>
+template<std::floating_point T>
 template<std::size_t I>
 inline const T& Color4<T>::get() const
 {
@@ -385,7 +480,7 @@ inline const T& Color4<T>::get() const
 	static_assert(false);
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline Color4<T> Color4<T>::fromPackedRgba(U c)
 {
@@ -394,7 +489,7 @@ inline Color4<T> Color4<T>::fromPackedRgba(U c)
 	return result;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline U Color4<T>::toPackedRgba() const
 {
@@ -404,7 +499,7 @@ inline U Color4<T>::toPackedRgba() const
 		saturate<int, detail::Rgba<U>::A_MAX>(c.a));
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline Color4<T> Color4<T>::fromPackedBgra(U c)
 {
@@ -413,7 +508,7 @@ inline Color4<T> Color4<T>::fromPackedBgra(U c)
 	return result;
 }
 
-template<typename T>
+template<std::floating_point T>
 template<typename U> 
 inline U Color4<T>::toPackedBgra() const
 {
@@ -423,28 +518,28 @@ inline U Color4<T>::toPackedBgra() const
 		saturate<int, detail::Bgra<U>::A_MAX>(c.a));
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Color4<T>::isApproxZero() const
 { 
 	return (std::fabs(r) < Constants<T>::TOLERANCE) && (std::fabs(g) < Constants<T>::TOLERANCE) && 
 		(std::fabs(b) < Constants<T>::TOLERANCE) && (std::fabs(a) < Constants<T>::TOLERANCE);
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Color4<T>::isApproxEqual(const Color4<T>& c) const
 { 
 	return (std::fabs(c.r - r) < Constants<T>::TOLERANCE) && (std::fabs(c.g - g) < Constants<T>::TOLERANCE) && 
 		(std::fabs(c.b - b) < Constants<T>::TOLERANCE) && (std::fabs(c.a - a) < Constants<T>::TOLERANCE); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline bool Color4<T>::isApproxEqual(const Color4<T>& c, T tolerance) const
 { 
 	return (std::fabs(c.r - r) < tolerance) && (std::fabs(c.g - g) < tolerance) && 
 		(std::fabs(c.b - b) < tolerance) && (std::fabs(c.a - a) < tolerance); 
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color4<T>& Color4<T>::setMinimum(const Color4<T>& c1, const Color4<T>& c2)
 { 
 	r = std::min(c1.r, c2.r); 
@@ -454,7 +549,7 @@ inline Color4<T>& Color4<T>::setMinimum(const Color4<T>& c1, const Color4<T>& c2
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color4<T>& Color4<T>::setMaximum(const Color4<T>& c1, const Color4<T>& c2)
 { 
 	r = std::max(c1.r, c2.r); 
@@ -464,7 +559,7 @@ inline Color4<T>& Color4<T>::setMaximum(const Color4<T>& c1, const Color4<T>& c2
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color4<T>& Color4<T>::saturate()
 { 
 	r = std::clamp(r, T(0), T(1)); 
@@ -474,7 +569,7 @@ inline Color4<T>& Color4<T>::saturate()
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color4<T>& Color4<T>::makeLinear()
 { 
 	r = makeLinear(r);
@@ -483,12 +578,62 @@ inline Color4<T>& Color4<T>::makeLinear()
 	return *this;
 }
 
-template<typename T>
+template<std::floating_point T>
 inline Color4<T>& Color4<T>::makeSrgb()
 { 
 	r = makeSrgb(r);
 	g = makeSrgb(g);
 	b = makeSrgb(b);
+	return *this;
+}
+
+template<std::integral T>
+template<std::size_t I>
+inline T& Color4<T>::get()
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	else if constexpr (I == 3)
+		return a;
+	static_assert(false);
+}
+
+template<std::integral T>
+template<std::size_t I>
+inline const T& Color4<T>::get() const
+{
+	if constexpr (I == 0)
+		return r;
+	else if constexpr (I == 1)
+		return g;
+	else if constexpr (I == 2)
+		return b;
+	else if constexpr (I == 3)
+		return a;
+	static_assert(false);
+}
+
+template<std::integral T>
+inline Color4<T>& Color4<T>::setMinimum(const Color4<T>& c1, const Color4<T>& c2)
+{
+	r = std::min(c1.r, c2.r);
+	g = std::min(c1.g, c2.g);
+	b = std::min(c1.b, c2.b);
+	a = std::min(c1.a, c2.a);
+	return *this;
+}
+
+template<std::integral T>
+inline Color4<T>& Color4<T>::setMaximum(const Color4<T>& c1, const Color4<T>& c2)
+{
+	r = std::max(c1.r, c2.r);
+	g = std::max(c1.g, c2.g);
+	b = std::max(c1.b, c2.b);
+	a = std::max(c1.a, c2.a);
 	return *this;
 }
 
@@ -624,6 +769,7 @@ inline U Color4<float>::toPackedBgra() const
 #endif /* SIMD_HAS_FLOAT4 */
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline T& get(Color4<T>& c) noexcept
 {
 	if constexpr (I == 0)
@@ -638,6 +784,7 @@ inline T& get(Color4<T>& c) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline const T& get(const Color4<T>& c) noexcept
 {
 	if constexpr (I == 0)
@@ -652,6 +799,7 @@ inline const T& get(const Color4<T>& c) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline T&& get(Color4<T>&& c) noexcept
 {
 	if constexpr (I == 0)
@@ -666,6 +814,7 @@ inline T&& get(Color4<T>&& c) noexcept
 }
 
 template<std::size_t I, typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline const T&& get(const Color4<T>&& c) noexcept
 {
 	if constexpr (I == 0)
@@ -686,33 +835,38 @@ inline const T&& get(const Color4<T>&& c) noexcept
 //inline const T& get(const Color4<U>& c) noexcept;
 
 template<typename T>
+	requires std::floating_point<T>
 inline T luminance(const Color4<T>& c) noexcept
 {
 	return c.r*T(0.2126) + c.g*T(0.7152) + c.b*T(0.0722);
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Color4<T> minimum(const Color4<T>& c1, const Color4<T>& c2)
 {
 	return Color4<T>(std::min(c1.r, c2.r), std::min(c1.g, c2.g), std::min(c1.b, c2.b), std::min(c1.a, c2.a));
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
 inline Color4<T> maximum(const Color4<T>& c1, const Color4<T>& c2)
 {
 	return Color4<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b), std::max(c1.a, c2.a));
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color4<T> saturate(const Color4<T>& c)
 {
 	return Color4<T>(std::clamp(c.r, T(0), T(1)), std::clamp(c.g, T(0), T(1)), std::clamp(c.b, T(0), T(1)), std::clamp(c.a, T(0), T(1)));
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Color4<T> saturate(Color4<T>&& c)
 {
@@ -724,21 +878,24 @@ inline Color4<T> saturate(Color4<T>&& c)
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color4<T> lerp(const Color4<T>& c1, const Color4<T>& c2, T t) noexcept
 {
 	return Color4<T>(c1.r + t*(c2.r - c1.r), c1.g + t*(c2.g - c1.g), c1.b + t*(c2.b - c1.b), c1.a + t*(c2.a - c1.a));
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color4<T> makeLinear(const Color4<T>& c) noexcept
 {
 	return Color4<T>(makeLinear(c.r), makeLinear(c.g), makeLinear(c.b), c.a);
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Color4<T> makeLinear(Color4<T>&& c) noexcept
 {
@@ -749,15 +906,17 @@ inline Color4<T> makeLinear(Color4<T>&& c) noexcept
 }
 
 template<typename T>
+	requires std::floating_point<T>
 inline Color4<T> makeSrgb(const Color4<T>& c) noexcept
 {
 	return Color4<T>(makeSrgb(c.r), makeSrgb(c.g), makeSrgb(c.b), c.a);
 }
 
-#if SIMD_HAS_FLOAT4
-template<typename T, std::enable_if_t<!std::is_same_v<T, float>, bool> = true>
-#else
 template<typename T>
+#if SIMD_HAS_FLOAT4
+	requires (std::floating_point<T> && !std::same_as<T, float>)
+#else
+	requires std::floating_point<T>
 #endif
 inline Color4<T> makeSrgb(Color4<T>&& c) noexcept
 {
