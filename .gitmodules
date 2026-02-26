@@ -37,3 +37,6 @@
 [submodule "Core/External/half"]
 	path = Core/External/half
 	url = https://github.com/pmrochen/half.git
+[submodule "Core/Mathematics"]
+	path = Core/Mathematics
+	url = https://github.com/pmrochen/Mathematics.git
