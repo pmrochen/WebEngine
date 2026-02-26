@@ -82,34 +82,34 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEvent>
-      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
-xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
-xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
-xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+      <Command>xcopy /S /I /Y "$(ProjectDir)..\External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)..\External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)..\External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)..\External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <PreBuildEvent>
-      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
-xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
-xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
-xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+      <Command>xcopy /S /I /Y "$(ProjectDir)..\External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)..\External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)..\External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)..\External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PreBuildEvent>
-      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
-xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
-xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
-xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+      <Command>xcopy /S /I /Y "$(ProjectDir)..\External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)..\External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)..\External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)..\External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <PreBuildEvent>
-      <Command>xcopy /S /I /Y "$(ProjectDir)External\half\include\" "$(ProjectDir)half\"
-xcopy /S /I /Y "$(ProjectDir)External\cereal\include\cereal\" "$(ProjectDir)cereal\"
-xcopy /S /I /Y "$(ProjectDir)External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
-xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
+      <Command>xcopy /S /I /Y "$(ProjectDir)..\External\half\include\" "$(ProjectDir)half\"
+xcopy /S /I /Y "$(ProjectDir)..\External\cereal\include\cereal\" "$(ProjectDir)cereal\"
+xcopy /S /I /Y "$(ProjectDir)..\External\sigslot\include\sigslot\" "$(ProjectDir)sigslot\"
+xcopy /S /I /Y "$(ProjectDir)..\External\intrusive_shared_ptr\inc\intrusive_shared_ptr\" "$(ProjectDir)intrusive_shared_ptr\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -169,11 +169,6 @@ xcopy /S /I /Y "$(ProjectDir)External\intrusive_shared_ptr\inc\intrusive_shared_
     <ClInclude Include="NameString.hpp" />
     <ClInclude Include="PathString.hpp" />
     <ClInclude Include="sigslot\signal.hpp" />
-    <ClInclude Include="Simd\AvxIntrinsics.hpp" />
-    <ClInclude Include="Simd\Float4.hpp" />
-    <ClInclude Include="Simd\Intrinsics.hpp" />
-    <ClInclude Include="Simd\Simd.hpp" />
-    <ClInclude Include="Simd\SseIntrinsics.hpp" />
     <ClInclude Include="Strings.hpp" />
     <ClInclude Include="Tuples\Tuple2.hpp" />
     <ClInclude Include="Tuples\Tuple3.hpp" />

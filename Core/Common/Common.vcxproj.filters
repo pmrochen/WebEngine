@@ -14,21 +14,6 @@
     <ClInclude Include="Tuples\Tuples.hpp">
       <Filter>Tuples</Filter>
     </ClInclude>
-    <ClInclude Include="Simd\AvxIntrinsics.hpp">
-      <Filter>Simd</Filter>
-    </ClInclude>
-    <ClInclude Include="Simd\Float4.hpp">
-      <Filter>Simd</Filter>
-    </ClInclude>
-    <ClInclude Include="Simd\Intrinsics.hpp">
-      <Filter>Simd</Filter>
-    </ClInclude>
-    <ClInclude Include="Simd\Simd.hpp">
-      <Filter>Simd</Filter>
-    </ClInclude>
-    <ClInclude Include="Simd\SseIntrinsics.hpp">
-      <Filter>Simd</Filter>
-    </ClInclude>
     <ClInclude Include="NameString.hpp" />
     <ClInclude Include="PathString.hpp" />
     <ClInclude Include="sigslot\signal.hpp">
@@ -195,9 +180,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Simd">
-      <UniqueIdentifier>{3ef9b2ac-592b-483c-b3a3-90973a516611}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Tuples">
       <UniqueIdentifier>{b763acdd-b33b-4848-8292-118dfcd3ed36}</UniqueIdentifier>
     </Filter>
