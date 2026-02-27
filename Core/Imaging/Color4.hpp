@@ -15,8 +15,8 @@
 #include <tuple>
 #include <cstddef>
 #include <cmath>
-#include <Simd/Intrinsics.hpp>
 #include <Tuples/Tuple4.hpp>
+#include <Simd/Intrinsics.hpp>
 #include "ColorSpaces.hpp"
 #include "PixelTypes.hpp"
 #include "Color3.hpp"
@@ -45,16 +45,16 @@ struct Color4<T>
 	constexpr Color4(const Color3<T>& c) noexcept : r(c.r), g(c.g), b(c.b), a(T(1)) {}
 	constexpr Color4(const Color3<T>& c, T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
 	explicit Color4(const tuples::templates::Tuple4<T>& t) noexcept : r(t.x), g(t.y), b(t.z), a(t.w) {}
-	template<ArithmeticType U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
+	template<Arithmetic U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
 	explicit Color4(const std::tuple<T, T, T, T>& t) noexcept : r(std::get<0>(t)), g(std::get<1>(t)), b(std::get<2>(t)), a(std::get<3>(t)) {}
-	template<ArithmeticType U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))), a(T(std::get<3>(t))) {}
+	template<Arithmetic U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))), a(T(std::get<3>(t))) {}
 	explicit Color4(const T* c) noexcept : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
-	template<ArithmeticType U> explicit Color4(const Color4<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)), a(T(c.a)) {}
+	template<Arithmetic U> explicit Color4(const Color4<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)), a(T(c.a)) {}
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
-	template<ArithmeticType U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
+	template<Arithmetic U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(r, g, b, a); }
-	//template<ArithmeticType U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
+	//template<Arithmetic U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
 	explicit operator T*() noexcept { return &r; }
 	explicit operator const T*() const noexcept { return &r; }
 	T& operator[](int i) noexcept { return (&r)[i]; }
@@ -97,8 +97,8 @@ struct Color4<T>
 	//void setRgb(const Color3<T>& c) noexcept { r = c.r; g = c.g; b = c.b; }
 	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()) && (a == T()); }
 	bool isApproxZero() const noexcept;
-	bool isApproxEqual(const Color4& c) const noexcept;
-	bool isApproxEqual(const Color4& c, T tolerance) const noexcept;
+	bool approxEquals(const Color4& c) const noexcept;
+	bool approxEquals(const Color4& c, T tolerance) const noexcept;
 	bool allLessThan(const Color4& c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b) && (a < c.a); }
 	bool allLessThanEqual(const Color4& c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b) && (a <= c.a); }
 	bool allGreaterThan(const Color4& c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b) && (a > c.a); }
@@ -118,12 +118,6 @@ struct Color4<T>
 	Color4& saturate();
 	Color4& makeLinear() noexcept;
 	Color4& makeSrgb() noexcept;
-
-	//static const Color4& getZero() noexcept { return ZERO; }
-	//static const Color4& getUnitR() noexcept { return UNIT_R; }
-	//static const Color4& getUnitG() noexcept { return UNIT_G; }
-	//static const Color4& getUnitB() noexcept { return UNIT_B; }
-	//static const Color4& getUnitA() noexcept { return UNIT_A; }
 
 	static const Color4 ZERO;
 	static const Color4 UNIT_R;
@@ -168,16 +162,16 @@ struct Color4<T>
 	constexpr Color4(const Color3<T>& c) noexcept : r(c.r), g(c.g), b(c.b), a(std::numeric_limits<T>::max()) {}
 	constexpr Color4(const Color3<T>& c, T a) noexcept : r(c.r), g(c.g), b(c.b), a(a) {}
 	explicit Color4(const tuples::templates::Tuple4<T>& t) noexcept : r(t.x), g(t.y), b(t.z), a(t.w) {}
-	template<ArithmeticType U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
+	template<Arithmetic U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : r(T(t.x)), g(T(t.y)), b(T(t.z)), a(T(t.w)) {}
 	explicit Color4(const std::tuple<T, T, T, T>& t) noexcept : r(std::get<0>(t)), g(std::get<1>(t)), b(std::get<2>(t)), a(std::get<3>(t)) {}
-	template<ArithmeticType U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))), a(T(std::get<3>(t))) {}
+	template<Arithmetic U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : r(T(std::get<0>(t))), g(T(std::get<1>(t))), b(T(std::get<2>(t))), a(T(std::get<3>(t))) {}
 	explicit Color4(const T* c) noexcept : r(c[0]), g(c[1]), b(c[2]), a(c[3]) {}
-	template<ArithmeticType U> explicit Color4(const Color4<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)), a(T(c.a)) {}
+	template<Arithmetic U> explicit Color4(const Color4<U>& c) noexcept : r(T(c.r)), g(T(c.g)), b(T(c.b)), a(T(c.a)) {}
 
 	explicit operator tuples::templates::Tuple4<T>() noexcept { return tuples::templates::Tuple4<T>(r, g, b, a); }
-	template<ArithmeticType U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
+	template<Arithmetic U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	//explicit operator std::tuple<T, T, T, T>() { return std::tuple<T, T, T, T>(r, g, b, a); }
-	//template<ArithmeticType U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
+	//template<Arithmetic U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
 	explicit operator T* () noexcept { return &r; }
 	explicit operator const T* () const noexcept { return &r; }
 	T& operator[](int i) noexcept { return (&r)[i]; }
@@ -205,9 +199,6 @@ struct Color4<T>
 	const Color3<T>& rgb/*getRgb*/() const noexcept { return reinterpret_cast<const Color3&>(*this); }
 	//void setRgb(const Color3<T>& c) noexcept { r = c.r; g = c.g; b = c.b; }
 	bool isZero() const noexcept { return (r == T()) && (g == T()) && (b == T()) && (a == T()); }
-	bool isApproxZero() const noexcept;
-	bool isApproxEqual(const Color4& c) const noexcept;
-	bool isApproxEqual(const Color4& c, T tolerance) const noexcept;
 	bool allLessThan(const Color4& c) const noexcept { return (r < c.r) && (g < c.g) && (b < c.b) && (a < c.a); }
 	bool allLessThanEqual(const Color4& c) const noexcept { return (r <= c.r) && (g <= c.g) && (b <= c.b) && (a <= c.a); }
 	bool allGreaterThan(const Color4& c) const noexcept { return (r > c.r) && (g > c.g) && (b > c.b) && (a > c.a); }
@@ -222,8 +213,6 @@ struct Color4<T>
 	Color4& set(T r, T g, T b, T a) noexcept { this->r = r; this->g = g; this->b = b; this->a = a; return *this; }
 	Color4& setMinimum(const Color4& c1, const Color4& c2);
 	Color4& setMaximum(const Color4& c1, const Color4& c2);
-
-	//static const Color4& getZero() noexcept { return ZERO; }
 
 	static const Color4 ZERO;
 
@@ -251,20 +240,20 @@ struct Color4<float>
 	/*constexpr*/ Color4(const Color3<float>& c) noexcept : rgba(simd::insert3(c, UNIT_A)) {}
 	/*constexpr*/ Color4(const Color3<float>& c, float a) noexcept : rgba(simd::insert<3>(a, c)) {}
 	explicit Color4(const tuples::templates::Tuple4<float>& t) noexcept : rgba(simd::set4(t.x, t.y, t.z, t.w)) {}
-	template<ArithmeticType U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : rgba(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
+	template<Arithmetic U> explicit Color4(const tuples::templates::Tuple4<U>& t) noexcept : rgba(simd::set4((float)t.x, (float)t.y, (float)t.z, (float)t.w)) {}
 	explicit Color4(const std::tuple<float, float, float, float>& t) noexcept : rgba(simd::set4(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t))) {}
-	template<ArithmeticType U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : rgba(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
+	template<Arithmetic U> explicit Color4(const std::tuple<U, U, U, U>& t) noexcept : rgba(simd::set4((float)std::get<0>(t), (float)std::get<1>(t), (float)std::get<2>(t), (float)std::get<3>(t))) {}
 	explicit Color4(const float* c) noexcept : rgba(simd::load4(c)) {}
 	explicit Color4(simd::float4 c) noexcept : rgba(c) {}
 	Color4(const Color4& c) noexcept : rgba(c.rgba) {}
-	template<ArithmeticType U> explicit Color4(const Color4<U>& c) noexcept : rgba(simd::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a)) {}
+	template<Arithmetic U> explicit Color4(const Color4<U>& c) noexcept : rgba(simd::set4((float)c.r, (float)c.g, (float)c.b, (float)c.a)) {}
 	Color4& operator=(const Color4& c) noexcept { rgba = c.rgba; return *this; }
 
 	operator simd::float4() const noexcept { return rgba; }
 	explicit operator tuples::templates::Tuple4<float>() noexcept { return tuples::templates::Tuple4<float>(r, g, b, a); }
-	template<ArithmeticType U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
+	template<Arithmetic U> explicit operator tuples::templates::Tuple4<U>() noexcept { return tuples::templates::Tuple4<U>(U(r), U(g), U(b), U(a)); }
 	//explicit operator std::tuple<float, float, float, float>() { return std::tuple<float, float, float, float>(r, g, b, a); }
-	//template<ArithmeticType U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
+	//template<Arithmetic U> explicit operator std::tuple<U, U, U, U>() { return std::tuple<U, U, U, U>(U(r), U(g), U(b), U(a)); }
 	explicit operator float* () noexcept { return &r; }
 	explicit operator const float* () const noexcept { return &r; }
 	float& operator[](int i) noexcept { return (&r)[i]; }
@@ -315,8 +304,8 @@ struct Color4<float>
 	//void setRgb(const Color3<float>& c) noexcept { rgba = simd::insert3(c, rgba); }
 	bool isZero() const noexcept { return simd::all4(simd::equal(rgba, simd::zero<simd::float4>())); }
 	bool isApproxZero() const noexcept { return simd::all4(simd::lessThan(simd::abs4(rgba), TOLERANCE)); }
-	bool isApproxEqual(const Color4& c) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), TOLERANCE)); }
-	bool isApproxEqual(const Color4& c, float tolerance) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), simd::set4(tolerance))); }
+	bool approxEquals(const Color4& c) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), TOLERANCE)); }
+	bool approxEquals(const Color4& c, float tolerance) const noexcept { return simd::all4(simd::lessThan(simd::abs4(simd::sub4(rgba, c)), simd::set4(tolerance))); }
 	bool allLessThan(const Color4& c) const noexcept { return simd::all4(simd::lessThan(rgba, c)); }
 	bool allLessThanEqual(const Color4& c) const noexcept { return simd::all4(simd::lessThanEqual(rgba, c)); }
 	bool allGreaterThan(const Color4& c) const noexcept { return simd::all4(simd::greaterThan(rgba, c)); }
@@ -336,12 +325,6 @@ struct Color4<float>
 	Color4& saturate() noexcept { rgba = simd::min4(simd::max4(rgba, simd::zero<simd::float4>()), ONE); return *this; }
 	Color4& makeLinear() noexcept { rgba = simd::insert3(simd::set3(makeLinear(r), makeLinear(g), makeLinear(b)), rgba); }
 	Color4& makeSrgb() noexcept { rgba = simd::insert3(simd::set3(makeSrgb(r), makeSrgb(g), makeSrgb(b)), rgba); }
-
-	//static const Color4& getZero() noexcept { return ZERO; }
-	//static const Color4& getUnitR() noexcept { return UNIT_R; }
-	//static const Color4& getUnitG() noexcept { return UNIT_G; }
-	//static const Color4& getUnitB() noexcept { return UNIT_B; }
-	//static const Color4& getUnitA() noexcept { return UNIT_A; }
 
 	static const Color4 ZERO;
 	static const Color4 UNIT_R;
@@ -526,14 +509,14 @@ inline bool Color4<T>::isApproxZero() const
 }
 
 template<std::floating_point T>
-inline bool Color4<T>::isApproxEqual(const Color4<T>& c) const
+inline bool Color4<T>::approxEquals(const Color4<T>& c) const
 { 
 	return (std::fabs(c.r - r) < Constants<T>::TOLERANCE) && (std::fabs(c.g - g) < Constants<T>::TOLERANCE) && 
 		(std::fabs(c.b - b) < Constants<T>::TOLERANCE) && (std::fabs(c.a - a) < Constants<T>::TOLERANCE); 
 }
 
 template<std::floating_point T>
-inline bool Color4<T>::isApproxEqual(const Color4<T>& c, T tolerance) const
+inline bool Color4<T>::approxEquals(const Color4<T>& c, T tolerance) const
 { 
 	return (std::fabs(c.r - r) < tolerance) && (std::fabs(c.g - g) < tolerance) && 
 		(std::fabs(c.b - b) < tolerance) && (std::fabs(c.a - a) < tolerance); 
