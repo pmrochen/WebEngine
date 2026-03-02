@@ -854,14 +854,14 @@ inline T luminance(const Color3<T>& c) noexcept
 
 template<typename T>
 	requires (std::floating_point<T> || std::integral<T>)
-inline Color3<T> minimum(const Color3<T>& c1, const Color3<T>& c2)
+inline Color3<T> min(const Color3<T>& c1, const Color3<T>& c2)
 {
 	return Color3<T>(std::min(c1.r, c2.r), std::min(c1.g, c2.g), std::min(c1.b, c2.b));
 }
 
 template<typename T>
 	requires (std::floating_point<T> || std::integral<T>)
-inline Color3<T> maximum(const Color3<T>& c1, const Color3<T>& c2)
+inline Color3<T> max(const Color3<T>& c1, const Color3<T>& c2)
 {
 	return Color3<T>(std::max(c1.r, c2.r), std::max(c1.g, c2.g), std::max(c1.b, c2.b));
 }
@@ -965,13 +965,13 @@ inline float luminance(const Color3<float>& c) noexcept
 }
 
 template<>
-inline Color3<float> minimum(const Color3<float>& c1, const Color3<float>& c2)
+inline Color3<float> min(const Color3<float>& c1, const Color3<float>& c2)
 {
 	return Color3<float>(simd::min4(c1, c2));
 }
 
 template<>
-inline Color3<float> maximum(const Color3<float>& c1, const Color3<float>& c2)
+inline Color3<float> max(const Color3<float>& c1, const Color3<float>& c2)
 {
 	return Color3<float>(simd::max4(c1, c2));
 }
