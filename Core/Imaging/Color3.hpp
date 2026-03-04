@@ -867,6 +867,13 @@ inline Color3<T> max(const Color3<T>& c1, const Color3<T>& c2)
 }
 
 template<typename T>
+	requires (std::floating_point<T> || std::integral<T>)
+inline Color3<T> clamp(const Color3<T>& c, const Color3<T>& low, const Color3<T>& high)
+{
+	return Color3<T>(std::clamp(c.r, low.r, high.r), std::clamp(c.g, low.g, high.g), std::clamp(c.b, low.b, high.b));
+}
+
+template<typename T>
 	requires std::floating_point<T>
 inline Color3<T> saturate(const Color3<T>& c)
 {
@@ -974,6 +981,12 @@ template<>
 inline Color3<float> max(const Color3<float>& c1, const Color3<float>& c2)
 {
 	return Color3<float>(simd::max4(c1, c2));
+}
+
+template<>
+inline Color3<float> clamp(const Color3<float>& c, const Color3<float>& low, const Color3<float>& high)
+{
+	return Color3<float>(simd::min4(simd::max4(c, low), high));
 }
 
 template<>
