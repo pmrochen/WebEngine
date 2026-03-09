@@ -1,33 +1,19 @@
 /*
- *	Name: PixelTypes
+ *	Name: Pixel
  *	Author: Pawel Mrochen
  */
 
 #pragma once
 
-#include <cstdint>
 #include <type_traits>
 #include <limits>
 #include <algorithm>
+#include <cstdint>
 
-#ifndef IMAGING_NATIVE_ORDER_RGBA
-#if defined(_WIN32) && !defined(_XBOX) && !defined(_XBOX_ONE)
-#define IMAGING_NATIVE_ORDER_RGBA 0
-#else
-#define IMAGING_NATIVE_ORDER_RGBA 1
-#endif
-#endif
-
-#ifndef IMAGING_NATIVE_ORDER_BGRA
-#define IMAGING_NATIVE_ORDER_BGRA (1 - IMAGING_NATIVE_ORDER_RGBA)
-#endif
-
-namespace core::imaging {
-
-namespace detail/*pixel*/ {
+namespace core::imaging::pixel {
 
 template<typename Type, int Size, int RBits, int GBits, int BBits, int ABits = 0, bool Compressed = false>
-struct Pixel
+struct Base
 {
     using DataType = Type;
 
@@ -49,14 +35,14 @@ struct Pixel
 };
 
 template<typename Type, int NComponents>
-struct SequentialPixel : public Pixel<Type, sizeof(Type)*NComponents, (NComponents > 0) ? sizeof(Type)*8 : 0,
+struct Sequential : public Base<Type, sizeof(Type)*NComponents, (NComponents > 0) ? sizeof(Type)*8 : 0,
     (NComponents > 1) ? sizeof(Type)*8 : 0, (NComponents > 2) ? sizeof(Type)*8 : 0, (NComponents > 3) ? sizeof(Type)*8 : 0>
 {
     using ComponentType = Type;
 };
 
 template<typename Type, int RBits, int GBits, int BBits, int ABits, int RShift, int GShift, int BShift, int AShift = 0>
-struct PackedPixel : public Pixel<Type, sizeof(Type), RBits, GBits, BBits, ABits>
+struct Packed : public Base<Type, sizeof(Type), RBits, GBits, BBits, ABits>
 {
     using PackedType = Type;
 
@@ -73,31 +59,48 @@ struct PackedPixel : public Pixel<Type, sizeof(Type), RBits, GBits, BBits, ABits
 };
 
 template<typename Type, int RBits = sizeof(Type)*2, int GBits = sizeof(Type)*2, int BBits = sizeof(Type)*2>
-struct Rgb : public PackedPixel<Type, RBits, GBits, BBits, 0, 0, RBits, RBits + GBits> {};
+struct PackedRgb : public Packed<Type, RBits, GBits, BBits, 0, 0, RBits, RBits + GBits> {};
 
 template<typename Type, int RBits = sizeof(Type)*2, int GBits = sizeof(Type)*2, int BBits = sizeof(Type)*2, int ABits = sizeof(Type)*2>
-struct Rgba : public PackedPixel<Type, RBits, GBits, BBits, ABits, 0, RBits, RBits + GBits, RBits + GBits + BBits> {};
+struct PackedRgba : public Packed<Type, RBits, GBits, BBits, ABits, 0, RBits, RBits + GBits, RBits + GBits + BBits> {};
 
 template<typename Type, int RBits = sizeof(Type)*2, int GBits = sizeof(Type)*2, int BBits = sizeof(Type)*2>
-struct Bgr : public PackedPixel<Type, RBits, GBits, BBits, 0, BBits + GBits, BBits, 0> {};
+struct PackedBgr : public Packed<Type, RBits, GBits, BBits, 0, BBits + GBits, BBits, 0> {};
 
 template<typename Type, int RBits = sizeof(Type)*2, int GBits = sizeof(Type)*2, int BBits = sizeof(Type)*2, int ABits = sizeof(Type)*2>
-struct Bgra : public PackedPixel<Type, RBits, GBits, BBits, ABits, BBits + GBits, BBits, 0, BBits + GBits + RBits> {};
+struct PackedBgra : public Packed<Type, RBits, GBits, BBits, ABits, BBits + GBits, BBits, 0, BBits + GBits + RBits> {};
 
-struct Rgb8 : public Rgb<std::uint32_t, 8, 8, 8> {};
-struct Rgba8 : public Rgba<std::uint32_t, 8, 8, 8, 8> {};
-struct Bgr8 : public Bgr<std::uint32_t, 8, 8, 8> {};
-struct Bgra8 : public Bgra<std::uint32_t, 8, 8, 8, 8> {};
+struct Rgb8 : public PackedRgb<std::uint32_t, 8, 8, 8> {};
+struct Rgba8 : public PackedRgba<std::uint32_t, 8, 8, 8, 8> {};
+struct Bgr8 : public PackedBgr<std::uint32_t, 8, 8, 8> {};
+struct Bgra8 : public PackedBgra<std::uint32_t, 8, 8, 8, 8> {};
 
-struct R32f : public SequentialPixel<float, 1> {};
-struct Rg32f : public SequentialPixel<float, 2> {};
-struct Rgb32f : public SequentialPixel<float, 3> {};
-struct Rgba32f : public SequentialPixel<float, 4> {};
+struct R16 : public Sequential<std::uint16_t, 1> {};
+struct Rg16 : public Sequential<std::uint16_t, 2> {};
+struct Rgba16 : public Sequential<std::uint16_t, 4> {};
 
-struct R32i : public SequentialPixel<int, 1> {};
-struct Rg32i : public SequentialPixel<int, 2> {};
-struct Rgb32i : public SequentialPixel<int, 3> {};
-struct Rgba32i : public SequentialPixel<int, 4> {};
+struct R32 : public Sequential<std::uint32_t, 1> {};
+struct Rg32 : public Sequential<std::uint32_t, 2> {};
+struct Rgb32 : public Sequential<std::uint32_t, 3> {};
+struct Rgba32 : public Sequential<std::uint32_t, 4> {};
+
+struct R16i : public Sequential<std::int16_t, 1> {};
+struct Rg16i : public Sequential<std::int16_t, 2> {};
+struct Rgba16i : public Sequential<std::int16_t, 4> {};
+
+struct R32i : public Sequential<std::int32_t, 1> {};
+struct Rg32i : public Sequential<std::int32_t, 2> {};
+struct Rgb32i : public Sequential<std::int32_t, 3> {};
+struct Rgba32i : public Sequential<std::int32_t, 4> {};
+
+//struct R16f : public Sequential<half_float::half, 1> {}; // #TODO
+//struct Rg16f : public Sequential<half_float::half, 2> {};
+//struct Rgba16f : public Sequential<half_float::half, 4> {};
+
+struct R32f : public Sequential<float, 1> {};
+struct Rg32f : public Sequential<float, 2> {};
+struct Rgb32f : public Sequential<float, 3> {};
+struct Rgba32f : public Sequential<float, 4> {};
 
 template<typename TResult, bool Scale, int MaxValue, typename TSource>
 inline TResult convert(TSource x)
@@ -196,94 +199,4 @@ inline TResult unpack(typename TPixel::PackedType c) noexcept
     return TResult(TComponent(r));
 }
 
-} // namespace detail
-
-template<typename TResult, typename TComponent>
-inline TResult makePackedRgb/*packRgb*/(TComponent r, TComponent g, TComponent b) noexcept
-{
-    return detail::pack<detail::Rgb<TResult>>(r, g, b);
-}
-
-template<typename TResult, typename TComponent>
-inline TResult makePackedBgr/*packBgr*/(TComponent r, TComponent g, TComponent b) noexcept
-{
-    return detail::pack<detail::Bgr<TResult>>(r, g, b);
-}
-
-template<typename TResult, typename TComponent>
-inline TResult makePackedRgba/*packRgba*/(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
-{ 
-    return detail::pack<detail::Rgba<TResult>>(r, g, b, a);
-}
-
-template<typename TResult, typename TComponent>
-inline TResult makePackedBgra/*packBgra*/(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
-{ 
-    return detail::pack<detail::Bgra<TResult>>(r, g, b, a);
-}
-
-template<typename TResult, typename TComponent>
-inline TResult makePacked/*Native*/(TComponent r, TComponent g, TComponent b) noexcept
-{
-#if IMAGING_NATIVE_ORDER_RGBA
-    return makePackedRgb<TResult, TComponent>(r, g, b);
-#else
-    return makePackedBgr<TResult, TComponent>(r, g, b);
-#endif
-}
-
-template<typename TResult, typename TComponent>
-inline TResult makePacked/*Native*/(TComponent r, TComponent g, TComponent b, TComponent a) noexcept
-{ 
-#if IMAGING_NATIVE_ORDER_RGBA
-    return makePackedRgba<TResult, TComponent>(r, g, b, a);
-#else
-    return makePackedBgra<TResult, TComponent>(r, g, b, a);
-#endif
-}
-
-template<typename TResult, typename TPacked>
-inline TResult unpackRgb(TPacked c) noexcept
-{
-    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Rgb<TPacked>>(c);
-}
-
-template<typename TResult, typename TPacked>
-inline TResult unpackBgr(TPacked c) noexcept
-{
-    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Bgr<TPacked>>(c);
-}
-
-template<typename TResult, typename TPacked>
-inline TResult unpackRgba(TPacked c) noexcept
-{ 
-    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Rgba<TPacked>>(c);
-}
-
-template<typename TResult, typename TPacked>
-inline TResult unpackBgra(TPacked c) noexcept
-{ 
-    return detail::unpack<TResult, typename TResult::ComponentType, TResult::NUM_COMPONENTS, detail::Bgra<TPacked>>(c);
-}
-/*
-template<typename TResult, typename TPacked>
-inline TResult unpackNative(TPacked c) noexcept
-{
-#if IMAGING_NATIVE_ORDER_RGBA
-    return unpackRgb<TResult, TPacked>(c);
-#else
-    return unpackBgr<TResult, TPacked>(c);
-#endif
-}
-
-template<typename TResult, typename TPacked>
-inline TResult unpackNative(TPacked c) noexcept
-{ 
-#if IMAGING_NATIVE_ORDER_RGBA
-    return unpackRgba<TResult, TPacked>(c);
-#else
-    return unpackBgra<TResult, TPacked>(c);
-#endif
-}
-*/
-} // namespace core::imaging
+} // namespace core::imaging::pixel
