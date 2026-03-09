@@ -17,8 +17,9 @@
 #include <cmath>
 #include <Tuples/Tuple4.hpp>
 #include <Simd/Intrinsics.hpp>
-#include "ColorSpaces.hpp"
-#include "PixelTypes.hpp"
+#include "ColorSpace.hpp"
+#include "ChannelOrder.hpp"
+#include "PixelFormat.hpp"
 #include "Color3.hpp"
 
 namespace core::imaging {

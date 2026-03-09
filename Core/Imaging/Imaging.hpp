@@ -5,7 +5,9 @@
 
 #pragma once
 
-#include "ColorSpaces.hpp"
-#include "PixelTypes.hpp"
+#include "ColorMask.hpp"
+#include "ColorSpace.hpp"
+#include "ChannelOrder.hpp"
+#include "PixelFormat.hpp"
 #include "Color3.hpp"
 #include "Color4.hpp"

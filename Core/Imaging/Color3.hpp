@@ -17,15 +17,13 @@
 #include <cmath>
 #include <Tuples/Tuple3.hpp>
 #include <Simd/Intrinsics.hpp>
-#include "ColorSpaces.hpp"
-#include "PixelTypes.hpp"
+#include "ColorSpace.hpp"
+#include "ChannelOrder.hpp"
+#include "PixelFormat.hpp"
 
 namespace core::imaging {
 
-struct Uninitialized
-{
-};
-
+struct Uninitialized {};
 constexpr Uninitialized UNINITIALIZED{};
 
 template<typename T>
