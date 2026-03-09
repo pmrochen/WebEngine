@@ -1,17 +1,25 @@
 /*
- *	Name: ColorSpaces
+ *	Name: ColorSpace
  *	Author: Pawel Mrochen
  */
 
 #pragma once
 
-#include <cmath>
 #include <type_traits>
 #include <limits>
 #include <algorithm>
+#include <cmath>
 #include <Simd/Intrinsics.hpp>
 
 namespace core::imaging {
+
+enum class ColorSpace
+{
+    UNSPECIFIED,
+	LINEAR,
+	SRGB
+	//XYZ
+};
 
 namespace detail {
 
@@ -147,8 +155,8 @@ inline T rgbToHsv(U r, U g, U b)
 	U hi = (r > g) ? ((r > b) ? r : b) : ((g > b) ? g : b);
 	U lo = (r < g) ? ((r < b) ? r : b) : ((g < b) ? g : b);
 	U range = hi - lo;
-	U h = U(0);
-	U s = U(0);
+	U h = {};
+	U s = {};
 
 	if (hi != U(0))
 		s = range/hi;
@@ -167,7 +175,7 @@ inline T rgbToHsv(U r, U g, U b)
 			h += U(1);
 	}
 
-    return T(h, s, hi);
+    return { h, s, hi };
 }
 
 template<typename T, typename U>
@@ -182,30 +190,30 @@ inline T hsvToRgb(U h, U s, U v)
 
 	switch ((int)i) 
 	{
-		case 0: return T(v, t, p);
-		case 1: return T(q, v, p);
-		case 2: return T(p, v, t);
-		case 3: return T(p, q, v);
-		case 4: return T(t, p, v);
-		case 5: return T(v, p, q);
-		default: return T(U(0), U(0), U(0));
+		case 0: return { v, t, p };
+		case 1: return { q, v, p };
+		case 2: return { p, v, t };
+		case 3: return { p, q, v };
+		case 4: return { t, p, v };
+		case 5: return { v, p, q };
+		default: return { U(), U(), U() };
 	}
 }
 
 template<typename T, typename U>
 inline T rgbToXyz(U r, U g, U b)
 {
-    return T(U(0.412453)*r + U(0.357580)*g + U(0.180423)*b,
+    return { U(0.412453)*r + U(0.357580)*g + U(0.180423)*b,
 	    U(0.212671)*r + U(0.715160)*g + U(0.072169)*b,
-	    U(0.019334)*r + U(0.119193)*g + U(0.950227)*b);
+	    U(0.019334)*r + U(0.119193)*g + U(0.950227)*b };
 }
 
 template<typename T, typename U>
 inline T xyzToRgb(U x, U y, U z)
 {
-    return T(U(3.240479)*x - U(1.537150)*y - U(0.498535)*z,
+    return { U(3.240479)*x - U(1.537150)*y - U(0.498535)*z,
 	    U(-0.969256)*x + U(1.875992)*y + U(0.041556)*z,
-	    U(0.055648)*x - U(0.204043)*y + U(1.057311)*z);
+	    U(0.055648)*x - U(0.204043)*y + U(1.057311)*z };
 }
 
 #if SIMD_HAS_FLOAT4
