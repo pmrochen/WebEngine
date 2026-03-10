@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace core {
+namespace common {
 
 #if NAME_WIDE
 using NameString = std::wstring;

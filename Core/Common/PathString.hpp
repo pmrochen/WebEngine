@@ -15,7 +15,7 @@
 
 #include <string>
 
-namespace core {
+namespace common {
 
 #if PATH_WIDE
 using PathString = std::wstring;
