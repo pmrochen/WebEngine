@@ -105,7 +105,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zconf.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
 copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
@@ -135,7 +135,7 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zconf.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
 copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
@@ -169,7 +169,7 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zconf.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
 copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
@@ -203,7 +203,7 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zconf.h"
+      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
 copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
 PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
@@ -224,7 +224,7 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
     <ClInclude Include="minizip-ng\mz_strm_zlib.h" />
     <ClInclude Include="minizip-ng\mz_zip.h" />
     <ClInclude Include="minizip-ng\mz_zip_rw.h" />
-    <ClInclude Include="zconf.h" />
+    <ClInclude Include="zlib-ng\zconf.h" />
     <ClInclude Include="zlib.h" />
     <ClInclude Include="zlib_name_mangling.h" />
     <ClInclude Include="zlib-ng\adler32_p.h" />
@@ -273,6 +273,51 @@ PowerShell -File "$(ProjectDir)..\..\Scripts\ReplaceStrings.ps1" "$(ProjectDir)z
     <ClInclude Include="zlib-ng\zendian.h" />
     <ClInclude Include="zlib-ng\zmemory.h" />
     <ClInclude Include="zlib-ng\zutil.h" />
+    <ClInclude Include="cereal\access.hpp" />
+    <ClInclude Include="cereal\archives\adapters.hpp" />
+    <ClInclude Include="cereal\archives\binary.hpp" />
+    <ClInclude Include="cereal\archives\json.hpp" />
+    <ClInclude Include="cereal\archives\portable_binary.hpp" />
+    <ClInclude Include="cereal\archives\xml.hpp" />
+    <ClInclude Include="cereal\cereal.hpp" />
+    <ClInclude Include="cereal\details\helpers.hpp" />
+    <ClInclude Include="cereal\details\polymorphic_impl.hpp" />
+    <ClInclude Include="cereal\details\polymorphic_impl_fwd.hpp" />
+    <ClInclude Include="cereal\details\static_object.hpp" />
+    <ClInclude Include="cereal\details\traits.hpp" />
+    <ClInclude Include="cereal\details\util.hpp" />
+    <ClInclude Include="cereal\external\base64.hpp" />
+    <ClInclude Include="cereal\macros.hpp" />
+    <ClInclude Include="cereal\specialize.hpp" />
+    <ClInclude Include="cereal\types\array.hpp" />
+    <ClInclude Include="cereal\types\atomic.hpp" />
+    <ClInclude Include="cereal\types\base_class.hpp" />
+    <ClInclude Include="cereal\types\bitset.hpp" />
+    <ClInclude Include="cereal\types\boost_variant.hpp" />
+    <ClInclude Include="cereal\types\chrono.hpp" />
+    <ClInclude Include="cereal\types\common.hpp" />
+    <ClInclude Include="cereal\types\complex.hpp" />
+    <ClInclude Include="cereal\types\concepts\pair_associative_container.hpp" />
+    <ClInclude Include="cereal\types\deque.hpp" />
+    <ClInclude Include="cereal\types\forward_list.hpp" />
+    <ClInclude Include="cereal\types\functional.hpp" />
+    <ClInclude Include="cereal\types\list.hpp" />
+    <ClInclude Include="cereal\types\map.hpp" />
+    <ClInclude Include="cereal\types\memory.hpp" />
+    <ClInclude Include="cereal\types\optional.hpp" />
+    <ClInclude Include="cereal\types\polymorphic.hpp" />
+    <ClInclude Include="cereal\types\queue.hpp" />
+    <ClInclude Include="cereal\types\set.hpp" />
+    <ClInclude Include="cereal\types\stack.hpp" />
+    <ClInclude Include="cereal\types\string.hpp" />
+    <ClInclude Include="cereal\types\tuple.hpp" />
+    <ClInclude Include="cereal\types\unordered_map.hpp" />
+    <ClInclude Include="cereal\types\unordered_set.hpp" />
+    <ClInclude Include="cereal\types\utility.hpp" />
+    <ClInclude Include="cereal\types\valarray.hpp" />
+    <ClInclude Include="cereal\types\variant.hpp" />
+    <ClInclude Include="cereal\types\vector.hpp" />
+    <ClInclude Include="cereal\version.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="minizip-ng\mz_crypt.c" />

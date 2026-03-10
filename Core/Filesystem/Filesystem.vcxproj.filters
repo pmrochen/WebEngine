@@ -352,7 +352,7 @@
     <ClInclude Include="zlib-ng\zbuild.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
-    <ClInclude Include="zconf.h">
+    <ClInclude Include="zlib-ng\zconf.h">
       <Filter>zlib-ng</Filter>
     </ClInclude>
     <ClInclude Include="zlib-ng\zendian.h">
@@ -397,6 +397,141 @@
     <ClInclude Include="zlib-ng\arch\generic\generic_functions.h">
       <Filter>zlib-ng\arch\generic</Filter>
     </ClInclude>
+    <ClInclude Include="cereal\access.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\cereal.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\macros.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\specialize.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\version.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\adapters.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\binary.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\json.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\portable_binary.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\archives\xml.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\helpers.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\polymorphic_impl.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\polymorphic_impl_fwd.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\static_object.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\traits.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\details\util.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\external\base64.hpp">
+      <Filter>cereal\external</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\array.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\atomic.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\base_class.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\bitset.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\boost_variant.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\chrono.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\common.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\complex.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\deque.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\forward_list.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\functional.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\list.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\map.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\memory.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\optional.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\polymorphic.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\queue.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\set.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\stack.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\string.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\tuple.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\unordered_map.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\unordered_set.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\utility.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\valarray.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\variant.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\vector.hpp">
+      <Filter>cereal\items</Filter>
+    </ClInclude>
+    <ClInclude Include="cereal\types\concepts\pair_associative_container.hpp">
+      <Filter>cereal\items\concepts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="minizip-ng">
@@ -416,6 +551,24 @@
     </Filter>
     <Filter Include="zlib-ng\arch\generic">
       <UniqueIdentifier>{5d9fad7b-f65f-43c2-9644-6472d4a88a6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal">
+      <UniqueIdentifier>{38b167e0-ebab-4c5e-8546-4228ed22c236}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\archives">
+      <UniqueIdentifier>{71a94968-8664-4bd2-b8d7-fdb18f55534e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\details">
+      <UniqueIdentifier>{078a12cf-37be-45dc-a952-f745c0a6e84f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external">
+      <UniqueIdentifier>{99d1ce02-a476-4398-8b39-5a5c69ae5ce5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\items">
+      <UniqueIdentifier>{b072e5bc-fd6d-41c8-a289-786c82455c59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\items\concepts">
+      <UniqueIdentifier>{622bd50d-e7e5-45c9-868a-c38bb5b2093b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
