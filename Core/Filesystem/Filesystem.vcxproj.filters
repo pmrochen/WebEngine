@@ -397,139 +397,139 @@
     <ClInclude Include="zlib-ng\arch\generic\generic_functions.h">
       <Filter>zlib-ng\arch\generic</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\access.hpp">
+    <ClInclude Include="cereal\include\cereal\access.hpp">
       <Filter>cereal</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\cereal.hpp">
+    <ClInclude Include="cereal\include\cereal\cereal.hpp">
       <Filter>cereal</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\macros.hpp">
+    <ClInclude Include="cereal\include\cereal\macros.hpp">
       <Filter>cereal</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\specialize.hpp">
+    <ClInclude Include="cereal\include\cereal\specialize.hpp">
       <Filter>cereal</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\version.hpp">
+    <ClInclude Include="cereal\include\cereal\version.hpp">
       <Filter>cereal</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\archives\adapters.hpp">
+    <ClInclude Include="cereal\include\cereal\archives\adapters.hpp">
       <Filter>cereal\archives</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\archives\binary.hpp">
+    <ClInclude Include="cereal\include\cereal\archives\binary.hpp">
       <Filter>cereal\archives</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\archives\json.hpp">
+    <ClInclude Include="cereal\include\cereal\archives\json.hpp">
       <Filter>cereal\archives</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\archives\portable_binary.hpp">
+    <ClInclude Include="cereal\include\cereal\archives\portable_binary.hpp">
       <Filter>cereal\archives</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\archives\xml.hpp">
+    <ClInclude Include="cereal\include\cereal\archives\xml.hpp">
       <Filter>cereal\archives</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\details\helpers.hpp">
+    <ClInclude Include="cereal\include\cereal\details\helpers.hpp">
       <Filter>cereal\details</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\details\polymorphic_impl.hpp">
+    <ClInclude Include="cereal\include\cereal\details\polymorphic_impl.hpp">
       <Filter>cereal\details</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\details\polymorphic_impl_fwd.hpp">
+    <ClInclude Include="cereal\include\cereal\details\polymorphic_impl_fwd.hpp">
       <Filter>cereal\details</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\details\static_object.hpp">
+    <ClInclude Include="cereal\include\cereal\details\static_object.hpp">
       <Filter>cereal\details</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\details\traits.hpp">
+    <ClInclude Include="cereal\include\cereal\details\traits.hpp">
       <Filter>cereal\details</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\details\util.hpp">
+    <ClInclude Include="cereal\include\cereal\details\util.hpp">
       <Filter>cereal\details</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\external\base64.hpp">
+    <ClInclude Include="cereal\include\cereal\external\base64.hpp">
       <Filter>cereal\external</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\array.hpp">
+    <ClInclude Include="cereal\include\cereal\types\array.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\atomic.hpp">
+    <ClInclude Include="cereal\include\cereal\types\atomic.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\base_class.hpp">
+    <ClInclude Include="cereal\include\cereal\types\base_class.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\bitset.hpp">
+    <ClInclude Include="cereal\include\cereal\types\bitset.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\boost_variant.hpp">
+    <ClInclude Include="cereal\include\cereal\types\boost_variant.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\chrono.hpp">
+    <ClInclude Include="cereal\include\cereal\types\chrono.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\common.hpp">
+    <ClInclude Include="cereal\include\cereal\types\common.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\complex.hpp">
+    <ClInclude Include="cereal\include\cereal\types\complex.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\deque.hpp">
+    <ClInclude Include="cereal\include\cereal\types\deque.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\forward_list.hpp">
+    <ClInclude Include="cereal\include\cereal\types\forward_list.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\functional.hpp">
+    <ClInclude Include="cereal\include\cereal\types\functional.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\list.hpp">
+    <ClInclude Include="cereal\include\cereal\types\list.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\map.hpp">
+    <ClInclude Include="cereal\include\cereal\types\map.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\memory.hpp">
+    <ClInclude Include="cereal\include\cereal\types\memory.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\optional.hpp">
+    <ClInclude Include="cereal\include\cereal\types\optional.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\polymorphic.hpp">
+    <ClInclude Include="cereal\include\cereal\types\polymorphic.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\queue.hpp">
+    <ClInclude Include="cereal\include\cereal\types\queue.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\set.hpp">
+    <ClInclude Include="cereal\include\cereal\types\set.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\stack.hpp">
+    <ClInclude Include="cereal\include\cereal\types\stack.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\string.hpp">
+    <ClInclude Include="cereal\include\cereal\types\string.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\tuple.hpp">
+    <ClInclude Include="cereal\include\cereal\types\tuple.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\unordered_map.hpp">
+    <ClInclude Include="cereal\include\cereal\types\unordered_map.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\unordered_set.hpp">
+    <ClInclude Include="cereal\include\cereal\types\unordered_set.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\utility.hpp">
+    <ClInclude Include="cereal\include\cereal\types\utility.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\valarray.hpp">
+    <ClInclude Include="cereal\include\cereal\types\valarray.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\variant.hpp">
+    <ClInclude Include="cereal\include\cereal\types\variant.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\vector.hpp">
+    <ClInclude Include="cereal\include\cereal\types\vector.hpp">
       <Filter>cereal\items</Filter>
     </ClInclude>
-    <ClInclude Include="cereal\types\concepts\pair_associative_container.hpp">
+    <ClInclude Include="cereal\include\cereal\types\concepts\pair_associative_container.hpp">
       <Filter>cereal\items\concepts</Filter>
     </ClInclude>
   </ItemGroup>

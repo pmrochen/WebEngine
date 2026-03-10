@@ -89,16 +89,16 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="intrusive_shared_ptr\apple_cf_ptr.h" />
-    <ClInclude Include="intrusive_shared_ptr\common.h" />
-    <ClInclude Include="intrusive_shared_ptr\com_ptr.h" />
-    <ClInclude Include="intrusive_shared_ptr\intrusive_shared_ptr.h" />
-    <ClInclude Include="intrusive_shared_ptr\python_ptr.h" />
-    <ClInclude Include="intrusive_shared_ptr\refcnt_ptr.h" />
-    <ClInclude Include="intrusive_shared_ptr\ref_counted.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\apple_cf_ptr.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\common.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\com_ptr.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\intrusive_shared_ptr.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\python_ptr.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\refcnt_ptr.h" />
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\ref_counted.h" />
     <ClInclude Include="NameString.hpp" />
     <ClInclude Include="PathString.hpp" />
-    <ClInclude Include="sigslot\signal.hpp" />
+    <ClInclude Include="sigslot\include\sigslot\signal.hpp" />
     <ClInclude Include="Strings.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

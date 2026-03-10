@@ -4,28 +4,28 @@
     <ClInclude Include="Strings.hpp" />
     <ClInclude Include="NameString.hpp" />
     <ClInclude Include="PathString.hpp" />
-    <ClInclude Include="sigslot\signal.hpp">
+    <ClInclude Include="sigslot\include\sigslot\signal.hpp">
       <Filter>sigslot</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\apple_cf_ptr.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\apple_cf_ptr.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\com_ptr.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\com_ptr.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\common.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\common.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\intrusive_shared_ptr.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\intrusive_shared_ptr.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\python_ptr.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\python_ptr.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\ref_counted.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\ref_counted.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
-    <ClInclude Include="intrusive_shared_ptr\refcnt_ptr.h">
+    <ClInclude Include="intrusive_shared_ptr\inc\intrusive_shared_ptr\refcnt_ptr.h">
       <Filter>intrusive_shared_ptr</Filter>
     </ClInclude>
   </ItemGroup>
