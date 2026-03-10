@@ -16,3 +16,6 @@
 [submodule "Core/Imaging"]
 	path = Core/Imaging
 	url = https://github.com/pmrochen/Imaging.git
+[submodule "Core/Filesystem/cereal"]
+	path = Core/Filesystem/cereal
+	url = https://github.com/USCiLab/cereal.git
