@@ -83,7 +83,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Imaging;..\Imaging\zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;X86_FEATURES;HAVE_CPUID_MS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -105,16 +105,16 @@
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>if exist "$(ProjectDir)zlib-ng\zconf.h.in" copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+if exist "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
+if exist "$(ProjectDir)zlib-ng\zlib.h.in" PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Imaging;..\Imaging\zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;ZLIB_COMPAT;ARM_FEATURES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -135,9 +135,9 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>if exist "$(ProjectDir)zlib-ng\zconf.h.in" copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+if exist "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
+if exist "$(ProjectDir)zlib-ng\zlib.h.in" PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -145,7 +145,7 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>.;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Imaging;..\Imaging\zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;X86_FEATURES;HAVE_CPUID_MS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -169,9 +169,9 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>if exist "$(ProjectDir)zlib-ng\zconf.h.in" copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+if exist "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
+if exist "$(ProjectDir)zlib-ng\zlib.h.in" PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -179,7 +179,7 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>.;zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Imaging;..\Imaging\zlib-ng;minizip-ng;..\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_SECURE_SCL=0;ZLIB_COMPAT;ARM_FEATURES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -203,9 +203,9 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
       <OutputFile>$(TargetPath)</OutputFile>
     </Lib>
     <PreBuildEvent>
-      <Command>copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
-copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
-PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
+      <Command>if exist "$(ProjectDir)zlib-ng\zconf.h.in" copy /Y "$(ProjectDir)zlib-ng\zconf.h.in" "$(ProjectDir)zlib-ng\zconf.h"
+if exist "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" copy /Y "$(ProjectDir)zlib-ng\zlib_name_mangling.h.empty" "$(ProjectDir)zlib_name_mangling.h"
+if exist "$(ProjectDir)zlib-ng\zlib.h.in" PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng\zlib.h.in" "$(ProjectDir)zlib.h" "@ZLIB_SYMBOL_PREFIX@" ""
 </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -224,55 +224,6 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
     <ClInclude Include="minizip-ng\mz_strm_zlib.h" />
     <ClInclude Include="minizip-ng\mz_zip.h" />
     <ClInclude Include="minizip-ng\mz_zip_rw.h" />
-    <ClInclude Include="zlib-ng\zconf.h" />
-    <ClInclude Include="zlib.h" />
-    <ClInclude Include="zlib_name_mangling.h" />
-    <ClInclude Include="zlib-ng\adler32_p.h" />
-    <ClInclude Include="zlib-ng\arch\arm\acle_intrins.h" />
-    <ClInclude Include="zlib-ng\arch\arm\arm_features.h" />
-    <ClInclude Include="zlib-ng\arch\arm\arm_functions.h" />
-    <ClInclude Include="zlib-ng\arch\arm\neon_intrins.h" />
-    <ClInclude Include="zlib-ng\arch\generic\chunk_128bit_perm_idx_lut.h" />
-    <ClInclude Include="zlib-ng\arch\generic\chunk_256bit_perm_idx_lut.h" />
-    <ClInclude Include="zlib-ng\arch\generic\chunk_permute_table.h" />
-    <ClInclude Include="zlib-ng\arch\generic\compare256_p.h" />
-    <ClInclude Include="zlib-ng\arch\generic\generic_functions.h" />
-    <ClInclude Include="zlib-ng\arch\x86\adler32_avx2_p.h" />
-    <ClInclude Include="zlib-ng\arch\x86\adler32_avx512_p.h" />
-    <ClInclude Include="zlib-ng\arch\x86\adler32_ssse3_p.h" />
-    <ClInclude Include="zlib-ng\arch\x86\crc32_pclmulqdq_tpl.h" />
-    <ClInclude Include="zlib-ng\arch\x86\x86_features.h" />
-    <ClInclude Include="zlib-ng\arch\x86\x86_functions.h" />
-    <ClInclude Include="zlib-ng\arch\x86\x86_intrins.h" />
-    <ClInclude Include="zlib-ng\arch_functions.h" />
-    <ClInclude Include="zlib-ng\chunkset_tpl.h" />
-    <ClInclude Include="zlib-ng\compare256_rle.h" />
-    <ClInclude Include="zlib-ng\cpu_features.h" />
-    <ClInclude Include="zlib-ng\crc32.h" />
-    <ClInclude Include="zlib-ng\crc32_braid_comb_p.h" />
-    <ClInclude Include="zlib-ng\crc32_braid_p.h" />
-    <ClInclude Include="zlib-ng\crc32_braid_tbl.h" />
-    <ClInclude Include="zlib-ng\crc32_p.h" />
-    <ClInclude Include="zlib-ng\deflate.h" />
-    <ClInclude Include="zlib-ng\deflate_p.h" />
-    <ClInclude Include="zlib-ng\fallback_builtins.h" />
-    <ClInclude Include="zlib-ng\functable.h" />
-    <ClInclude Include="zlib-ng\inffast_tpl.h" />
-    <ClInclude Include="zlib-ng\inffixed_tbl.h" />
-    <ClInclude Include="zlib-ng\inflate.h" />
-    <ClInclude Include="zlib-ng\inflate_p.h" />
-    <ClInclude Include="zlib-ng\inftrees.h" />
-    <ClInclude Include="zlib-ng\insert_string_p.h" />
-    <ClInclude Include="zlib-ng\insert_string_tpl.h" />
-    <ClInclude Include="zlib-ng\match_tpl.h" />
-    <ClInclude Include="zlib-ng\trees.h" />
-    <ClInclude Include="zlib-ng\trees_emit.h" />
-    <ClInclude Include="zlib-ng\trees_tbl.h" />
-    <ClInclude Include="zlib-ng\zarch.h" />
-    <ClInclude Include="zlib-ng\zbuild.h" />
-    <ClInclude Include="zlib-ng\zendian.h" />
-    <ClInclude Include="zlib-ng\zmemory.h" />
-    <ClInclude Include="zlib-ng\zutil.h" />
     <ClInclude Include="cereal\include\cereal\access.hpp" />
     <ClInclude Include="cereal\include\cereal\archives\adapters.hpp" />
     <ClInclude Include="cereal\include\cereal\archives\binary.hpp" />
@@ -335,60 +286,6 @@ PowerShell -File "$(ProjectDir)Scripts\ReplaceStrings.ps1" "$(ProjectDir)zlib-ng
     <ClCompile Include="minizip-ng\mz_strm_zlib.c" />
     <ClCompile Include="minizip-ng\mz_zip.c" />
     <ClCompile Include="minizip-ng\mz_zip_rw.c" />
-    <ClCompile Include="zlib-ng\adler32.c" />
-    <ClCompile Include="zlib-ng\arch\arm\adler32_neon.c" />
-    <ClCompile Include="zlib-ng\arch\arm\arm_features.c" />
-    <ClCompile Include="zlib-ng\arch\arm\chunkset_neon.c" />
-    <ClCompile Include="zlib-ng\arch\arm\compare256_neon.c" />
-    <ClCompile Include="zlib-ng\arch\arm\crc32_armv8.c" />
-    <ClCompile Include="zlib-ng\arch\arm\crc32_armv8_pmull_eor3.c" />
-    <ClCompile Include="zlib-ng\arch\arm\slide_hash_armv6.c" />
-    <ClCompile Include="zlib-ng\arch\arm\slide_hash_neon.c" />
-    <ClCompile Include="zlib-ng\arch\generic\adler32_c.c" />
-    <ClCompile Include="zlib-ng\arch\generic\chunkset_c.c" />
-    <ClCompile Include="zlib-ng\arch\generic\compare256_c.c" />
-    <ClCompile Include="zlib-ng\arch\generic\crc32_braid_c.c" />
-    <ClCompile Include="zlib-ng\arch\generic\crc32_chorba_c.c" />
-    <ClCompile Include="zlib-ng\arch\generic\slide_hash_c.c" />
-    <ClCompile Include="zlib-ng\arch\x86\adler32_avx2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\adler32_avx512.c" />
-    <ClCompile Include="zlib-ng\arch\x86\adler32_avx512_vnni.c" />
-    <ClCompile Include="zlib-ng\arch\x86\adler32_sse42.c" />
-    <ClCompile Include="zlib-ng\arch\x86\adler32_ssse3.c" />
-    <ClCompile Include="zlib-ng\arch\x86\chorba_sse2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\chorba_sse41.c" />
-    <ClCompile Include="zlib-ng\arch\x86\chunkset_avx2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\chunkset_avx512.c" />
-    <ClCompile Include="zlib-ng\arch\x86\chunkset_sse2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\chunkset_ssse3.c" />
-    <ClCompile Include="zlib-ng\arch\x86\compare256_avx2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\compare256_avx512.c" />
-    <ClCompile Include="zlib-ng\arch\x86\compare256_sse2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\crc32_pclmulqdq.c" />
-    <ClCompile Include="zlib-ng\arch\x86\crc32_vpclmulqdq.c" />
-    <ClCompile Include="zlib-ng\arch\x86\slide_hash_avx2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\slide_hash_sse2.c" />
-    <ClCompile Include="zlib-ng\arch\x86\x86_features.c" />
-    <ClCompile Include="zlib-ng\compress.c" />
-    <ClCompile Include="zlib-ng\cpu_features.c" />
-    <ClCompile Include="zlib-ng\crc32.c" />
-    <ClCompile Include="zlib-ng\crc32_braid_comb.c" />
-    <ClCompile Include="zlib-ng\deflate.c" />
-    <ClCompile Include="zlib-ng\deflate_fast.c" />
-    <ClCompile Include="zlib-ng\deflate_huff.c" />
-    <ClCompile Include="zlib-ng\deflate_medium.c" />
-    <ClCompile Include="zlib-ng\deflate_quick.c" />
-    <ClCompile Include="zlib-ng\deflate_rle.c" />
-    <ClCompile Include="zlib-ng\deflate_slow.c" />
-    <ClCompile Include="zlib-ng\deflate_stored.c" />
-    <ClCompile Include="zlib-ng\functable.c" />
-    <ClCompile Include="zlib-ng\infback.c" />
-    <ClCompile Include="zlib-ng\inflate.c" />
-    <ClCompile Include="zlib-ng\inftrees.c" />
-    <ClCompile Include="zlib-ng\insert_string.c" />
-    <ClCompile Include="zlib-ng\trees.c" />
-    <ClCompile Include="zlib-ng\uncompr.c" />
-    <ClCompile Include="zlib-ng\zutil.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
