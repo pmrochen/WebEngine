@@ -19,3 +19,9 @@
 [submodule "Core/Filesystem/cereal"]
 	path = Core/Filesystem/cereal
 	url = https://github.com/USCiLab/cereal.git
+[submodule "Core/Common/sigslot"]
+	path = Core/Common/sigslot
+	url = https://github.com/palacaze/sigslot.git
+[submodule "Core/Common/intrusive_shared_ptr"]
+	path = Core/Common/intrusive_shared_ptr
+	url = https://github.com/gershnik/intrusive_shared_ptr.git
