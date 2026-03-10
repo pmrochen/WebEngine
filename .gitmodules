@@ -13,3 +13,6 @@
 [submodule "Core/Mathematics"]
 	path = Core/Mathematics
 	url = https://github.com/pmrochen/Mathematics.git
+[submodule "Core/Imaging"]
+	path = Core/Imaging
+	url = https://github.com/pmrochen/Imaging.git
