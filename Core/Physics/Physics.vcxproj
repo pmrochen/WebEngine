@@ -577,12 +577,6 @@
     <ClCompile Include="bullet3\src\LinearMath\TaskScheduler\btThreadSupportPosix.cpp" />
     <ClCompile Include="bullet3\src\LinearMath\TaskScheduler\btThreadSupportWin32.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="bullet3\src\LinearMath\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="bullet3\src\LinearMath\premake4.lua" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1216,14 +1216,4 @@
       <Filter>bullet3\BulletDynamics\Vehicle</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="bullet3\src\LinearMath\CMakeLists.txt">
-      <Filter>bullet3\LinearMath</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="bullet3\src\LinearMath\premake4.lua">
-      <Filter>bullet3\LinearMath</Filter>
-    </None>
-  </ItemGroup>
 </Project>
