@@ -1,0 +1,134 @@
+﻿{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "windows-msvc-base",
+      "description": "Target Windows with the Visual Studio development environment.",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_FLAGS": "/MP /W3 /wd4800 /wd26812 /std:c++20 /EHsc /Gy /fp:fast $env{CXXFLAGS}",
+        "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /RTC1",
+        "CMAKE_CXX_FLAGS_RELEASE": "/GS- /GL /O2 /D _ITERATOR_DEBUG_LEVEL=0",
+        "CMAKE_C_FLAGS": "/MP /fp:fast $env{CFLAGS}",
+        "CMAKE_C_FLAGS_DEBUG": "/Zi /Od /RTC1",
+        "CMAKE_C_FLAGS_RELEASE": "/GS- /GL /O2",
+        "CMAKE_SHARED_LINKER_FLAGS": "/SUBSYSTEM:WINDOWS /MANIFESTUAC:\"level='asInvoker', uiAccess='false'\"",
+        "CMAKE_SHARED_LINKER_FLAGS_DEBUG": "/DEBUG:FULL",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FASTLINK /INCREMENTAL:NO /LTCG:INCREMENTAL /OPT:REF /OPT:ICF"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-clang-base",
+      "description": "Target Windows (Clang) with the Visual Studio development environment.",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "clang-cl.exe",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_FLAGS": "$env{CXXFLAGS}",
+        "CMAKE_C_FLAGS": "$env{CFLAGS}"
+      },
+      "toolset": "ClangCL",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-x64-debug",
+      "displayName": "x64 Debug",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "windows-msvc-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "environment": {
+        "CXXFLAGS": "/arch:AVX2",
+        "CFLAGS": "/arch:AVX2"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-msvc-x64-release",
+      "displayName": "x64 Release",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (Release)",
+      "inherits": "windows-msvc-x64-debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "windows-msvc-arm64-debug",
+      "displayName": "arm64 Debug",
+      "description": "Target Windows ARM (64-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "windows-msvc-base",
+      "architecture": {
+        "value": "arm64",
+        "strategy": "external"
+      },
+      "environment": {
+        "CXXFLAGS": "/arch:armv8.7",
+        "CFLAGS": "/arch:armv8.7"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-msvc-arm64-release",
+      "displayName": "arm64 Release",
+      "description": "Target Windows ARM (64-bit) with the Visual Studio development environment. (Release)",
+      "inherits": "windows-msvc-arm64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-clang-x64-debug",
+      "displayName": "x64 Debug (Clang)",
+      "description": "Target Windows (Clang 64-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "windows-clang-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "environment": {
+        "CXXFLAGS": "-mavx2",
+        "CFLAGS": "-mavx2"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      }
+    },
+    {
+      "name": "windows-clang-x64-release",
+      "displayName": "x64 Release (Clang)",
+      "description": "Target Windows (Clang 64-bit) with the Visual Studio development environment. (Release)",
+      "inherits": "windows-clang-x64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ]
+}
