@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <functional>
 //#include <boost/smart_ptr/scoped_ptr.hpp>
 
 namespace core {
@@ -134,9 +135,9 @@ struct hash;
 template<typename T> 
 struct hash<::core::OwnedPtr<T>>
 {
-    std::size_t operator()(const ::core::OwnedPtr<T>& p) const noexcept
+    size_t operator()(const ::core::OwnedPtr<T>& p) const noexcept
     {
-        return std::hash<T*>()(p.get());
+        return hash<T*>()(p.get());
     }
 };
 

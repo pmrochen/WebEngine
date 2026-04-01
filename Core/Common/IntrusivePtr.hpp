@@ -267,9 +267,9 @@ struct hash;
 template<typename T> 
 struct hash<::core::IntrusivePtr<T>>
 {
-    std::size_t operator()(const ::core::IntrusivePtr<T>& p) const noexcept
+    size_t operator()(const ::core::IntrusivePtr<T>& p) const noexcept
     {
-        return std::hash<T*>()(p.get());
+        return hash<T*>()(p.get());
     }
 };
 
