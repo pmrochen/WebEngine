@@ -21,6 +21,7 @@ target_include_directories(${GRAPHICS_LIB_NAME}
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
 		SamplerState.cpp
+		ViewVolume.cpp
 		MikkTSpace/mikktspace.c
 				
 	PRIVATE
@@ -33,12 +34,24 @@ target_sources(${GRAPHICS_LIB_NAME}
     	FILE_SET publicHeaders
 	    TYPE HEADERS
     	FILES
+			BlendEquation.hpp
+			BlendFunction.hpp
+			ClipOrigin.hpp
 			ComparisonFunction.hpp
+			CullFaceMode.hpp
+			DepthMask.hpp
+			DepthRange.hpp
+			FrontFace.hpp
 			Graphics.hpp
+			PolygonFillMode.hpp
+			Projection.hpp
+			RasterizerFlags.hpp
 			SamplerState.hpp
+			StencilOperation.hpp
 			TextureFilter.hpp
 			TextureWrapMode.hpp
 			Viewport.hpp
+			ViewVolume.hpp
 )
 
 target_compile_features(${GRAPHICS_LIB_NAME} 
