@@ -38,6 +38,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 			SamplerState.hpp
 			TextureFilter.hpp
 			TextureWrapMode.hpp
+			Viewport.hpp
 )
 
 target_compile_features(${GRAPHICS_LIB_NAME} 
