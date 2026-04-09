@@ -37,6 +37,14 @@ enum class RasterizerFlags
 
 ENABLE_ENUM_BITWISE_OPERATORS(RasterizerFlags);
 
+//namespace detail {
+//constexpr int COLOR_MASK = ColorMask::ALL;
+//constexpr int FRONT_FACE = FrontFace::CCW;
+//constexpr int CULL_FACE_MODE = CullFaceMode::BACK | CullFaceMode::FRONT;
+//constexpr int FILL_MODE = PolygonFillMode::WIREFRAME;
+//constexpr int DEPTH_WRITE_MASK = DepthMask::ENABLED;
+//} // namespace detail
+
 inline ColorMask extractColorWriteMask(RasterizerFlags flags) noexcept 
 { 
 	return (ColorMask)(flags & RasterizerFlags::COLOR_MASK_ALL);
