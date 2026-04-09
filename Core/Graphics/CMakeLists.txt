@@ -47,11 +47,14 @@ target_sources(${GRAPHICS_LIB_NAME}
 			DepthRange.hpp
 			DepthStencilFormat.hpp
 			FramebufferAccessMode.hpp
+			FramebufferAttributes.hpp
 			FramebufferOptions.hpp
 			FrontFace.hpp
+			GeometryAttributes.hpp
 			GeometryType.hpp
 			Graphics.hpp
-			LightType.hpp
+			Hash.inl
+			LightTypes.hpp
 			MultisampleMode.hpp
 			PolygonFillMode.hpp
 			PrimitiveTopology.hpp
@@ -59,13 +62,18 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Projection.hpp
 			RasterizerFlags.hpp
 			RasterizerState.hpp
+			ResourceTypes.hpp
 			SamplerState.hpp
-			SkinningFlags.hpp
 			StencilOperation.hpp
 			StorageFlags.hpp
 			TextureFilter.hpp
 			TextureWrapMode.hpp
+			VertexAttribute.hpp
 			VertexAttributeFlags.hpp
+			VertexAttributeIndex.hpp
+			VertexAttributeTypes.hpp
+			VertexDataType.hpp
+			VertexLayout.hpp
 			Viewport.hpp
 			ViewVolume.hpp
 )
