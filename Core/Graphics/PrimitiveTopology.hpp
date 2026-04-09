@@ -54,7 +54,7 @@ struct PrimitiveTopology
 		return !primitiveTypeAndControlPoints; 
 	}
 
-	void makeEmpty() noexcept 
+	void clear() noexcept
 	{ 
 		primitiveTypeAndControlPoints = 0; 
 	}

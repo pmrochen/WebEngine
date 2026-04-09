@@ -59,7 +59,7 @@ struct ColorFormat
 		return !pixelFormatAndColorSpace; 
 	}
 
-	void makeEmpty() noexcept 
+	void clear() noexcept 
 	{ 
 		pixelFormatAndColorSpace = (std::uint8_t)0; 
 	}
