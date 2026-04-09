@@ -14,7 +14,7 @@ struct AppearanceOptions
 {
 	bool operator==(const AppearanceOptions& options) const noexcept
 	{
-		return (dissolveDistanceFactor == options.dissolveDistanceFactor) && (lodDistanceFactor == options.lodDistanceFactor) &&
+		return /*(dissolveDistanceFactor == options.dissolveDistanceFactor) &&*/ (lodDistanceFactor == options.lodDistanceFactor) &&
 			(lodBias == options.lodBias) && (referenceZoomFactor == options.referenceZoomFactor) && 
 			(lightTypeMask == options.lightTypeMask) && (categoryMask == options.categoryMask) && (layerMask == options.layerMask) &&
 			(geometryType == options.geometryType) && (arrangeInLayers == options.arrangeInLayers) &&
@@ -25,13 +25,13 @@ struct AppearanceOptions
 
 	template<typename A> void serialize(A& ar)
 	{
-		ar(dissolveDistanceFactor, lodDistanceFactor, lodBias, referenceZoomFactor, lightTypeMask,
+		ar(/*dissolveDistanceFactor,*/ lodDistanceFactor, lodBias, referenceZoomFactor, lightTypeMask,
 			categoryMask, layerMask, geometryType, arrangeInLayers);
 	}
 
 	// Properties
-	float getDissolveDistanceFactor() const noexcept { return dissolveDistanceFactor; }
-	void setDissolveDistanceFactor(float factor) noexcept { dissolveDistanceFactor = factor; }
+	//float getDissolveDistanceFactor() const noexcept { return dissolveDistanceFactor; }
+	//void setDissolveDistanceFactor(float factor) noexcept { dissolveDistanceFactor = factor; }
 	float getLodDistanceFactor() const noexcept { return lodDistanceFactor; }
 	void setLodDistanceFactor(float factor) noexcept { lodDistanceFactor = factor; }
 	int getLodBias() const noexcept { return lodBias; }
@@ -74,7 +74,7 @@ struct AppearanceOptions
 	//	return lodDistanceFactor*zoomFactorAdjustment;
 	//}
 
-	float dissolveDistanceFactor = 1.f;
+	//float dissolveDistanceFactor = 1.f;
 	float lodDistanceFactor = 1.f;
 	int lodBias = 0;
 	float referenceZoomFactor = 3.2f;
