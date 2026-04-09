@@ -16,7 +16,7 @@ using imaging::Color4;
 
 struct ClearOptions
 {
-	static constexpr unsigned int MAX_COLOR_COUNT = 8u;
+	static constexpr int MAX_COLOR_COUNT = 8;
 	
 	ClearOptions() noexcept : 
 		colors{ Color4::UNIT_A }, 
@@ -59,12 +59,12 @@ struct ClearOptions
 
 	const Color4& getColor(int index) const noexcept 
 	{ 
-		return (((unsigned int)index < MAX_COLOR_COUNT) ? colors[index] : Color4::ZERO); 
+		return ((unsigned int)index < (unsigned int)MAX_COLOR_COUNT) ? colors[index] : Color4::ZERO;
 	}
 
 	void setColor(int index, const Color4& color) // throw (std::out_of_range)
 	{
-		if ((unsigned int)index >= MAX_COLOR_COUNT)
+		if ((unsigned int)index >= (unsigned int)MAX_COLOR_COUNT)
 			throw std::out_of_range("ClearOptions::setColor() : index");
 
 		colors[index] = color;
