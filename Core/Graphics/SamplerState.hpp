@@ -8,26 +8,12 @@
 #include <limits>
 #include <algorithm>
 #include <functional>
-#include <iterator>
 #include <cstddef>
 #include "ComparisonFunction.hpp"
 #include "TextureWrapMode.hpp"
 #include "TextureFilter.hpp"
 
 namespace graphics {
-namespace detail {
-
-template<typename I>
-inline std::size_t hashRange(I first, I last) noexcept
-{
-	std::hash<typename std::iterator_traits<I>::value_type> hasher;
-	std::size_t seed = 0;
-	for (; first != last; ++first)
-		seed ^= hasher(*first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	return seed;
-}
-
-} // namespace detail
 
 struct SamplerState
 {
@@ -90,6 +76,12 @@ struct SamplerState
 	template<typename A> void serialize(A& ar)
 	{
 		ar(wrapModes, filters, maxAnisotropy, depthFunctionSrgbDecoding, minMipLevel, maxMipLevel, mipLodBias);
+	}
+
+	static const SamplerState& getDefault()
+	{
+		static const SamplerState state;
+		return state;
 	}
 
 	// Wrap mode
@@ -165,7 +157,7 @@ struct SamplerState
 			this->maxAnisotropy = (std::int8_t)maxAnisotropy;
 	}
 
-	static const SamplerState DEFAULT;
+	//static const SamplerState DEFAULT;
 
 	std::uint8_t wrapModes;					// 3*2 bits
 	std::uint8_t filters;					// 3*2 bits
@@ -176,9 +168,9 @@ struct SamplerState
 	float mipLodBias;						// 4*uint8_t + 3*float = 128 bits
 };
 
-//const SamplerState SamplerState::DEFAULT{};
-
 } // namespace graphics
+
+#include "Hash.inl"
 
 namespace std {
 
@@ -191,7 +183,7 @@ struct hash<::graphics::SamplerState>
 	size_t operator()(const ::graphics::SamplerState& state) const noexcept
 	{
 		static_assert((sizeof(::graphics::SamplerState) & (sizeof(size_t) - 1)) == 0);
-		return ::graphics::detail::hashRange/*boost::hash_range*/((const size_t*)&state, 
+		return ::graphics::hash::range/*boost::hash_range*/((const size_t*)&state, 
 			(const size_t*)&state + sizeof(::graphics::SamplerState)/sizeof(size_t));
 	}
 };
