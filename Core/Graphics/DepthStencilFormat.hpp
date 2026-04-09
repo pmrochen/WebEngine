@@ -45,6 +45,16 @@ inline std::string str(DepthStencilFormat format)
 	}
 }
 
+inline DepthStencilFormat pack(DepthStencilFormat depth, DepthStencilFormat stencil) noexcept
+{
+	return (DepthStencilFormat)(((int)depth & detail::DEPTH_MASK) | ((int)stencil & detail::STENCIL_MASK));
+}
+
+inline std::pair<DepthStencilFormat, DepthStencilFormat> unpack(DepthStencilFormat format) noexcept
+{
+	return { (DepthStencilFormat)((int)format & detail::DEPTH_MASK), (DepthStencilFormat)((int)format & detail::STENCIL_MASK) };
+}
+
 inline bool isFloatingPoint(DepthStencilFormat format) noexcept 
 { 
 	return (format == DepthStencilFormat::DEPTH32F) || (format == DepthStencilFormat::DEPTH32F_STENCIL8);
@@ -53,11 +63,6 @@ inline bool isFloatingPoint(DepthStencilFormat format) noexcept
 inline bool isPacked/*DepthStencil*/(DepthStencilFormat format) noexcept 
 { 
 	return (format == DepthStencilFormat::DEPTH24_STENCIL8) || (format == DepthStencilFormat::DEPTH32F_STENCIL8);
-}
-
-inline std::pair<DepthStencilFormat, DepthStencilFormat> unpack(DepthStencilFormat format) noexcept
-{ 
-	return { (DepthStencilFormat)((int)format & detail::DEPTH_MASK), (DepthStencilFormat)((int)format & detail::STENCIL_MASK) };
 }
 
 inline bool hasDepth(DepthStencilFormat format) noexcept 

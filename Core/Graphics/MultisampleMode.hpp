@@ -27,6 +27,11 @@ enum class MultisampleMode
 //constexpr int COLOR_SAMPLES_SHIFT = 8;
 //} // namespace detail
 
+//inline MultisampleMode pack(int nCoverageSamples, int nColorSamples) noexcept
+//{
+//	return (MultisampleMode)((nCoverageSamples & detail::COVERAGE_SAMPLES_MASK) | ((nColorSamples << detail::COLOR_SAMPLES_SHIFT) & detail::COLOR_SAMPLES_MASK));
+//}
+
 //inline int getNumberOfCoverageSamples(MultisampleMode mode) noexcept 
 //{
 //	return (mode & detail::COVERAGE_SAMPLES_MASK);
