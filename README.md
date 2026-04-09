@@ -1,6 +1,5 @@
-# Generic Engine
+# Web Engine
 
-The generic game engine written in C++20, including a .NET wrapper
+Multi-purpose rendering & physics engine for the Web
 
 **Work in progress**
-
