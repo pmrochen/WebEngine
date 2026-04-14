@@ -20,7 +20,6 @@ target_include_directories(${GRAPHICS_LIB_NAME}
 
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
-		ViewVolume.cpp
 		MikkTSpace/mikktspace.c
 				
 	PRIVATE
