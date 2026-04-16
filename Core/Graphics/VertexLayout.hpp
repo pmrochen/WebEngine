@@ -6,8 +6,9 @@
 #pragma once
 
 #include <stdexcept>
-#include <algorithm>
 #include <functional>
+#include <array>
+#include <algorithm>
 #include <cstddef>
 #include "VertexDataType.hpp"
 #include "VertexAttribute.hpp"
@@ -51,12 +52,12 @@ struct VertexLayout
 
 	const VertexAttribute& getAttribute(int index) const noexcept 
 	{ 
-		return ((unsigned int)index < (unsigned int)MAX_ATTRIBUTE_COUNT) ? attributes[index] : VertexAttribute::getEmpty();
+		return ((std::size_t)index < (std::size_t)MAX_ATTRIBUTE_COUNT) ? attributes[index] : VertexAttribute::getEmpty();
 	}
 
 	void setAttribute(int index, const VertexAttribute& attribute) // throw (std::out_of_range)
 	{
-		if ((unsigned int)index >= (unsigned int)MAX_ATTRIBUTE_COUNT)
+		if ((std::size_t)index >= (std::size_t)MAX_ATTRIBUTE_COUNT)
 			throw std::out_of_range("VertexLayout::setAttribute() : index");
 
 		attributes[index] = attribute;
@@ -91,7 +92,7 @@ struct VertexLayout
 		stride = offset;
 	}
 
-	VertexAttribute attributes[MAX_ATTRIBUTE_COUNT];
+	std::array<VertexAttribute, MAX_ATTRIBUTE_COUNT> attributes;
 	unsigned int divisor/*stepRate*/ = 0;	// 0 = per vertex
 	unsigned int stride/*size*/ = 0;		// vertex size
 };

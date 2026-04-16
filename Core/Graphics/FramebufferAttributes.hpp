@@ -6,8 +6,9 @@
 #pragma once
 
 #include <stdexcept>
-#include <algorithm>
 #include <functional>
+#include <array>
+#include <algorithm>
 #include <cstddef>
 #include <ColorSpace.hpp>
 #include <PixelFormat.hpp>
@@ -81,7 +82,7 @@ struct FramebufferAttributes
 
 	const ColorFormat& getColorFormat(int index) const noexcept 
 	{ 
-		return ((unsigned int)index < (unsigned int)MAX_COLOR_FORMAT_COUNT) ? colorFormats[index] : ColorFormat::getEmpty();
+		return ((std::size_t)index < (std::size_t)MAX_COLOR_FORMAT_COUNT) ? colorFormats[index] : ColorFormat::getEmpty();
 	}
 
 	bool hasColorBuffers() const noexcept 
@@ -114,7 +115,7 @@ struct FramebufferAttributes
 
 	//int width;
 	//int height;
-	ColorFormat colorFormats[MAX_COLOR_FORMAT_COUNT];
+	std::array<ColorFormat, MAX_COLOR_FORMAT_COUNT> colorFormats;
 	DepthStencilFormat depthStencilFormat;
 	MultisampleMode multisampleMode;
 };

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <array>
 #include <algorithm>
 #include <Color4.hpp>
 #include "AttributeMask.hpp"
@@ -59,12 +60,12 @@ struct ClearOptions
 
 	const Color4& getColor(int index) const noexcept 
 	{ 
-		return ((unsigned int)index < (unsigned int)MAX_COLOR_COUNT) ? colors[index] : Color4::ZERO;
+		return ((std::size_t)index < (std::size_t)MAX_COLOR_COUNT) ? colors[index] : Color4::ZERO;
 	}
 
 	void setColor(int index, const Color4& color) // throw (std::out_of_range)
 	{
-		if ((unsigned int)index >= (unsigned int)MAX_COLOR_COUNT)
+		if ((std::size_t)index >= (std::size_t)MAX_COLOR_COUNT)
 			throw std::out_of_range("ClearOptions::setColor() : index");
 
 		colors[index] = color;
@@ -77,7 +78,7 @@ struct ClearOptions
 	AttributeMask getAttributeMask() const noexcept { return attributeMask; }
 	void setAttributeMask(AttributeMask attributeMask) noexcept { this->attributeMask = attributeMask; }
 
-	Color4 colors[MAX_COLOR_COUNT];
+	std::array<Color4, MAX_COLOR_COUNT> colors;
 	float depthValue;
 	int stencilValue;
 	AttributeMask attributeMask;
