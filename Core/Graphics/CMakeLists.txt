@@ -20,6 +20,7 @@ target_include_directories(${GRAPHICS_LIB_NAME}
 
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
+		Mesh.cpp
 		MikkTSpace/mikktspace.c
 				
 	PRIVATE
@@ -49,7 +50,6 @@ target_sources(${GRAPHICS_LIB_NAME}
 			FramebufferAttributes.hpp
 			FramebufferOptions.hpp
 			FrontFace.hpp
-			GeometryAttributes.hpp
 			GeometryType.hpp
 			Graphics.hpp
 			Hash.inl
@@ -63,6 +63,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 			RasterizerState.hpp
 			ResourceTypes.hpp
 			SamplerState.hpp
+			Sidedness.hpp
 			StencilOperation.hpp
 			StorageFlags.hpp
 			TextureFilter.hpp
