@@ -5,7 +5,12 @@
 
 #pragma once
 
+#include <type_traits>
 #include <cstddef>
+#include <cstdint>
+#include <Vector2.hpp>
+#include <Vector3.hpp>
+#include <Vector4.hpp>
 
 namespace graphics {
 
@@ -28,7 +33,7 @@ enum class VertexDataType
 	//INT2 = 0x001224,
 	//INT3 = 0x001324,
 	//INT4 = 0x001424,
-	//UINT = 0x001134,
+	UINT = 0x001134,
 	//UINT2 = 0x001234,
 	//UINT3 = 0x001334,
 	//UINT4 = 0x001434,
@@ -39,6 +44,7 @@ enum class VertexDataType
 };
 
 namespace detail {
+
 constexpr int COMPONENT_TYPE_MASK = 0x0000FF;
 constexpr int COMPONENT_SIZE_MASK = 0x00000F;
 constexpr int UNSIGNED_MASK = 0x000010;
@@ -49,7 +55,38 @@ constexpr int H_COMPONENTS_SHIFT = 8;
 constexpr int NORMALIZED_MASK = 0x010000;
 constexpr int BGRA8_MASK = 0x020000;
 constexpr int RGB10_A2_MASK = 0x040000;
+
 } // namespace detail
+
+template<typename T>
+struct VertexDataTypeOf;
+
+template<>
+struct VertexDataTypeOf<float> : std::integral_constant<VertexDataType, VertexDataType::FLOAT> {};
+
+template<>
+struct VertexDataTypeOf<mathematics::templates::Vector2<float>> : std::integral_constant<VertexDataType, VertexDataType::FLOAT2> {};
+
+template<>
+struct VertexDataTypeOf<mathematics::templates::Vector3<float>> : std::integral_constant<VertexDataType, VertexDataType::FLOAT3> {};
+
+template<>
+struct VertexDataTypeOf<mathematics::templates::Vector4<float>> : std::integral_constant<VertexDataType, VertexDataType::FLOAT4> {};
+
+template<>
+struct VertexDataTypeOf<std::uint8_t> : std::integral_constant<VertexDataType, VertexDataType::BYTE> {};
+
+template<>
+struct VertexDataTypeOf<mathematics::templates::Vector2<std::uint8_t>> : std::integral_constant<VertexDataType, VertexDataType::BYTE2> {};
+
+template<>
+struct VertexDataTypeOf<mathematics::templates::Vector3<std::uint8_t>> : std::integral_constant<VertexDataType, VertexDataType::BYTE3> {};
+
+template<>
+struct VertexDataTypeOf<mathematics::templates::Vector4<std::uint8_t>> : std::integral_constant<VertexDataType, VertexDataType::BYTE4> {};
+
+template<>
+struct VertexDataTypeOf<std::uint32_t> : std::integral_constant<VertexDataType, VertexDataType::UINT> {};
 
 inline VertexDataType pack(VertexDataType componentType, int nComponents) noexcept 
 { 
