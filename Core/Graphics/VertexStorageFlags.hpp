@@ -1,5 +1,5 @@
 /*
- *	Name: VertexAttributeFlags
+ *	Name: VertexStorageFlags
  *	Author: Pawel Mrochen
  */
 
@@ -9,7 +9,7 @@
 
 namespace graphics {
 
-enum class VertexAttributeFlags
+enum class VertexStorageFlags
 {
 	NONE = 0,
 	OMIT_LAST_BLEND_WEIGHT = 1,
@@ -22,6 +22,6 @@ enum class VertexAttributeFlags
 	DEFAULT = 0
 };
 
-ENABLE_ENUM_BITWISE_OPERATORS(VertexAttributeFlags);
+ENABLE_ENUM_BITWISE_OPERATORS(VertexStorageFlags);
 
 } // namespace graphics
