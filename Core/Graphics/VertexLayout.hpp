@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <cstddef>
 #include "VertexDataType.hpp"
-#include "VertexAttribute.hpp"
+#include "VertexAttributeInfo.hpp"
 
 namespace graphics {
 

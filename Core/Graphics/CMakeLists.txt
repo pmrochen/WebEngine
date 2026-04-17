@@ -42,6 +42,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 			ClipOrigin.hpp
 			ColorFormat.hpp
 			ComparisonFunction.hpp
+			ComponentVector.hpp
 			CullFaceMode.hpp
 			DepthMask.hpp
 			DepthRange.hpp
@@ -68,12 +69,12 @@ target_sources(${GRAPHICS_LIB_NAME}
 			StorageFlags.hpp
 			TextureFilter.hpp
 			TextureWrapMode.hpp
-			VertexAttribute.hpp
-			VertexAttributeFlags.hpp
 			VertexAttributeIndex.hpp
+			VertexAttributeInfo.hpp
 			VertexAttributeTypes.hpp
 			VertexDataType.hpp
 			VertexLayout.hpp
+			VertexStorageFlags.hpp
 			Viewport.hpp
 			ViewVolume.hpp
 )

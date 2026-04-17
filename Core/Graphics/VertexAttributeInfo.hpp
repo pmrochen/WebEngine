@@ -1,39 +1,55 @@
 /*
- *	Name: VertexAttribute
+ *	Name: VertexAttributeInfo
  *	Author: Pawel Mrochen
  */
 
 #pragma once
 
+#include <concepts>
 #include <functional>
 #include <cstddef>
+#include <cstdint>
+#include <Vector2.hpp>
+#include <Vector3.hpp>
+#include <Vector4.hpp>
 #include "VertexDataType.hpp"
 
 namespace graphics {
+namespace detail {
 
-struct VertexAttribute
+template<typename T, typename ... U>
+concept Either = (std::same_as<T, U> || ...);
+
+} // namespace detail
+
+template<typename T>
+concept AnyVertexAttribute = detail::Either<T, float, mathematics::templates::Vector2<float>, mathematics::templates::Vector3<float>, 
+	mathematics::templates::Vector4<float>, std::uint8_t, mathematics::templates::Vector2<uint8_t>, 
+	mathematics::templates::Vector3<uint8_t>, mathematics::templates::Vector4<uint8_t>, std::uint32_t>;
+
+struct VertexAttributeInfo
 {
-	constexpr VertexAttribute() noexcept : 
+	constexpr VertexAttributeInfo() noexcept :
 		dataTypeAndOffset(0) 
 	{
 	}
 
-	//constexpr explicit VertexAttribute(VertexDataType dataType) noexcept : 
+	//constexpr explicit VertexAttributeInfo(VertexDataType dataType) noexcept : 
 	//	dataTypeAndOffset((unsigned int)dataType & 0x000FFFFF)
 	//{
 	//}
 	
-	constexpr VertexAttribute(VertexDataType dataType, unsigned int offset) noexcept : 
+	constexpr VertexAttributeInfo(VertexDataType dataType, unsigned int offset) noexcept :
 		dataTypeAndOffset(((unsigned int)dataType & 0x000FFFFF) | (offset << 20))
 	{
 	}
 
-	bool operator==(const VertexAttribute& attribute) const noexcept 
+	bool operator==(const VertexAttributeInfo& attribute) const noexcept
 	{ 
 		return (dataTypeAndOffset == attribute.dataTypeAndOffset); 
 	}
 	
-	bool operator!=(const VertexAttribute& attribute) const noexcept 
+	bool operator!=(const VertexAttributeInfo& attribute) const noexcept
 	{ 
 		return (dataTypeAndOffset != attribute.dataTypeAndOffset); 
 	}
@@ -43,9 +59,9 @@ struct VertexAttribute
 		ar(dataTypeAndOffset);
 	}
 
-	static const VertexAttribute& getEmpty() noexcept 
+	static const VertexAttributeInfo& getEmpty() noexcept
 	{ 
-		static const VertexAttribute empty; 
+		static const VertexAttributeInfo empty;
 		return empty; 
 	}
 
@@ -95,9 +111,9 @@ template<typename T>
 struct hash;
 
 template<>
-struct hash<::graphics::VertexAttribute>
+struct hash<::graphics::VertexAttributeInfo>
 {
-	size_t operator()(const ::graphics::VertexAttribute& attribute) const noexcept
+	size_t operator()(const ::graphics::VertexAttributeInfo& attribute) const noexcept
 	{
 		return hash<unsigned int>()(attribute.dataTypeAndOffset);
 	}
