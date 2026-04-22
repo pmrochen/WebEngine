@@ -1,6 +1,19 @@
+# Graphics
+
 cmake_minimum_required(VERSION 3.25)
 
-project(Graphics LANGUAGES CXX)
+if(NOT DEFINED CACHE{GRAPHICS_LIB_VERSION})
+	string(TIMESTAMP VER_YEAR "%y")
+	string(TIMESTAMP VER_MONTH "%m")
+	math(EXPR VER_MONTH "${VER_MONTH} + 0")
+    set(GRAPHICS_LIB_VERSION "${VER_YEAR}.${VER_MONTH}" CACHE STRING "Project version (auto-set at first configure)")
+endif()
+
+project(Graphics
+	VERSION ${GRAPHICS_LIB_VERSION}
+	LANGUAGES CXX
+)
+
 set(GRAPHICS_LIB_NAME Graphics)
 
 find_package(OpenMP)
@@ -26,12 +39,14 @@ target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
     	FILE_SET privateHeaders
 	    TYPE HEADERS
+		#BASE_DIRS Source
     	FILES
 			MikkTSpace/mikktspace.h
 				
 	PUBLIC
     	FILE_SET publicHeaders
 	    TYPE HEADERS
+		#BASE_DIRS Source
     	FILES
 			AppearanceFlags.hpp
 			AppearanceOptions.hpp
