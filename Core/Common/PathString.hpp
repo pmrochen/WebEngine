@@ -17,6 +17,8 @@
 
 namespace common {
 
+//using namespace std::literals::string_literals;
+
 #if PATH_WIDE
 using PathString = std::wstring;
 using PathChar = wchar_t;
@@ -29,4 +31,4 @@ using PathChar = char;
 #define	PATH_STRING(q) q##s
 #endif
 
-} // namespace core
+} // namespace common

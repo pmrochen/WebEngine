@@ -9,9 +9,9 @@
 #include <vector>
 #include "ObservableSequenceCollection.hpp"
 
-namespace core {
+namespace common {
 
 template<typename T, typename Alloc = std::allocator<T>>
 using ObservableVector = ObservableSequenceContainer<std::vector>;
 
-} // namespace core
+} // namespace common

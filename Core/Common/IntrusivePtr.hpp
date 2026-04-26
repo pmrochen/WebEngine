@@ -43,7 +43,7 @@
 
 //} // namespace boost::serialization
 
-namespace core {
+namespace common {
 
 //using IntrusivePtr = ::boost::intrusive_ptr;
 
@@ -257,7 +257,7 @@ inline T* get_pointer(const IntrusivePtr<T>& p) noexcept
     return p.get();
 }
 
-} // namespace core
+} // namespace common
 
 namespace std {
 
@@ -265,9 +265,9 @@ template<typename T>
 struct hash;
 
 template<typename T> 
-struct hash<::core::IntrusivePtr<T>>
+struct hash<::common::IntrusivePtr<T>>
 {
-    size_t operator()(const ::core::IntrusivePtr<T>& p) const noexcept
+    size_t operator()(const ::common::IntrusivePtr<T>& p) const noexcept
     {
         return hash<T*>()(p.get());
     }

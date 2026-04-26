@@ -13,6 +13,8 @@
 
 namespace common {
 
+//using namespace std::literals::string_literals;
+
 #if NAME_WIDE
 using NameString = std::wstring;
 using NameChar = wchar_t;
@@ -25,4 +27,4 @@ using NameChar = char;
 #define	NAME_STRING(q) q##s
 #endif
 
-} // namespace core
+} // namespace common

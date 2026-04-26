@@ -7,7 +7,7 @@
 
 #include <atomic>
 
-namespace core {
+namespace common {
 
 //class IRefCounted
 //{
@@ -42,4 +42,4 @@ private:
 //    refCounter->release();
 //}
 
-} // namespace core
+} // namespace common

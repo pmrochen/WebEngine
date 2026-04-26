@@ -8,7 +8,7 @@
 #include <stdexcept>
 //#include <variant>
 
-namespace core {
+namespace common {
 
 //template<typename T, typename U>
 //class OwnedVector<T, U>;
@@ -89,4 +89,4 @@ private:
 //    owned->release();
 //}
 
-} // namespace core
+} // namespace common

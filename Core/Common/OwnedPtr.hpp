@@ -8,7 +8,7 @@
 #include <functional>
 //#include <boost/smart_ptr/scoped_ptr.hpp>
 
-namespace core {
+namespace common {
 
 template<typename T> 
 class OwnedPtr //: public boost::scoped_ptr<T>
@@ -125,7 +125,7 @@ inline T* get_pointer(const OwnedPtr<T>& p) noexcept
     return p.get();
 }
 
-} // namespace core
+} // namespace common
 
 namespace std {
 
@@ -133,9 +133,9 @@ template<typename T>
 struct hash;
 
 template<typename T> 
-struct hash<::core::OwnedPtr<T>>
+struct hash<::common::OwnedPtr<T>>
 {
-    size_t operator()(const ::core::OwnedPtr<T>& p) const noexcept
+    size_t operator()(const ::common::OwnedPtr<T>& p) const noexcept
     {
         return hash<T*>()(p.get());
     }

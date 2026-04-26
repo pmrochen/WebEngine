@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace core {
+namespace common {
 
 template<typename T, typename Alloc = std::allocator<T>>
 class UnorderedVector : public std::vector<T, Alloc>
@@ -64,4 +64,4 @@ public:
     }
 };
 
-} // namespace core
+} // namespace common

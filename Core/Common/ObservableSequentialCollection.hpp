@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <sigslot/signal.hpp>
 
-namespace core {
+namespace common {
 
 template<typename Container>
 class ObservableSequentialCollection
@@ -312,4 +312,4 @@ private:
     Container v_;
 };
 
-} // namespace core
+} // namespace common
