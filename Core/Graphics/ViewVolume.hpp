@@ -319,35 +319,36 @@ struct ViewVolume
 
 	Matrix4<T> getProjectionMatrix(DepthRange depthRange) const noexcept
 	{
-		auto [left, bottom, depthMin] = minimum;
-		auto [right, top, depthMax] = maximum;
+		auto [l, b, n] = minimum;
+		auto [r, t, f] = maximum;
 		bool symmetric = isSymmetric();
-		bool depthRange01 = (depthRange == DepthRange::ZERO_TO_ONE);
+		bool positiveZ = (depthRange != DepthRange::NEGATIVE_ONE_TO_ONE);
+		bool reverseZ = (depthRange == DepthRange::ONE_TO_ZERO);
 
 		if (projection == Projection::PARALLEL)
 		{
-			T k = depthRange01 ? T(1)/(depthMax - depthMin) : T(2)/(depthMax - depthMin);
-			T z = depthRange01 ? depthMin/(depthMin - depthMax) : (depthMin + depthMax)/(depthMin - depthMax);
+			T k = positiveZ ? T(1)/(f - n) : T(2)/(f - n);
+			T z = positiveZ ? n/(n - f) : (n + f)/(n - f);
 
-			return Matrix4<T>(T(2)/(right - left), T(), T(), T(),
-				T(), T(2)/(top - bottom), T(), T(),
-				T(), T(), k, T(),
-				symmetric ? T() : (left + right)/(left - right), symmetric ? T() : (bottom + top)/(bottom - top), z, T(1));
+			return { T(2)/(r - l), T(), T(), T(),
+				T(), T(2)/(t - b), T(), T(),
+				T(), T(), reverseZ ? -k : k, T(),
+				symmetric ? T() : (l + r)/(l - r), symmetric ? T() : (b + t)/(b - t), reverseZ ? (z + T(1)) : z, T(1) };
 		}
 		else
 		{
-			bool finite = (depthMax < std::numeric_limits<T>::max());
+			bool finite = (f < std::numeric_limits<T>::max());
 			T k = finite ?
-				(depthRange01 ? depthMax/(depthMax - depthMin) : (depthMax + depthMin)/(depthMax - depthMin)) :
+				(positiveZ ? f/(f - n) : (f + n)/(f - n)) :
 				T(1);
 			T z = finite ?
-				(depthRange01 ? depthMin*depthMax/(depthMin - depthMax) : T(2)*depthMin*depthMax/(depthMin - depthMax)) :
-				(depthRange01 ? -depthMin : -T(2)*depthMin);
+				(positiveZ ? n*f/(n - f) : T(2)*n*f/(n - f)) :
+				(positiveZ ? -n : -T(2)*n);
 
-			return Matrix4<T>(T(2)*depthMin/(right - left), T(), T(), T(),
-				T(), T(2)*depthMin/(top - bottom), T(), T(),
-				symmetric ? T() : (left + right)/(left - right), symmetric ? T() : (bottom + top)/(bottom - top), k, T(1),
-				T(), T(), z, T());
+			return { T(2)*n/(r - l), T(), T(), T(),
+				T(), T(2)*n/(t - b), T(), T(),
+				symmetric ? T() : (l + r)/(l - r), symmetric ? T() : (b + t)/(b - t), reverseZ ? -k : k, T(1),
+				T(), T(), reverseZ ? (z + T(1)) : z, T() };
 		}
 	}
 
