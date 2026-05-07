@@ -1,5 +1,5 @@
 /*
- *	Name: StorageFlags
+ *	Name: ResourceStorageFlags
  *	Author: Pawel Mrochen
  */
 
@@ -9,7 +9,7 @@
 
 namespace graphics {
 
-enum class StorageFlags
+enum class ResourceStorageFlags
 {
 	NONE = 0,
 	DYNAMIC = 0x0001,
@@ -19,6 +19,6 @@ enum class StorageFlags
 	STREAMED = 0x0020
 };
 
-ENABLE_ENUM_BITWISE_OPERATORS(StorageFlags);
+ENABLE_ENUM_BITWISE_OPERATORS(ResourceStorageFlags);
 
 } // namespace graphics

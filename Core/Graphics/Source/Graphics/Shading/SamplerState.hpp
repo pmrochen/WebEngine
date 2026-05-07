@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <cstddef>
-#include "ComparisonFunction.hpp"
+#include "../Rasterization/ComparisonFunction.hpp"
 #include "TextureWrapMode.hpp"
 #include "TextureFilter.hpp"
 

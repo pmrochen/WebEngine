@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "GeometryType.hpp"
+#include "../Geometry/GeometryType.hpp"
 #include "LightType.hpp"
 
 namespace graphics {

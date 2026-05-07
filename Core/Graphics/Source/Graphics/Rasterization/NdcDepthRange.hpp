@@ -1,5 +1,5 @@
 /*
- *	Name: DepthRange
+ *	Name: NdcDepthRange
  *	Author: Pawel Mrochen
  */
 
@@ -7,7 +7,7 @@
 
 namespace graphics {
 
-enum class DepthRange
+enum class NdcDepthRange
 {
 	//UNSPECIFIED,
 	NEGATIVE_ONE_TO_ONE,	// OpenGL
