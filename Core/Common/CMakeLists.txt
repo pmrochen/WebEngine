@@ -25,22 +25,20 @@ target_include_directories(${COMMON_LIB_NAME} 		# to remove after moving header 
 )
 
 set(COMMON_HEADERS
-	IntrusivePtr.hpp
-	NameString.hpp
-	ObservableSequentialCollection.hpp
-	ObservableVector.hpp
-	Owned.hpp
-	OwnedPtr.hpp
-	PathString.hpp
-	RefCounted.hpp
-	Strings.hpp
-	UnorderedVector.hpp
+	Inlude/Common/Collections/ComponentVector.hpp
+	Inlude/Common/Collections/Hash.inl
+	Inlude/Common/Collections/ObservableSequentialCollection.hpp
+	Inlude/Common/Collections/ObservableVector.hpp
+	Inlude/Common/Collections/UnorderedVector.hpp
+	Inlude/Common/Strings/NameString.hpp
+	Inlude/Common/Strings/PathString.hpp
+	Inlude/Common/Strings/Strings.hpp
 )
 
 target_sources(${COMMON_LIB_NAME}
 	INTERFACE
     	FILE_SET HEADERS
-		#BASE_DIRS Include
+		BASE_DIRS Include
     	FILES
 			${COMMON_HEADERS}
 )
