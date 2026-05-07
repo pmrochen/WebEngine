@@ -17,6 +17,7 @@ project(Core
 set(CORE_LIB_NAME Core)
 
 add_subdirectory(Common)
+add_subdirectory(Filesystem)
 add_subdirectory(Mathematics)
 add_subdirectory(Imaging)
 add_subdirectory(Graphics)
