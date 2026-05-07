@@ -11,11 +11,8 @@
 #include <vector>
 #include <tuple>
 #include <iterator>
-#include <Vector2.hpp>
-#include <Vector3.hpp>
-#include <Vector4.hpp>
 
-namespace graphics {
+namespace common {
 
 template<typename T>
 concept TupleLike = requires { std::tuple_size<T>::value; };
@@ -376,4 +373,4 @@ struct ComponentVectorOf<T>
     using Type = ComponentVector<typename std::tuple_element<0, T>::type>;
 };
 
-} // namespace graphics
+} // namespace common

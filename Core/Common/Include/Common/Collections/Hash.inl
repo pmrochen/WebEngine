@@ -9,7 +9,7 @@
 #include <iterator>
 #include <cstddef>
 
-namespace graphics::hash {
+namespace common::hash {
 
 template<typename I>
 inline std::size_t range(I first, I last) noexcept
@@ -21,4 +21,4 @@ inline std::size_t range(I first, I last) noexcept
 	return seed;
 }
 
-} // namespace graphics::hash
+} // namespace common::hash
