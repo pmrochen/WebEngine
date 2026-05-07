@@ -9,7 +9,7 @@
 #include <concepts>
 #include <string>
 #include <filesystem>
-#include <PathString.hpp>
+#include <Common/Strings/PathString.hpp>
 
 namespace filesystem {
 
