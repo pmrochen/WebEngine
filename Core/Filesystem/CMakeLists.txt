@@ -19,14 +19,24 @@ set(FILESYSTEM_LIB_NAME Filesystem)
 add_library(${FILESYSTEM_LIB_NAME} STATIC)
 
 target_sources(${FILESYSTEM_LIB_NAME}
+	PRIVATE
+		Source/Filesystem/FilesystemError.cpp
+		Source/Filesystem/VirtualFilesystem.cpp
+
 	PUBLIC
     	FILE_SET publicHeaders
 	    TYPE HEADERS
-		#BASE_DIRS Source
+		BASE_DIRS Source
     	FILES
-			Endianness.hpp
-			Filesystem.hpp
-			Path.hpp
+			Source/Filesystem/Endianness.hpp
+			Source/Filesystem/FileAccessFlags.hpp
+			Source/Filesystem/FileOpenMode.hpp
+			Source/Filesystem/Filesystem.hpp
+			Source/Filesystem/FilesystemError.hpp
+			Source/Filesystem/FilesystemException.hpp
+			Source/Filesystem/Path.hpp
+			Source/Filesystem/SeekOrigin.hpp
+			Source/Filesystem/VirtualFilesystem.hpp
 )
 
 target_compile_features(${FILESYSTEM_LIB_NAME} 
