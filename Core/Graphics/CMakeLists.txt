@@ -33,7 +33,6 @@ target_include_directories(${GRAPHICS_LIB_NAME}
 
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
-		#Source/Graphics/Animation/FCurve.cpp
 		#Source/Graphics/Geometry/Mesh.cpp
 		#Source/Graphics/SceneGraph/Locator.cpp
 		#Source/Graphics/Shading/Material.cpp
@@ -51,6 +50,10 @@ target_sources(${GRAPHICS_LIB_NAME}
 		BASE_DIRS Source
     	FILES
 			#Source/Graphics/Animation/FCurve.hpp
+			Source/Graphics/Animation/FCurveAttributes.hpp
+			Source/Graphics/Animation/FCurveChannel.hpp
+			Source/Graphics/Animation/FCurveExtrapolationMode.hpp
+			Source/Graphics/Animation/FCurveInterpolationMode.hpp
 			Source/Graphics/Geometry/GeometryType.hpp
 			#Source/Graphics/Geometry/Mesh.hpp
 			Source/Graphics/Geometry/PrimitiveTopology.hpp

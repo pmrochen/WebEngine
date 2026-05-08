@@ -34,6 +34,11 @@
 #include "Geometry/GeometryType.hpp"
 #include "SceneGraph/LightTypes.hpp"
 #include "SceneGraph/AppearanceFlags.hpp"
+#include "Animation/FCurveInterpolationMode.hpp"
+#include "Animation/FCurveExtrapolationMode.hpp"
+#include "Animation/FCurveChannel.hpp"
+#include "Animation/FCurveAttributes.hpp"
+
 #include "Rasterization/ColorFormat.hpp"
 #include "Shading/SamplerState.hpp"
 #include "Rasterization/RasterizerState.hpp"
@@ -46,6 +51,7 @@
 #include "Rasterization/Viewport.hpp"
 #include "SceneGraph/ViewVolume.hpp"
 #include "SceneGraph/AppearanceOptions.hpp"
+
 //#include "Geometry/Mesh.hpp"
 //#include "Shading/Material.hpp"
 //#include "Animation/FCurve.hpp"
