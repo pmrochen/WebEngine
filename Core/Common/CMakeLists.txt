@@ -18,12 +18,6 @@ set(COMMON_LIB_NAME Common)
 
 add_library(${COMMON_LIB_NAME} INTERFACE)
 
-target_include_directories(${COMMON_LIB_NAME} 		# to remove after moving header files to Include folder
-	INTERFACE 
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:include>
-)
-
 set(COMMON_HEADERS
 	Inlude/Common/Collections/ComponentVector.hpp
 	Inlude/Common/Collections/Hash.inl
