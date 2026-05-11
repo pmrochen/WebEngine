@@ -7,8 +7,11 @@
 
 #include <string>
 #include <filesystem>
+#include <Common/Strings/LocalString.hpp>
 
 namespace filesystem {
+
+using common::LocalString;
 
 enum class FilesystemError
 {
@@ -27,9 +30,9 @@ enum class FilesystemError
 };
 
 int getSystemErrorCode(FilesystemError error) noexcept;
-std::string makeErrorMessage(const std::filesystem::path& path, FilesystemError cause = FilesystemError::GENERIC) noexcept;
-std::string makeErrorMessage(const std::filesystem::path& path, int systemErrorCode) noexcept;
-//std::string makeErrorMessage(const std::filesystem::path& path, const char* message) noexcept;
-//std::string makeErrorMessage(const std::filesystem::path& path, const std::string& message) noexcept;
+LocalString makeErrorMessage(const std::filesystem::path& path, FilesystemError cause = FilesystemError::GENERIC) noexcept;
+LocalString makeErrorMessage(const std::filesystem::path& path, int systemErrorCode) noexcept;
+LocalString makeErrorMessage(const std::filesystem::path& path, const LocalChar* message) noexcept;
+LocalString makeErrorMessage(const std::filesystem::path& path, const LocalString& message) noexcept;
 
 } // namespace filesystem

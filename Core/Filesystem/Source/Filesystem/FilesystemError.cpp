@@ -14,6 +14,7 @@
 #include <string>
 #include <filesystem>
 #include "FilesystemError.hpp"
+#include "Path.hpp"
 
 namespace filesystem {
 
@@ -53,44 +54,44 @@ int getSystemErrorCode(FilesystemError error)
 	return systemErrorCodes[error];
 }
 
-std::string makeErrorMessage(const std::filesystem::path& path, FilesystemError cause/* = FilesystemError::GENERIC*/)
+LocalString makeErrorMessage(const std::filesystem::path& path, FilesystemError cause/* = FilesystemError::GENERIC*/)
 {
 	return makeErrorMessage(path, getSystemErrorCode(cause));
 }
 
-std::string makeErrorMessage(const std::filesystem::path& path, int systemErrorCode)
+LocalString makeErrorMessage(const std::filesystem::path& path, int systemErrorCode)
 {
-	auto getSystemMessage = [](int systemError) -> std::string
+	auto getSystemMessage = [](int systemError) -> LocalString
 		{
 #ifdef _WIN32
-			char* msgBuffer = nullptr;
-			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				0, systemError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msgBuffer, 0, 0);
+			wchar_t* msgBuffer = nullptr;
+			FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+				0, systemError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&msgBuffer, 0, 0);
 			if (!msgBuffer)
-				return std::string("Unknown filesystem error");
-			std::string message(msgBuffer);
+				return { L"Unknown filesystem error" };
+			std::wstring message(msgBuffer);
 			LocalFree(msgBuffer);
-			while (!message.empty() && ((message[message.length() - 1] == '\n') || (message[message.length() - 1] == '\r')))
+			while (!message.empty() && ((message[message.length() - 1] == L'\n') || (message[message.length() - 1] == L'\r')))
 				message.erase(message.length() - 1);
 			return message;
 #else /* !_WIN32 */
 			if (systemError == -1)
-				return std::string("Unknown filesystem error");
-			return std::string(std::strerror(systemError));
+				return { LOCAL_CSTR("Unknown filesystem error") };
+			return { (LocalChar*)std::strerror(systemError) };
 #endif /* _WIN32 */
 		};
 
-	return '\'' + path.string() + "': " + getSystemMessage(systemErrorCode);
+	return LOCAL_CHAR('\'') + toLocalString(path) + LOCAL_CSTR("': ") + getSystemMessage(systemErrorCode);
 }
 
-// std::string makeErrorMessage(const std::filesystem::path& path, const char* message)
-// {
-// 	return '\'' + path.string() + "': " + std::string(message ? message : "");
-// }
+LocalString makeErrorMessage(const std::filesystem::path& path, const LocalChar* message)
+{
+	return LOCAL_CHAR('\'') + toLocalString(path) + LOCAL_CSTR("': ") + LocalString(message ? message : LOCAL_CSTR(""));
+}
 
-// std::string makeErrorMessage(const std::filesystem::path& path, const std::string& message)
-// {
-// 	return '\'' + path.string() + "': " + message;
-// }
+LocalString makeErrorMessage(const std::filesystem::path& path, const LocalString& message)
+{
+	return LOCAL_CHAR('\'') + toLocalString(path) + LOCAL_CSTR("': ") + message;
+}
 
 } // namespace filesystem
