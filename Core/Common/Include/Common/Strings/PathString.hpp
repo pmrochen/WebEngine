@@ -5,11 +5,11 @@
 
 #pragma once
 
-#ifndef PATH_WIDE
+#ifndef PATH_STRING_WIDE
 #ifdef _WIN32
-#define PATH_WIDE 1
+#define PATH_STRING_WIDE 1
 #else
-#define PATH_WIDE 0
+#define PATH_STRING_WIDE 0
 #endif
 #endif
 
@@ -19,16 +19,24 @@ namespace common {
 
 //using namespace std::literals::string_literals;
 
-#if PATH_WIDE
-using PathString = std::wstring;
+#if PATH_STRING_WIDE
+
 using PathChar = wchar_t;
+using PathString = std::wstring;
+
+#define	PATH_CHAR(q) L##q
 #define	PATH_CSTR(q) L##q
 #define	PATH_STRING(q) L##q##s
-#else
-using PathString = std::string;
+
+#else /* !PATH_STRING_WIDE */
+
 using PathChar = char;
+using PathString = std::string;
+
+#define	PATH_CHAR(q) q
 #define	PATH_CSTR(q) q
 #define	PATH_STRING(q) q##s
-#endif
+
+#endif /* PATH_STRING_WIDE */
 
 } // namespace common
