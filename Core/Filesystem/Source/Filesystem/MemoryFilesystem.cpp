@@ -142,8 +142,9 @@ long long MemoryFileSystem::seek(VirtualFileSystem::IFile* file, long long offse
 			break;
 	}
 
+	//newPointer = std::max(newPointer, 0ll);
 	if (newPointer < 0ll) 
-		newPointer = 0ll; //throw FilesystemException(memoryFile->path, FilesystemError::INVALID_OFFSET);
+		throw FilesystemException(memoryFile->path, FilesystemError::INVALID_OFFSET);
 
 	memoryFile->pointer = newPointer;
 	return newPointer;
