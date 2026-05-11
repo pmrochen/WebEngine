@@ -5,8 +5,6 @@
 
 #pragma once
 
-//#include <type_traits>
-//#include <concepts>
 #include <memory>
 #include <utility>
 #include <string>
@@ -40,10 +38,10 @@ public:
 	virtual ~VirtualFilesystem();
 
 	static std::pair<PathString, std::filesystem::path> decompose(const PathString& uri);
-	static VirtualFilesystem* getDefault() { return defaultFilesystem_; }
-	void makeDefault() { defaultFilesystem_ = this; }
+	static VirtualFilesystem* getDefault() noexcept { return defaultFilesystem_; }
+	void makeDefault() noexcept { defaultFilesystem_ = this; }
 	static VirtualFilesystem* find(const PathString& protocol);
-	const PathString& getProtocolName() const { return protocol_; }
+	const PathString& getProtocolName() const noexcept { return protocol_; }
 	
 	virtual const std::filesystem::path& getWorkingDirectory() const noexcept;
 	virtual bool exists(const std::filesystem::path& path);
