@@ -15,30 +15,30 @@ namespace filesystem {
 class FilesystemException : public std::filesystem::filesystem_error
 {
 public:
-	FileSystemException() = default;
+	FilesystemException() = default;
 
-	FileSystemException(const std::filesystem::path& path, FilesystemError cause = FilesystemError::GENERIC) noexcept :
+	FilesystemException(const std::filesystem::path& path, FilesystemError cause = FilesystemError::GENERIC) noexcept :
 		std::filesystem::filesystem_error(makeErrorMessage(path, cause), path, { getSystemErrorCode(cause), std::system_category{} }),
 		cause_(cause)//,
 		//message_()
 	{
 	}
 
-	FileSystemException(const std::filesystem::path& path, int systemErrorCode) noexcept :
+	FilesystemException(const std::filesystem::path& path, int systemErrorCode) noexcept :
 		std::filesystem::filesystem_error(makeErrorMessage(path, systemErrorCode), path, { systemErrorCode, std::system_category{} }),
 		cause_(FilesystemError::GENERIC)//,
 		//message_()
 	{
 	}
 
-	// FileSystemException(const std::filesystem::path& path, const char* message) noexcept :
+	// FilesystemException(const std::filesystem::path& path, const char* message) noexcept :
 	// 	std::filesystem::filesystem_error(makeErrorMessage(path, message), path, {}),
 	// 	cause_(),
 	// 	message_(message ? message : "")
 	// {
 	// }
 
-	// FileSystemException(const std::filesystem::path& path, const std::string& message) noexcept :
+	// FilesystemException(const std::filesystem::path& path, const std::string& message) noexcept :
 	// 	std::filesystem::filesystem_error(makeErrorMessage(path, message), path, {}),
 	// 	cause_(),
 	// 	message_(message)
