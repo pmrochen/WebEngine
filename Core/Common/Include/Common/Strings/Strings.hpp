@@ -7,3 +7,4 @@
 
 #include "NameString.hpp"
 #include "PathString.hpp"
+#include "LocalString.hpp"

@@ -24,6 +24,7 @@ set(COMMON_HEADERS
 	Inlude/Common/Collections/ObservableSequentialCollection.hpp
 	Inlude/Common/Collections/ObservableVector.hpp
 	Inlude/Common/Collections/UnorderedVector.hpp
+	Inlude/Common/Strings/LocalString.hpp
 	Inlude/Common/Strings/NameString.hpp
 	Inlude/Common/Strings/PathString.hpp
 	Inlude/Common/Strings/Strings.hpp
