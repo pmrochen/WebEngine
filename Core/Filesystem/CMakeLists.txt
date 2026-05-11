@@ -21,6 +21,9 @@ add_library(${FILESYSTEM_LIB_NAME} STATIC)
 target_sources(${FILESYSTEM_LIB_NAME}
 	PRIVATE
 		Source/Filesystem/FilesystemError.cpp
+		Source/Filesystem/LowLevelFilesystem.cpp
+		Source/Filesystem/MemoryFilesystem.cpp
+		Source/Filesystem/NativeFilesystem.cpp
 		Source/Filesystem/VirtualFilesystem.cpp
 
 	PUBLIC
@@ -29,11 +32,15 @@ target_sources(${FILESYSTEM_LIB_NAME}
 		BASE_DIRS Source
     	FILES
 			Source/Filesystem/Endianness.hpp
+			Source/Filesystem/FileDataException.hpp
 			Source/Filesystem/FileAccessFlags.hpp
 			Source/Filesystem/FileOpenMode.hpp
 			Source/Filesystem/Filesystem.hpp
 			Source/Filesystem/FilesystemError.hpp
 			Source/Filesystem/FilesystemException.hpp
+			Source/Filesystem/LowLevelFilesystem.hpp
+			Source/Filesystem/MemoryFilesystem.hpp
+			Source/Filesystem/NativeFilesystem.hpp
 			Source/Filesystem/Path.hpp
 			Source/Filesystem/SeekOrigin.hpp
 			Source/Filesystem/VirtualFilesystem.hpp
