@@ -11,7 +11,7 @@
 #include <utility>
 #include <string>
 #include <unordered_map>
-//#include <filesystem>
+#include <filesystem>
 #include <cstddef>
 #include <Common/Strings/PathString.hpp>
 #include "FileOpenMode.hpp"
@@ -24,36 +24,47 @@ using common::PathString;
 class VirtualFilesystem : public std::enable_shared_from_this<VirtualFilesystem>
 {
 public:
-	using Handle = void*;
 	using OffsetType = long long;
 	using SizeType = std::size_t;
 
-	VirtualFilesystem(const PathString& name) : name_(name) {}
+	class IFile
+	{
+	public:
+		virtual const std::filesystem::path& getPath() const noexcept = 0;
+
+	protected:
+		~IFile() = default;
+	};
+
+	VirtualFilesystem(const PathString& protocol) : protocol_(protocol) {}
 	virtual ~VirtualFilesystem();
 
-	static std::pair<PathString, PathString> decompose(const PathString& uri);
+	static std::pair<PathString, std::filesystem::path> decompose(const PathString& uri);
 	static VirtualFilesystem* getDefault() { return defaultFilesystem_; }
 	void makeDefault() { defaultFilesystem_ = this; }
-	static VirtualFilesystem* find(const PathString& name);
-	const PathString& getName() const { return name_; }
-	virtual bool exists(const PathString& path);
-	virtual Handle open(const PathString& path, FileOpenMode mode); // throw (FilesystemException);
-	virtual void close(Handle handle);
-	virtual long long getSize(Handle handle);
-	virtual bool canSetSize(Handle handle);
-	virtual void setSize(Handle handle, long long size); // throw (FilesystemException);
-	virtual long long tell(Handle handle);
-	virtual bool canSeek(Handle handle);
-	virtual long long seek(Handle handle, long long offset, SeekOrigin origin); // throw (FilesystemException);
-	virtual bool canRead(Handle handle);
-	virtual std::size_t read(Handle handle, void* buffer, std::size_t size); // throw (FilesystemException);
-	virtual bool canWrite(Handle handle);
-	virtual void write(Handle handle, const void* buffer, std::size_t size); // throw (FilesystemException);
-	virtual void flush(Handle handle); // throw (FilesystemException);
-	virtual bool canMap(Handle handle);
-	virtual void* map(Handle handle, long long offset, std::size_t size); // throw (FilesystemException);
-	virtual void unmap(Handle handle, void* ptr);
-	virtual void synchronize(Handle handle, void* ptr, std::size_t size); // throw (FilesystemException);
+	static VirtualFilesystem* find(const PathString& protocol);
+	const PathString& getProtocolName() const { return protocol_; }
+	
+	virtual const std::filesystem::path& getWorkingDirectory() const noexcept;
+	virtual bool exists(const std::filesystem::path& path);
+	virtual IFile* open(const std::filesystem::path& path, FileOpenMode mode); // throw (FilesystemException);
+	virtual void close(IFile* file);
+	virtual long long getSize(IFile* file);
+	virtual bool canSetSize(IFile* file);
+	virtual void setSize(IFile* file, long long size); // throw (FilesystemException);
+	virtual long long tell(IFile* file);
+	virtual bool canSeek(IFile* file);
+	virtual long long seek(IFile* file, long long offset, SeekOrigin origin); // throw (FilesystemException);
+	virtual bool canRead(IFile* file);
+	virtual std::size_t tryRead(IFile* file, void* buffer, std::size_t size); // throw (FilesystemException);
+	virtual void read(IFile* file, void* buffer, std::size_t size); // throw (FilesystemException);
+	virtual bool canWrite(IFile* file);
+	virtual void write(IFile* file, const void* buffer, std::size_t size); // throw (FilesystemException);
+	virtual void flush(IFile* file); // throw (FilesystemException);
+	virtual bool canMap(IFile* file);
+	virtual void* map(IFile* file, long long offset, std::size_t size); // throw (FilesystemException);
+	virtual void unmap(IFile* file, void* ptr);
+	virtual void synchronize(IFile* file, void* ptr, std::size_t size); // throw (FilesystemException);
 
 protected:
 	void registerProtocol();
@@ -63,12 +74,10 @@ private:
 	VirtualFilesystem(const VirtualFilesystem& filesystem) = delete;
 	VirtualFilesystem& operator=(const VirtualFilesystem& filesystem) = delete;
 
-	using PathStringVirtualFilesystemMap = std::unordered_map<PathString, VirtualFilesystem*>;
-
 	static VirtualFilesystem* defaultFilesystem_;
-	static PathStringVirtualFilesystemMap filesystemRegistry_;
+	static std::unordered_map<PathString, VirtualFilesystem*> filesystemRegistry_;
 
-	PathString name_;
+	PathString protocol_;
 };
 
 } // namespace filesystem

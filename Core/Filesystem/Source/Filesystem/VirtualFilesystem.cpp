@@ -11,7 +11,6 @@
 #endif
 #include "MemoryFilesystem.hpp"
 
-namespace filesystem {
 namespace {
 
 #ifdef _WIN32
@@ -23,8 +22,10 @@ MemoryFilesystem defaultMemoryVfs({}, (void*)nullptr, ~(std::size_t)0);
 
 } // anonymous namespace
 
+namespace filesystem {
+
 /*static*/ VirtualFilesystem* VirtualFilesystem::defaultFilesystem_ = &defaultFileVfs;
-/*static*/ VirtualFilesystem::PathStringVirtualFilesystemMap VirtualFilesystem::filesystemRegistry_;
+/*static*/ std::unordered_map<PathString, VirtualFilesystem*> VirtualFilesystem::filesystemRegistry_;
 
 VirtualFilesystem::~VirtualFilesystem()
 {
@@ -34,65 +35,70 @@ VirtualFilesystem::~VirtualFilesystem()
 		defaultFilesystem_ = &defaultFileVfs;
 }
 
-/*static*/ std::pair<PathString, PathString> VirtualFilesystem::decompose(const PathString& uri)
+/*static*/ std::pair<PathString, std::filesystem::path> VirtualFilesystem::decompose(const PathString& uri)
 {
-	std::size_t colonPos = uri.find(PATH_CSTR(':'));
+	std::size_t colonPos = uri.find(PATH_CHAR(':'));
 	if ((colonPos != std::string::npos) && (colonPos > 1))
 	{
-		std::string protocol(uri, 0, colonPos);
-		std::string fileName(uri, colonPos + 1, uri.length() - colonPos - 1);
-		if (!fileName.empty() && ((fileName[0] == '/') || (fileName[0] == '\\'))) 
+		PathString protocol(uri, 0, colonPos);
+		PathString fileName(uri, colonPos + 1, uri.length() - colonPos - 1);
+		if (!fileName.empty() && ((fileName[0] == PATH_CHAR('/')) || (fileName[0] == PATH_CHAR('\\')))) 
 			fileName.erase(0, 1);
-		if (!fileName.empty() && ((fileName[0] == '/') || (fileName[0] == '\\'))) 
+		if (!fileName.empty() && ((fileName[0] == PATH_CHAR('/')) || (fileName[0] == PATH_CHAR('\\')))) 
 			fileName.erase(0, 1);
-		return { protocol, fileName };
+		return { protocol, { fileName } };
 	}
 	else
 	{
-		return { {}, uri };
+		return { {}, { uri } };
 	}
 }
 
-/*static*/ VirtualFilesystem* VirtualFilesystem::find(const PathString& name)
+/*static*/ VirtualFilesystem* VirtualFilesystem::find(const PathString& protocol)
 {
-	if (name.length() > 1)
+	if (protocol.length() > 1)
 	{
-		if (name == PATH_CSTR("file"))
+		if (protocol == PATH_CSTR("file"))
 		{
 			return &defaultFileVfs;
 		}
-		else if (name == PATH_CSTR("mem"))
+		else if (protocol == PATH_CSTR("mem"))
 		{
 			return &defaultMemoryVfs;
 		}
 		else
 		{
-			auto iVirtualFilesystem = filesystemRegistry_.find(name);
-			if (iVirtualFilesystem != filesystemRegistry_.end())
-				return iVirtualFilesystem->second;
-			else
-				return nullptr;
+			auto iVirtualFilesystem = filesystemRegistry_.find(protocol);
+			return (iVirtualFilesystem != filesystemRegistry_.end()) ?
+				iVirtualFilesystem->second :
+				nullptr;
 		}
 	}
 
 	return defaultFilesystem_;
 }
 
-bool VirtualFilesystem::exists(const PathString& path)
+const std::filesystem::path& VirtualFilesystem::getWorkingDirectory() const
+{
+	static const std::filesystem::path empty;
+	return empty;
+}
+
+bool VirtualFilesystem::exists(const std::filesystem::path& path)
 {
 	return false;
 }
 
-VirtualFilesystem::Handle VirtualFilesystem::open(const PathString& path, FileOpenMode mode)
+VirtualFilesystem::IFile* VirtualFilesystem::open(const std::filesystem::path& path, FileOpenMode mode)
 {
 	throw FilesystemException(path, FilesystemError::NOT_SUPPORTED);
 }
 
-void VirtualFilesystem::close(Handle handle)
+void VirtualFilesystem::close(VirtualFilesystem::IFile* file)
 {
 }
 
-long long VirtualFilesystem::getSize(Handle handle)
+long long VirtualFilesystem::getSize(VirtualFilesystem::IFile* file)
 {
 	try
 	{
@@ -108,96 +114,100 @@ long long VirtualFilesystem::getSize(Handle handle)
 	}
 }
 
-bool VirtualFilesystem::canSetSize(Handle handle)
+bool VirtualFilesystem::canSetSize(VirtualFilesystem::IFile* file)
 {
 	return false;
 }
 
-void VirtualFilesystem::setSize(Handle handle, long long size)
+void VirtualFilesystem::setSize(VirtualFilesystem::IFile* file, long long size)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
-long long VirtualFilesystem::tell(Handle handle)
+long long VirtualFilesystem::tell(VirtualFilesystem::IFile* file)
 {
 	return 0ll;
 }
 
-bool VirtualFilesystem::canSeek(Handle handle)
+bool VirtualFilesystem::canSeek(VirtualFilesystem::IFile* file)
 {
 	return false;
 }
 
-long long VirtualFilesystem::seek(Handle handle, long long offset, SeekOrigin origin)
+long long VirtualFilesystem::seek(VirtualFilesystem::IFile* file, long long offset, SeekOrigin origin)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
-	//return 0ll;
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
-bool VirtualFilesystem::canRead(Handle handle)
+bool VirtualFilesystem::canRead(VirtualFilesystem::IFile* file)
 {
 	return false;
 }
 
-std::size_t VirtualFilesystem::read(Handle handle, void* buffer, std::size_t size)
+std::size_t VirtualFilesystem::tryRead(VirtualFilesystem::IFile* file, void* buffer, std::size_t size)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
-	//return 0u;
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
-bool VirtualFilesystem::canWrite(Handle handle)
+void VirtualFilesystem::read(VirtualFilesystem::IFile* file, void* buffer, std::size_t size)
+{
+	if (tryRead(file, buffer, size) != size)
+		throw FilesystemException(file->getPath(), FilesystemError::END_OF_FILE);
+}
+
+bool VirtualFilesystem::canWrite(VirtualFilesystem::IFile* file)
 {
 	return false;
 }
 
-void VirtualFilesystem::write(Handle handle, const void* buffer, std::size_t size)
+void VirtualFilesystem::write(VirtualFilesystem::IFile* file, const void* buffer, std::size_t size)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
 
-void VirtualFilesystem::flush(Handle handle)
+void VirtualFilesystem::flush(VirtualFilesystem::IFile* file)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
-bool VirtualFilesystem::canMap(Handle handle)
+bool VirtualFilesystem::canMap(VirtualFilesystem::IFile* file)
 {
 	return false;
 }
 
-void* VirtualFilesystem::map(Handle handle, long long offset, std::size_t size)
+void* VirtualFilesystem::map(VirtualFilesystem::IFile* file, long long offset, std::size_t size)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
-void VirtualFilesystem::unmap(Handle handle, void* ptr)
+void VirtualFilesystem::unmap(VirtualFilesystem::IFile* file, void* ptr)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
-void VirtualFilesystem::synchronize(Handle handle, void* ptr, std::size_t size)
+void VirtualFilesystem::synchronize(VirtualFilesystem::IFile* file, void* ptr, std::size_t size)
 {
-	throw FilesystemException({}, FilesystemError::NOT_SUPPORTED);
+	throw FilesystemException(file->getPath(), FilesystemError::NOT_SUPPORTED);
 }
 
 void VirtualFilesystem::registerProtocol()
 {
-	if ((this != &defaultFileVfs) && (this != &defaultMemoryVfs) && (name_.length() > 1) &&
-		(name_ != PATH_CSTR("file")) && (name_ != PATH_CSTR("mem")))
+	if ((this != &defaultFileVfs) && (this != &defaultMemoryVfs) && (protocol_.length() > 1) &&
+		(protocol_ != PATH_CSTR("file")) && (protocol_ != PATH_CSTR("mem")))
 	{
-		auto iVirtualFilesystem = filesystemRegistry_.find(name_);
+		auto iVirtualFilesystem = filesystemRegistry_.find(protocol_);
 		if (iVirtualFilesystem != filesystemRegistry_.end())
 			iVirtualFilesystem->second = this;
 		else
-			filesystemRegistry_.insert(PathStringVirtualFilesystemMap::value_type(name_, this));
+			filesystemRegistry_.insert({ protocol_, this });
 	}
 }
 
 void VirtualFilesystem::unregisterProtocol()
 {
-	if ((this != &defaultFileVfs) && (this != &defaultMemoryVfs) && (name_.length() > 1) &&
-		(name_ != PATH_CSTR("file")) && (name_ != PATH_CSTR("mem")))
+	if ((this != &defaultFileVfs) && (this != &defaultMemoryVfs) && (protocol_.length() > 1) &&
+		(protocol_ != PATH_CSTR("file")) && (protocol_ != PATH_CSTR("mem")))
 	{
 		for (auto iVirtualFilesystem = filesystemRegistry_.begin(); 
 			iVirtualFilesystem != filesystemRegistry_.end(); ++iVirtualFilesystem)
