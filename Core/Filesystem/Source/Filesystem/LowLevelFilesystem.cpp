@@ -220,7 +220,7 @@ long long LowLevelFilesystem::seek(VirtualFileSystem::IFile* file, long long off
 {
 	LowLevelFile* lowLevelFile = static_cast<LowLevelFile*>(file);
 
-	long long pos = ::_lseeki64(lowLevelFile->handle, offset, origin);
+	long long pos = ::_lseeki64(lowLevelFile->handle, offset, (int)origin);
 	if (pos == -1ll)
 	{
 		switch (errno)

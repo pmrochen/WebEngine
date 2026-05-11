@@ -174,7 +174,7 @@ long long NativeFilesystem::seek(VirtualFileSystem::IFile* file, long long offse
 	LARGE_INTEGER offs, pointer;
 	offs.QuadPart = offset;
 	pointer.QuadPart = 0ll;
-	if (!SetFilePointerEx((HANDLE)nativeFile->handle, offs, &pointer, origin))
+	if (!SetFilePointerEx((HANDLE)nativeFile->handle, offs, &pointer, (DWORD)origin))
 		throw FilesystemException(nativeFile->path, (int)GetLastError());
 
 	return pointer.QuadPart;
