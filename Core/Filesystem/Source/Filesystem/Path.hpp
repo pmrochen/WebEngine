@@ -10,6 +10,7 @@
 #include <string>
 #include <filesystem>
 #include <Common/Strings/PathString.hpp>
+#include <Common/Strings/LocalString.hpp>
 
 namespace filesystem {
 
@@ -20,6 +21,36 @@ namespace filesystem {
 //concept AnyString = (std::same_as<T, std::string> || std::same_as<T, std::wstring> || std::same_as<T, std::u8string> || std::same_as<T, std::u16string> || std::same_as<T, std::u32string>);
 
 using common::PathString;
+using common::LocalString;
+
+inline PathString toPathString(const std::filesystem::path& path)
+{
+#if PATH_STRING_WIDE
+	return path.wstring();
+#else
+	return path.string();
+#endif
+}
+
+inline PathString toGenericPathString(const std::filesystem::path& path)
+{
+#if PATH_STRING_WIDE
+	return path.generic_wstring();
+#else
+	return path.generic_string();
+#endif
+}
+
+inline LocalString toLocalString(const std::filesystem::path& path) 
+{
+#if LOCAL_STRING_WIDE
+	return path.wstring();
+#elif LOCAL_STRING_UTF8
+	return path.u8string();
+#else
+	return {}/*path.string()*/;
+#endif
+}
 
 namespace detail {
 
@@ -37,24 +68,6 @@ inline std::filesystem::path makePath(const T& source)
 		return std::filesystem::path(source ? source : empty<std::remove_pointer_t<T>>());
 	else
 		return std::filesystem::path(source);
-}
-
-inline PathString toPathString(const std::filesystem::path& path)
-{
-#if PATH_WIDE
-	return path.wstring();
-#else
-	return path.string();
-#endif
-}
-
-inline PathString toGenericPathString(const std::filesystem::path& path)
-{
-#if PATH_WIDE
-	return path.generic_wstring();
-#else
-	return path.generic_string();
-#endif
 }
 
 } // namespace detail
@@ -110,24 +123,24 @@ struct Path
 
 	static PathString getPathRoot(const std::filesystem::path& path)
 	{
-		return detail::toPathString(path.root_path());
+		return toPathString(path.root_path());
 	}
 
 	template<typename T> 
 	static PathString getPathRoot(const T& path)
 	{
-		return detail::toPathString(detail::makePath(path).root_path());
+		return toPathString(detail::makePath(path).root_path());
 	}
 
 	static PathString getParentPath(const std::filesystem::path& path)
 	{
-		return detail::toPathString(path.parent_path());
+		return toPathString(path.parent_path());
 	}
 
 	template<typename T> 
 	static PathString getParentPath(const T& path)
 	{
-		return detail::toPathString(detail::makePath(path).parent_path());
+		return toPathString(detail::makePath(path).parent_path());
 	}
 
 	static PathString getDirectoryName(const std::filesystem::path& path)
@@ -143,24 +156,24 @@ struct Path
 
 	static PathString getFileName(const std::filesystem::path& path)
 	{
-		return detail::toPathString(path.filename());
+		return toPathString(path.filename());
 	}
 
 	template<typename T> 
 	static PathString getFileName(const T& path)
 	{
-		return detail::toPathString(detail::makePath(path).filename());
+		return toPathString(detail::makePath(path).filename());
 	}
 
 	static PathString getFileNameWithoutExtension(const std::filesystem::path& path)
 	{
-		return detail::toPathString(path.stem());
+		return toPathString(path.stem());
 	}
 
 	template<typename T> 
 	static PathString getFileNameWithoutExtension(const T& path)
 	{
-		return detail::toPathString(detail::makePath(path).stem());
+		return toPathString(detail::makePath(path).stem());
 	}
 
 	static bool Path::hasExtension(const std::filesystem::path& path)
@@ -176,42 +189,42 @@ struct Path
 
 	static PathString getExtension(const std::filesystem::path& path)
 	{
-		return detail::toPathString(path.extension());
+		return toPathString(path.extension());
 	}
 
 	template<typename T> 
 	static PathString getExtension(const T& path)
 	{
-		return detail::toPathString(detail::makePath(path).extension());
+		return toPathString(detail::makePath(path).extension());
 	}
 
 	template<typename T> 
 	static PathString changeExtension(const std::filesystem::path& path, const T& ext)
 	{
 		if constexpr (std::is_pointer_v<T>)
-			return detail::toPathString(path.replace_extension(ext ? ext : detail::empty<std::remove_pointer_t<T>>()));
+			return toPathString(path.replace_extension(ext ? ext : detail::empty<std::remove_pointer_t<T>>()));
 		else
-			return detail::toPathString(path.replace_extension(ext));
+			return toPathString(path.replace_extension(ext));
 	}
 
 	template<typename T> 
 	static PathString changeExtension(const T& path, const T& ext)
 	{
 		if constexpr (std::is_pointer_v<T>)
-			return detail::toPathString(detail::makePath(path).replace_extension(ext ? ext : detail::empty<std::remove_pointer_t<T>>()));
+			return toPathString(detail::makePath(path).replace_extension(ext ? ext : detail::empty<std::remove_pointer_t<T>>()));
 		else
-			return detail::toPathString(detail::makePath(path).replace_extension(ext));
+			return toPathString(detail::makePath(path).replace_extension(ext));
 	}
 
 	static PathString getUniversalPath(const std::filesystem::path& path)
 	{
-		return detail::toGenericPathString(path);
+		return toGenericPathString(path);
 	}
 
 	template<typename T> 
 	static PathString getUniversalPath(const T& path)
 	{
-		return detail::toGenericPathString(detail::makePath(path));
+		return toGenericPathString(detail::makePath(path));
 	}
 };
 
