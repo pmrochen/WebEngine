@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "Endianness.hpp"
 #include "FileAccessFlags.hpp"
 #include "FileOpenMode.hpp"
 #include "SeekOrigin.hpp"
@@ -24,4 +23,3 @@
 #include "BufferedFile.hpp"
 //#include "InputArchive.hpp"
 //#include "OutputArchive.hpp"
-//#include "LogStreamBuffer.hpp"

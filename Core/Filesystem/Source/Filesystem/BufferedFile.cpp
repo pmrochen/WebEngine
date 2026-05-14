@@ -9,10 +9,6 @@
 #include <windows.h>
 #endif /* _WIN32 */
 
-#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64))
-#include <intrin.h> // for _byteswap_xxx
-#endif
-
 #include <cstring>
 #include <cstdlib>
 #include <cstdint>
@@ -21,27 +17,14 @@
 #include <vector>
 #include <algorithm>
 #include <bit>
-#include "Endianness.hpp"
+#include <Common/Endianness.hpp>
 #include "BufferedFile.hpp"
 
-namespace {
-
-#if defined(__clang__) || defined(__GNUC__)
-inline std::uint16_t bswapw(std::uint16_t x) noexcept { return __builtin_bswap16(x); }
-//inline std::uint32_t bswapd(std::uint32_t x) noexcept { return __builtin_bswap32(x); }
-#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64))
-inline std::uint16_t bswapw(std::uint16_t x) noexcept { return _byteswap_ushort(x); }
-//inline std::uint32_t bswapd(std::uint32_t x) noexcept { return _byteswap_ulong(x); }
-#else
-inline std::uint16_t bswapw(std::uint16_t x) noexcept { return (x << 8) | (x >> 8); }
-//inline std::uint32_t bswapd(std::uint32_t x) noexcept { return (x << 24) | ((x & 0xFF00) << 8) | ((x >> 8) & 0xFF00) | (x >> 24); }
-#endif
-
-inline wchar_t bswap(wchar_t x) noexcept { return (wchar_t)bswapw((std::uint16_t)x); }
-
-} // anonymous namespace
-
 namespace filesystem {
+
+using common::Endianness;
+using common::endianness;
+using common::bswap;
 
 BufferedFile::BufferedFile(const PathChar* uri, FileOpenMode mode) :
 File(uri, (mode | FileOpenMode::SEQUENTIAL_SCAN) & ~FileOpenMode::RANDOM_ACCESS)

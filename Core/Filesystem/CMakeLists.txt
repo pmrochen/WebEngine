@@ -34,7 +34,6 @@ target_sources(${FILESYSTEM_LIB_NAME}
 		BASE_DIRS Source
     	FILES
 			Source/Filesystem/BufferedFile.hpp
-			Source/Filesystem/Endianness.hpp
 			Source/Filesystem/File.hpp
 			Source/Filesystem/FileDataException.hpp
 			Source/Filesystem/FileAccessFlags.hpp
