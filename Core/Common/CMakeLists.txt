@@ -28,6 +28,8 @@ set(COMMON_HEADERS
 	Inlude/Common/Strings/NameString.hpp
 	Inlude/Common/Strings/PathString.hpp
 	Inlude/Common/Strings/Strings.hpp
+	Inlude/Common/Endianness.hpp
+	Inlude/Common/StreamCaptureBuffer.hpp
 )
 
 target_sources(${COMMON_LIB_NAME}
