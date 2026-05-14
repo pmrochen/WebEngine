@@ -64,9 +64,9 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Geometry/VertexAttributeTypes.hpp
 			Source/Graphics/Geometry/VertexDataType.hpp
 			Source/Graphics/Geometry/VertexLayout.hpp
-			Source/Graphics/HardwareInterface/ResourceTypes.hpp
-			Source/Graphics/HardwareInterface/ResourceStorageFlags.hpp
-			Source/Graphics/HardwareInterface/VertexStorageFlags.hpp
+			Source/Graphics/Backend/ResourceTypes.hpp
+			Source/Graphics/Backend/ResourceStorageFlags.hpp
+			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Rasterization/AttributeMask.hpp
 			Source/Graphics/Rasterization/BlendEquation.hpp
 			Source/Graphics/Rasterization/BlendFunction.hpp
