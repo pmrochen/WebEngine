@@ -74,8 +74,10 @@ VirtualFilesystem::~VirtualFilesystem()
 				nullptr;
 		}
 	}
-
-	return defaultFilesystem_;
+	else
+	{
+		return defaultFilesystem_;
+	}
 }
 
 const std::filesystem::path& VirtualFilesystem::getWorkingDirectory() const

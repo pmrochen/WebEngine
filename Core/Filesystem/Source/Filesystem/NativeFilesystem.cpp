@@ -9,6 +9,7 @@
 #include <windows.h>
 //#include <intsafe.h>
 #endif /* _WIN32 */
+
 #include <limits>
 #include "FilesystemError.hpp"
 #include "FilesystemException.hpp"
