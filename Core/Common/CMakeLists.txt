@@ -16,20 +16,28 @@ project(Common
 
 set(COMMON_LIB_NAME Common)
 
+add_subdirectory(observable_unique_ptr)
+add_subdirectory(intrusive_shared_ptr)
+add_subdirectory(sigslot)
+
 add_library(${COMMON_LIB_NAME} INTERFACE)
 
+target_link_libraries(${COMMON_LIB_NAME} INTERFACE oup::oup)
+target_link_libraries(${COMMON_LIB_NAME} INTERFACE isptr::isptr)
+target_link_libraries(${COMMON_LIB_NAME} INTERFACE Pal::Sigslot)
+
 set(COMMON_HEADERS
-	Inlude/Common/Collections/ComponentVector.hpp
-	Inlude/Common/Collections/Hash.inl
-	Inlude/Common/Collections/ObservableSequentialCollection.hpp
-	Inlude/Common/Collections/ObservableVector.hpp
-	Inlude/Common/Collections/UnorderedVector.hpp
-	Inlude/Common/Strings/LocalString.hpp
-	Inlude/Common/Strings/NameString.hpp
-	Inlude/Common/Strings/PathString.hpp
-	Inlude/Common/Strings/Strings.hpp
-	Inlude/Common/Endianness.hpp
-	Inlude/Common/StreamCaptureBuffer.hpp
+	Include/Common/Collections/ComponentVector.hpp
+	Include/Common/Collections/Hash.inl
+	Include/Common/Collections/ObservableSequentialCollection.hpp
+	Include/Common/Collections/ObservableVector.hpp
+	Include/Common/Collections/UnorderedVector.hpp
+	Include/Common/Strings/LocalString.hpp
+	Include/Common/Strings/NameString.hpp
+	Include/Common/Strings/PathString.hpp
+	Include/Common/Strings/Strings.hpp
+	Include/Common/Endianness.hpp
+	Include/Common/StreamCaptureBuffer.hpp
 )
 
 target_sources(${COMMON_LIB_NAME}
