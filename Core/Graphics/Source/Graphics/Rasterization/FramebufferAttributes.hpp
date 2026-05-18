@@ -26,15 +26,20 @@ struct FramebufferAttributes
 	static constexpr int MAX_COLOR_FORMAT_COUNT = 8;
 
 	FramebufferAttributes() noexcept :
-		//width(0),
-		//height(0)
+		depthStencilFormat(DepthStencilFormat::UNSPECIFIED),
+		multisampleMode(MultisampleMode::NONE)
+	{
+	}
+
+	explicit FramebufferAttributes(MultisampleMode multisampleMode) noexcept :
+		depthStencilFormat(DepthStencilFormat::UNSPECIFIED),
+		multisampleMode(multisampleMode)
 	{
 	}
 	
 	FramebufferAttributes(/*int width, int height,*/ PixelFormat colorFormat, ColorSpace colorSpace,
 		DepthStencilFormat depthStencilFormat, MultisampleMode multisampleMode) noexcept :
-		//width(width),
-		//height(height),
+		//size(width, height),
 		depthStencilFormat(depthStencilFormat),
 		multisampleMode(multisampleMode)
 	{
@@ -44,8 +49,7 @@ struct FramebufferAttributes
 	
 	FramebufferAttributes(/*int width, int height,*/ int nColorBuffers, PixelFormat colorFormat, ColorSpace colorSpace,
 		DepthStencilFormat depthStencilFormat, MultisampleMode multisampleMode) noexcept :
-		//width(width),
-		//height(height),
+		//size(width, height),
 		depthStencilFormat(depthStencilFormat),
 		multisampleMode(multisampleMode)
 	{
@@ -73,9 +77,9 @@ struct FramebufferAttributes
 		ar(depthStencilFormat, multisampleMode);
 	}
 
-	//int getWidth() const noexcept { return width; }
-	//int getHeight() const noexcept { return height; }
-	//IntVector2 getSize() const noexcept { return IntVector2(width, height); }
+	//int getWidth() const noexcept { return size.x; }
+	//int getHeight() const noexcept { return size.y; }
+	//const Size& getSize() const noexcept { return size; }
 
 	PixelFormat getPixelFormat() const noexcept { return colorFormats[0].getPixelFormat(); }
 	ColorSpace getColorSpace() const noexcept { return colorFormats[0].getColorSpace(); }
@@ -113,8 +117,7 @@ struct FramebufferAttributes
 	bool hasStencilBuffer() const noexcept { return depthStencilFormat.hasStencil(); }
 	MultisampleMode getMultisampleMode() const noexcept { return multisampleMode; }
 
-	//int width;
-	//int height;
+	//Size size;
 	std::array<ColorFormat, MAX_COLOR_FORMAT_COUNT> colorFormats;
 	DepthStencilFormat depthStencilFormat;
 	MultisampleMode multisampleMode;

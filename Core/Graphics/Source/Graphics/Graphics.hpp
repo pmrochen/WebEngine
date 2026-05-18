@@ -52,6 +52,11 @@
 #include "SceneGraph/ViewVolume.hpp"
 #include "SceneGraph/AppearanceOptions.hpp"
 
+#include "Rasterization/Framebuffer.hpp"
+#include "Backend/ResourceManager.hpp"
+#include "Backend/ComputeEngine.hpp"
+#include "Backend/Renderer.hpp"
+#include "Backend/SwapChain.hpp"
 //#include "Geometry/Mesh.hpp"
 //#include "Shading/Material.hpp"
 //#include "Animation/FCurve.hpp"

@@ -50,12 +50,12 @@ struct VertexLayout
 		stride = 0;
 	}
 
-	const VertexAttribute& getAttribute(int index) const noexcept 
+	const VertexAttributeInfo& getAttribute(int index) const noexcept 
 	{ 
-		return ((std::size_t)index < (std::size_t)MAX_ATTRIBUTE_COUNT) ? attributes[index] : VertexAttribute::getEmpty();
+		return ((std::size_t)index < (std::size_t)MAX_ATTRIBUTE_COUNT) ? attributes[index] : VertexAttributeInfo::getEmpty();
 	}
 
-	void setAttribute(int index, const VertexAttribute& attribute) // throw (std::out_of_range)
+	void setAttribute(int index, const VertexAttributeInfo& attribute) // throw (std::out_of_range)
 	{
 		if ((std::size_t)index >= (std::size_t)MAX_ATTRIBUTE_COUNT)
 			throw std::out_of_range("VertexLayout::setAttribute() : index");
@@ -92,7 +92,7 @@ struct VertexLayout
 		stride = offset;
 	}
 
-	std::array<VertexAttribute, MAX_ATTRIBUTE_COUNT> attributes;
+	std::array<VertexAttributeInfo, MAX_ATTRIBUTE_COUNT> attributes;
 	unsigned int divisor/*stepRate*/ = 0;	// 0 = per vertex
 	unsigned int stride/*size*/ = 0;		// vertex size
 };

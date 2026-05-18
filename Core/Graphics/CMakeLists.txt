@@ -33,7 +33,11 @@ target_include_directories(${GRAPHICS_LIB_NAME}
 
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
+		#Source/Graphics/Backend/ComputeEngine.cpp
+		#Source/Graphics/Backend/Renderer.cpp
+		#Source/Graphics/Backend/ResourceManager.cpp
 		#Source/Graphics/Geometry/Mesh.cpp
+		Source/Graphics/Rasterization/Framebuffer.cpp
 		#Source/Graphics/SceneGraph/Locator.cpp
 		#Source/Graphics/Shading/Material.cpp
 		MikkTSpace/mikktspace.c
@@ -54,6 +58,13 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Animation/FCurveChannel.hpp
 			Source/Graphics/Animation/FCurveExtrapolationMode.hpp
 			Source/Graphics/Animation/FCurveInterpolationMode.hpp
+			Source/Graphics/Backend/ComputeEngine.hpp
+			Source/Graphics/Backend/Renderer.hpp
+			Source/Graphics/Backend/ResourceManager.hpp
+			Source/Graphics/Backend/ResourceStorageFlags.hpp
+			Source/Graphics/Backend/ResourceTypes.hpp
+			Source/Graphics/Backend/SwapChain.hpp
+			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Geometry/GeometryType.hpp
 			#Source/Graphics/Geometry/Mesh.hpp
 			Source/Graphics/Geometry/PrimitiveTopology.hpp
@@ -64,9 +75,6 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Geometry/VertexAttributeTypes.hpp
 			Source/Graphics/Geometry/VertexDataType.hpp
 			Source/Graphics/Geometry/VertexLayout.hpp
-			Source/Graphics/Backend/ResourceTypes.hpp
-			Source/Graphics/Backend/ResourceStorageFlags.hpp
-			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Rasterization/AttributeMask.hpp
 			Source/Graphics/Rasterization/BlendEquation.hpp
 			Source/Graphics/Rasterization/BlendFunction.hpp
@@ -76,13 +84,14 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Rasterization/ComparisonFunction.hpp
 			Source/Graphics/Rasterization/CullFaceMode.hpp
 			Source/Graphics/Rasterization/DepthMask.hpp
-			Source/Graphics/Rasterization/NdcDepthRange.hpp
 			Source/Graphics/Rasterization/DepthStencilFormat.hpp
+			Source/Graphics/Rasterization/Framebuffer.hpp
 			Source/Graphics/Rasterization/FramebufferAccessMode.hpp
 			Source/Graphics/Rasterization/FramebufferAttributes.hpp
 			Source/Graphics/Rasterization/FramebufferOptions.hpp
 			Source/Graphics/Rasterization/FrontFace.hpp
 			Source/Graphics/Rasterization/MultisampleMode.hpp
+			Source/Graphics/Rasterization/NdcDepthRange.hpp
 			Source/Graphics/Rasterization/PolygonFillMode.hpp
 			Source/Graphics/Rasterization/RasterizerFlags.hpp
 			Source/Graphics/Rasterization/RasterizerState.hpp
