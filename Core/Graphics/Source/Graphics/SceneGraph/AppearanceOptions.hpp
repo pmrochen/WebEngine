@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../Geometry/GeometryType.hpp"
-#include "LightType.hpp"
+#include "LightTypes.hpp"
 
 namespace graphics {
 
@@ -38,8 +38,8 @@ struct AppearanceOptions
 	void setLodBias(int bias) noexcept { lodBias = bias; }
 	float getReferenceZoomFactor() const noexcept { return referenceZoomFactor; }
 	void setReferenceZoomFactor(float factor) noexcept { referenceZoomFactor = factor; }
-	LightType getLightTypeMask() const noexcept { return lightTypeMask; }
-	void setLightTypeMask(LightType mask) noexcept { lightTypeMask = mask; }
+	LightTypes getLightTypeMask() const noexcept { return lightTypeMask; }
+	void setLightTypeMask(LightTypes mask) noexcept { lightTypeMask = mask; }
 	unsigned int getCategoryMask() const noexcept { return categoryMask; }
 	void setCategoryMask(unsigned int mask) noexcept { categoryMask = mask; }
 	unsigned int getLayerMask() const noexcept { return layerMask; }
@@ -78,7 +78,7 @@ struct AppearanceOptions
 	float lodDistanceFactor = 1.f;
 	int lodBias = 0;
 	float referenceZoomFactor = 3.2f;
-	LightType lightTypeMask = LightType::DIRECTIONAL | LightType::POINT | LightType::SPOT;
+	LightTypes lightTypeMask = LightTypes::DIRECTIONAL | LightTypes::POINT | LightTypes::SPOT;
 	unsigned int categoryMask = 0xFFFFu/*~0u*/;
 	unsigned int layerMask = 0xFFFFu;
 	GeometryType geometryType = GeometryType::BASE_GEOMETRY;
