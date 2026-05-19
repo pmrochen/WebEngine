@@ -14,12 +14,12 @@
 #include <utility>
 #include <cstddef>
 #include <cmath>
-#include <Vector2.hpp>
-#include <AffineTransform.hpp>
-#include <Interval.hpp>
-#include <Size.hpp>
-#include <Point.hpp>
-#include <Rectangle.hpp>
+#include <Mathematics/Algebra/Vector2.hpp>
+#include <Mathematics/Transform/AffineTransform.hpp>
+#include <Mathematics/Interval.hpp>
+#include <Imaging/Geometry/Size.hpp>
+#include <Imaging/Geometry/Point.hpp>
+#include <Imaging/Geometry/Rectangle.hpp>
 
 namespace graphics {
 namespace templates {

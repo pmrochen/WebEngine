@@ -6,7 +6,7 @@
 #pragma once
 
 #include <bitwise_enum.hpp>
-#include <ColorMask.hpp>
+#include <Imaging/Color/ColorMask.hpp>
 #include "FrontFace.hpp"
 #include "CullFaceMode.hpp"
 #include "PolygonFillMode.hpp"

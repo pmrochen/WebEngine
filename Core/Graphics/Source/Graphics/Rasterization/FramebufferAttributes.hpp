@@ -10,8 +10,8 @@
 #include <array>
 #include <algorithm>
 #include <cstddef>
-#include <ColorSpace.hpp>
-#include <PixelFormat.hpp>
+#include <Imaging/Color/ColorSpace.hpp>
+#include <Imaging/Pixel/PixelFormat.hpp>
 #include "DepthStencilFormat.hpp"
 #include "MultisampleMode.hpp"
 #include "ColorFormat.hpp"

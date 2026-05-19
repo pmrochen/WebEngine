@@ -13,7 +13,7 @@
 #include <Common/Collections/ObservableVector.hpp>
 #include <Common/Strings/NameString.hpp>
 #include <Mathematics/Constants.hpp>
-#include <Mathematics/Vector2.hpp>
+#include <Mathematics/Algebra/Vector2.hpp>
 #include <Imaging/ColorSpace.hpp>
 #include <Imaging/PixelFormat.hpp>
 //#include <Imaging/ImageInterpolationMode.hpp>

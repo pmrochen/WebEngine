@@ -6,10 +6,10 @@
 #pragma once
 
 #include <oup/observable_unique_ptr.hpp>
-#include <Imaging/ColorSpace.hpp>
-#include <Imaging/PixelFormat.hpp>
-#include <Imaging/Size.hpp>
-//#include <Imaging/Rectangle.hpp>
+#include <Imaging/Color/ColorSpace.hpp>
+#include <Imaging/Pixel/PixelFormat.hpp>
+#include <Imaging/Geometry/Size.hpp>
+//#include <Imaging/Geometry/Rectangle.hpp>
 #include "DepthStencilFormat.hpp"
 #include "MultisampleMode.hpp"
 #include "AttributeMask.hpp"

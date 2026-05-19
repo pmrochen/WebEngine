@@ -8,8 +8,8 @@
 #include <functional>
 #include <cstddef>
 #include <cstdint>
-#include <ColorSpace.hpp>
-#include <PixelFormat.hpp>
+#include <Imaging/Color/ColorSpace.hpp>
+#include <Imaging/Pixel/PixelFormat.hpp>
 
 namespace graphics {
 

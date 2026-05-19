@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Axis.hpp>
+#include <Mathematics/Geometry/Axis.hpp>
 
 namespace graphics {
 

@@ -9,9 +9,9 @@
 #include <functional>
 #include <cstddef>
 #include <cstdint>
-#include <Vector2.hpp>
-#include <Vector3.hpp>
-#include <Vector4.hpp>
+#include <Mathematics/Algebra/Vector2.hpp>
+#include <Mathematics/Algebra/Vector3.hpp>
+#include <Mathematics/Algebra/Vector4.hpp>
 #include "VertexDataType.hpp"
 
 namespace graphics {

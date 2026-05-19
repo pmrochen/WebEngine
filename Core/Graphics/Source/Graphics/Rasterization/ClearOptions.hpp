@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <array>
 #include <algorithm>
-#include <Color4.hpp>
+#include <Imaging/Color/Color4.hpp>
 #include "AttributeMask.hpp"
 
 namespace graphics {
