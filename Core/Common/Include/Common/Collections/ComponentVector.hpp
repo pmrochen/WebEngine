@@ -11,11 +11,12 @@
 #include <vector>
 #include <tuple>
 #include <iterator>
+#include "Concepts.hpp"
 
 namespace common {
 
-template<typename T>
-concept TupleLike = requires { std::tuple_size<T>::value; };
+//template<typename T>
+//concept TupleLike = requires { std::tuple_size<T>::value; };
 
 template<typename T>
 struct ComponentCount : std::integral_constant<std::size_t, 1> {};
@@ -104,6 +105,11 @@ public:
                 // #TODO
             }
         }
+    }
+
+    void set(SizeType pos, std::initializer_list<T> list)
+    {
+        // #TODO
     }
 
     //template<TupleLike U>

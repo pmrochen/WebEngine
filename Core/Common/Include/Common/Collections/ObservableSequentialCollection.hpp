@@ -8,6 +8,7 @@
 #include <concepts>
 #include <initializer_list>
 #include <sigslot/signal.hpp>
+#include "Concepts.hpp"
 
 namespace common {
 namespace detail {
@@ -32,19 +33,19 @@ inline void emit(Signal& signal, Size count, const Value& value)
 
 } // namespace detail
 
-template<typename Container>
+template<Container T>
 class ObservableSequentialCollection
 {
 public:
     using ThisType = ObservableSequentialCollection;
-    using ContainerType = Container;
-    using ValueType = typename Container::value_type;
-    using AllocatorType = typename Container::allocator_type;
-    using ConstReference = typename Container::const_reference;
-    using SizeType = typename Container::size_type;
-    using Iterator = typename Container::iterator;
-    using ConstIterator = typename Container::const_iterator;
-    using Signal = sigslot::signal<typename Container::value_type&>;
+    using ContainerType = T;
+    using ValueType = typename T::value_type;
+    using AllocatorType = typename T::allocator_type;
+    using ConstReference = typename T::const_reference;
+    using SizeType = typename T::size_type;
+    using Iterator = typename T::iterator;
+    using ConstIterator = typename T::const_iterator;
+    using Signal = sigslot::signal<typename T::value_type&>;
 
     ObservableSequentialCollection() noexcept(noexcept(AllocatorType())) : 
 		c_(AllocatorType()) 
@@ -131,7 +132,7 @@ public:
 
 		if (!empty() && onElementRemoved.slot_count())
 		{
-			Container removed(c_.get_allocator());
+			ContainerType removed(c_.get_allocator());
 			c_.swap(removed);
 			detail::emit(onElementRemoved, removed.begin(), removed.end());
 		}
@@ -161,7 +162,7 @@ public:
         return *this;
     }
 
-    ObservableSequentialCollection& operator=(const Container& other)
+    ObservableSequentialCollection& operator=(const ContainerType& other)
     {
 		if (!empty())
 			resize(0);
@@ -172,7 +173,7 @@ public:
         return *this;
     }
 
-    ObservableSequentialCollection& operator=(Container&& other)
+    ObservableSequentialCollection& operator=(ContainerType&& other)
     {
 		if (!empty())
 			resize(0);
@@ -266,7 +267,7 @@ public:
 
 		if (!empty() && onElementRemoved.slot_count())
 		{
-			Container removed(c_.get_allocator());
+			ContainerType removed(c_.get_allocator());
 			c_.swap(removed);
 			detail::emit(onElementRemoved, removed.begin(), removed.end());
 		}
@@ -374,7 +375,7 @@ public:
 			detail::emit(onElementRemoving, first, last);
 			if (onElementRemoved.slot_count())
 			{
-				Container removed(first, last, c_.get_allocator());
+				ContainerType removed(first, last, c_.get_allocator());
 				Iterator result = c_.erase(first, last);
 				detail::emit(onElementRemoved, removed.begin(), removed.end());
 				return result;
@@ -411,7 +412,7 @@ public:
 			detail::emit(onElementRemoving, c_.begin() + count, c_.end());
 			if (onElementRemoved.slot_count())
 			{
-				Container removed(c_.begin() + count, c_.end(), c_.get_allocator());
+				ContainerType removed(c_.begin() + count, c_.end(), c_.get_allocator());
             	c_.resize(count);
 				detail::emit(onElementRemoved, removed.begin(), removed.end());
 			}
@@ -435,7 +436,7 @@ public:
 			detail::emit(onElementRemoving, c_.begin() + count, c_.end());
 			if (onElementRemoved.slot_count())
 			{
-				Container removed(c_.begin() + count, c_.end(), c_.get_allocator());
+				ContainerType removed(c_.begin() + count, c_.end(), c_.get_allocator());
             	c_.resize(count, value);
 				detail::emit(onElementRemoved, removed.begin(), removed.end());
 			}
@@ -464,7 +465,7 @@ public:
         detail::emit(other.onElementAdded, other.c_.begin(), other.c_.end());
     }
 
-    void swap(Container& other)
+    void swap(ContainerType& other)
     {
        	detail::emit(onElementAdding, other.begin(), other.end());
 		detail::emit(onElementRemoving, c_.begin(), c_.end());
@@ -479,7 +480,7 @@ public:
     Signal onElementRemoved;
 
 private:
-    Container c_;
+    ContainerType c_;
 };
 
 } // namespace common
