@@ -27,7 +27,9 @@ target_link_libraries(${COMMON_LIB_NAME} INTERFACE isptr::isptr)
 target_link_libraries(${COMMON_LIB_NAME} INTERFACE Pal::Sigslot)
 
 set(COMMON_HEADERS
+	Include/Common/Collections/Clonable.inl
 	Include/Common/Collections/ComponentVector.hpp
+	Include/Common/Collections/Concepts.hpp
 	Include/Common/Collections/Hash.inl
 	Include/Common/Collections/ObservableSequentialCollection.hpp
 	Include/Common/Collections/ObservableVector.hpp
