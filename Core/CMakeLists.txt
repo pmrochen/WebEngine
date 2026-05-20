@@ -21,6 +21,7 @@ add_subdirectory(Filesystem)
 add_subdirectory(Mathematics)
 add_subdirectory(Imaging)
 add_subdirectory(Graphics)
+add_subdirectory(Physics)
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/Null.cpp "")
 
