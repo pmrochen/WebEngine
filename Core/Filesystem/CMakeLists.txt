@@ -17,6 +17,10 @@ project(Filesystem
 set(FILESYSTEM_LIB_NAME Filesystem)
 
 add_library(${FILESYSTEM_LIB_NAME} STATIC)
+add_library(Core::${FILESYSTEM_LIB_NAME} ALIAS ${FILESYSTEM_LIB_NAME})
+#set_target_properties(${FILESYSTEM_LIB_NAME} PROPERTIES EXPORT_NAME Core::${FILESYSTEM_LIB_NAME})
+
+target_link_libraries(${FILESYSTEM_LIB_NAME} INTERFACE Core::Common)
 
 target_sources(${FILESYSTEM_LIB_NAME}
 	PRIVATE

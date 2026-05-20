@@ -21,6 +21,8 @@ add_subdirectory(intrusive_shared_ptr)
 add_subdirectory(sigslot)
 
 add_library(${COMMON_LIB_NAME} INTERFACE)
+add_library(Core::${COMMON_LIB_NAME} ALIAS ${COMMON_LIB_NAME})
+#set_target_properties(${COMMON_LIB_NAME} PROPERTIES EXPORT_NAME Core::${COMMON_LIB_NAME})
 
 target_link_libraries(${COMMON_LIB_NAME} INTERFACE oup::oup)
 target_link_libraries(${COMMON_LIB_NAME} INTERFACE isptr::isptr)

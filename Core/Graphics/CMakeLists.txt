@@ -22,14 +22,13 @@ if(MSVC)
 endif()
 
 add_library(${GRAPHICS_LIB_NAME} STATIC)
+add_library(Core::${GRAPHICS_LIB_NAME} ALIAS ${GRAPHICS_LIB_NAME})
+#set_target_properties(${GRAPHICS_LIB_NAME} PROPERTIES EXPORT_NAME Core::${GRAPHICS_LIB_NAME})
 
-target_include_directories(${GRAPHICS_LIB_NAME}
-	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Mathematics>
-		$<INSTALL_INTERFACE:../Mathematics>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Imaging>
-		$<INSTALL_INTERFACE:../Imaging>
-)
+target_link_libraries(${GRAPHICS_LIB_NAME} INTERFACE Core::Common)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Filesystem)
+target_link_libraries(${GRAPHICS_LIB_NAME} INTERFACE Core::Mathematics)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Imaging)
 
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
