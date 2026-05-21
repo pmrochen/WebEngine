@@ -31,11 +31,11 @@ struct FramebufferAttributes
 	{
 	}
 
-	explicit FramebufferAttributes(MultisampleMode multisampleMode) noexcept :
-		depthStencilFormat(DepthStencilFormat::UNSPECIFIED),
-		multisampleMode(multisampleMode)
-	{
-	}
+	//explicit FramebufferAttributes(MultisampleMode multisampleMode) noexcept :
+	//	depthStencilFormat(DepthStencilFormat::UNSPECIFIED),
+	//	multisampleMode(multisampleMode)
+	//{
+	//}
 	
 	FramebufferAttributes(/*int width, int height,*/ PixelFormat colorFormat, ColorSpace colorSpace,
 		DepthStencilFormat depthStencilFormat, MultisampleMode multisampleMode) noexcept :

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <algorithm>
+#include <iterator>
 #include "Concepts.hpp"
 
 namespace common::clonable {
@@ -26,9 +28,10 @@ template<Container T>
 	//requires Clonable<typename T::value_type>
 inline T clone(const T& x)
 {
-	T copy(x);
-	for (auto& v : copy)
-		v = clone(v);
+	T copy;
+	copy.reserve(x.size()); // #FIXME Only supporting containers
+	std::transform(x.begin(), x.end(), std::back_inserter(copy),
+        [](const auto& e) /*-> T::value_type* */ { return e ? e->clone() : {}; });
 	return copy;
 }
 

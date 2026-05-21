@@ -5,20 +5,22 @@
 
 #pragma once
 
-#include <memory>
-#include <algorithm>
 #include <vector>
+#include <utility>
+#include <algorithm>
 #include <cstddef>
 #include <oup/observable_unique_ptr.hpp>
+#include <intrusive_shared_ptr/ref_counted.h>
+#include <intrusive_shared_ptr/refcnt_ptr.h>
 #include <Common/Collections/ObservableVector.hpp>
 #include <Common/Strings/NameString.hpp>
 #include <Mathematics/Constants.hpp>
 #include <Mathematics/Algebra/Vector2.hpp>
-#include <Imaging/ColorSpace.hpp>
-#include <Imaging/PixelFormat.hpp>
-//#include <Imaging/ImageInterpolationMode.hpp>
-#include <Imaging/Size.hpp>
-#include <Imaging/Rectangle.hpp>
+#include <Imaging/Color/ColorSpace.hpp>
+#include <Imaging/Pixel/PixelFormat.hpp>
+//#include <Imaging/Sampling/ImageInterpolationMode.hpp>
+#include <Imaging/Geometry/Size.hpp>
+#include <Imaging/Geometry/Rectangle.hpp>
 #include "DepthStencilFormat.hpp"
 #include "MultisampleMode.hpp"
 #include "ClipOrigin.hpp"
@@ -30,7 +32,6 @@
 namespace graphics {
 
 using common::ObservableVector;
-using common::NameChar;
 using common::NameString;
 using mathematics::Constants;
 using mathematics::Vector2;
@@ -40,46 +41,47 @@ using imaging::PixelFormat;
 using imaging::Size;
 using imaging::Rectangle;
 
-class Framebuffer final : public std::enable_shared_from_this<Framebuffer>
+class Framebuffer final : public isptr::weak_ref_counted<Framebuffer>
 {
 	friend class RenderBuffer;
-	friend class RenderTargetTexture;
 	friend class Renderer;
 
 public:
-	using RenderBufferVector = ObservableVector<std::shared_ptr<RenderBuffer>>;
+	using RenderBufferVector = ObservableVector<isptr::refcnt_ptr<RenderBuffer>>;
 
-	Framebuffer() noexcept {}
-	explicit Framebuffer(const NameChar* name) : name(name ? name : NAME_CSTR("")) {}
-	explicit Framebuffer(const NameString& name) : name(name) {}
+	Framebuffer();
+	explicit Framebuffer(const NameString& name);
+	explicit Framebuffer(NameString&& name);
 	Framebuffer(const NameString& name, int width, int height, MultisampleMode multisampleMode = MultisampleMode::NONE); 
 	Framebuffer(const NameString& name, float widthRatio, float heightRatio, MultisampleMode multisampleMode = MultisampleMode::NONE); 
+	Framebuffer(const Framebuffer& framebuffer);
+	Framebuffer(Framebuffer&& framebuffer);
 	~Framebuffer();
 
+	Framebuffer& operator=(const Framebuffer& framebuffer); // throw (std::runtime_error);
+	Framebuffer& operator=(Framebuffer&& framebuffer); // throw (std::runtime_error);
+
 	// Create
-	static Framebuffer* createRenderBuffers(const NameString& name, int width, int height, std::size_t nColorBuffers, PixelFormat colorFormat,
+	static Framebuffer* create(const NameString& name, int width, int height, std::size_t nColorBuffers, PixelFormat colorFormat,
 		ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
 		MultisampleMode multisampleMode = MultisampleMode::NONE);
-	static Framebuffer* createRenderBuffers(const NameString& name, float widthRatio, float heightRatio, std::size_t nColorBuffers, 
+	static Framebuffer* create(const NameString& name, float widthRatio, float heightRatio, std::size_t nColorBuffers, 
 		PixelFormat colorFormat, ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
 		MultisampleMode multisampleMode = MultisampleMode::NONE);
-	static Framebuffer* createRenderTargets(const NameString& name, int width, int height, std::size_t nColorBuffers, PixelFormat colorFormat,
-		ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
-		MultisampleMode multisampleMode = MultisampleMode::NONE, int nMipLevels = 1);
-	static Framebuffer* createRenderTargets(const NameString& name, float widthRatio, float heightRatio, std::size_t nColorBuffers, 
-		PixelFormat colorFormat, ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
-		MultisampleMode multisampleMode = MultisampleMode::NONE, int nMipLevels = 1);
+
+	// Clone
+	Framebuffer* clone() const;
 
 	// Name
 	const NameString& getName() const noexcept { return name_; }
-	void setName(const NameChar* name) { name_ = name ? name : NAME_CSTR(""); }
 	void setName(const NameString& name) { name_ = name; }
+	void setName(NameString&& name) { name_ = std::move(name); }
 
 	// Associatiom
 	bool isBound() const noexcept { return !renderers_.empty(); }
 	// #TODO bool isBoundTo(Renderer*)
 	bool isMutable() const noexcept { return mutable_; }
-	void makeImmutable();
+	void makeImmutable() { mutable_ = false; }
 
 	// Properties
 	bool isEmpty() const noexcept { return colorBuffers_.empty() && !depthBuffer_; }
@@ -101,6 +103,7 @@ public:
 
 	// Buffers
 	//RenderBufferIteratorRange getColorBuffers() const noexcept { return RenderBufferIteratorRange(colorBuffers_.begin(), colorBuffers_.end()); }
+	RenderBufferVector& getColorBuffers() const noexcept { return colorBuffers_; }
 	std::size_t getColorBufferCount() const noexcept { return colorBuffers_.size(); }
 	std::ptrdiff_t getIndexOfColorBuffer(RenderBuffer* buffer) const;
 	RenderBuffer* getColorBuffer() const noexcept { return colorBuffers_.empty() ? nullptr : colorBuffers_[0].get(); }
@@ -154,19 +157,12 @@ public:
 	// 	bool synchronize = false);
 
 private:
-	Framebuffer(const Framebuffer& framebuffer);
-	Framebuffer& operator=(const Framebuffer&) = delete;
-
-	// Associated renderers
-	void addRenderer(Renderer* renderer) { renderers_.push_back(renderer); }
-	void removeRenderer(Renderer* renderer);
-
 	// Attributes
 	void updateAttributes();
 
 	NameString name_;
 	RenderBufferVector colorBuffers_;
-	std::shared_ptr<RenderBuffer> depthBuffer_;
+	isptr::refcnt_ptr<RenderBuffer> depthBuffer_;
 	Size size_;
 	Vector2 viewportSizeRatio_;
 	FramebufferAttributes attributes_;
