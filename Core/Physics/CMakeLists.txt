@@ -20,9 +20,12 @@ add_library(${PHYSICS_LIB_NAME} STATIC)
 add_library(Core::${PHYSICS_LIB_NAME} ALIAS ${PHYSICS_LIB_NAME})
 #set_target_properties(${PHYSICS_LIB_NAME} PROPERTIES EXPORT_NAME Core::${PHYSICS_LIB_NAME})
 
+target_link_libraries(${PHYSICS_LIB_NAME} INTERFACE isptr::isptr)
+target_link_libraries(${PHYSICS_LIB_NAME} INTERFACE nlohmann_json::nlohmann_json)
 target_link_libraries(${PHYSICS_LIB_NAME} INTERFACE Core::Common)
 target_link_libraries(${PHYSICS_LIB_NAME} PUBLIC Core::Filesystem)
 target_link_libraries(${PHYSICS_LIB_NAME} INTERFACE Core::Mathematics)
+target_link_libraries(${PHYSICS_LIB_NAME} INTERFACE Core::Imaging) # for bitwise-enum
 target_link_libraries(${PHYSICS_LIB_NAME} PUBLIC Core::Graphics)
 
 target_sources(${PHYSICS_LIB_NAME}
@@ -31,6 +34,15 @@ target_sources(${PHYSICS_LIB_NAME}
 	    TYPE HEADERS
 		BASE_DIRS Source
     	FILES
+			Source/Physics/Collision/ContactPoint.hpp
+			Source/Physics/Collision/ContactPointFlags.hpp
+			Source/Physics/Collision/PhysicalMaterial.hpp
+			#Source/Physics/Constraints/Constraint.hpp
+			Source/Physics/Constraints/ConstraintRow.hpp
+			Source/Physics/Constraints/Limit.hpp
+			Source/Physics/Constraints/Motor.hpp
+			Source/Physics/Constraints/MotorMode.hpp
+			Source/Physics/Constraints/Spring.hpp
 			Source/Physics/Physics.hpp
 )
 
