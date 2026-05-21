@@ -16,12 +16,12 @@ template<typename T, typename Alloc = std::allocator<T>>
 class UnorderedVector : public std::vector<T, Alloc>
 {
 public:
-    //using ValueType = typename std::vector<T, Alloc>::value_type;
-    //using AllocatorType = typename std::vector<T, Alloc>::allocator_type;
-    //using ConstReference = typename std::vector<T, Alloc>::const_reference;
-    //using SizeType = typename std::vector<T, Alloc>::size_type;
-    //using Iterator = typename std::vector<T, Alloc>::iterator;
-    //using ConstIterator = typename std::vector<T, Alloc>::const_iterator;
+    using ValueType = typename std::vector<T, Alloc>::value_type;
+    using AllocatorType = typename std::vector<T, Alloc>::allocator_type;
+    using ConstReference = typename std::vector<T, Alloc>::const_reference;
+    using SizeType = typename std::vector<T, Alloc>::size_type;
+    using Iterator = typename std::vector<T, Alloc>::iterator;
+    using ConstIterator = typename std::vector<T, Alloc>::const_iterator;
 
     using std::vector<T, Alloc>::vector;
 
@@ -35,7 +35,7 @@ public:
         push_back(std::move(value));
     }
 
-    iterator erase(/*const_*/iterator pos)
+    Iterator erase(Iterator pos)
     {
         if (++pos == end())
         {
@@ -48,7 +48,7 @@ public:
         return pos;
     }
 
-    iterator erase(/*const_*/iterator first, /*const_*/iterator last)
+    Iterator erase(Iterator first, Iterator last)
     {
         if (first == last)
             return last;
