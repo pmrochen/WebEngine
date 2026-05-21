@@ -8,7 +8,7 @@
 #include <concepts>
 #include <initializer_list>
 #include <sigslot/signal.hpp>
-#include "Concepts.hpp"
+#include "../Concepts.hpp"
 
 namespace common {
 namespace detail {

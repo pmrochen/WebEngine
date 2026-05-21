@@ -1,5 +1,5 @@
 /*
- *	Name: Clonable
+ *	Name: Cloneable
  *	Author: Pawel Mrochen
  */
 
@@ -9,7 +9,7 @@
 #include <iterator>
 #include "Concepts.hpp"
 
-namespace common::clonable {
+namespace common::cloneable {
 
 template<typename T>
 	requires (PointerLike<T> || Container<T>)
@@ -25,7 +25,7 @@ inline T clone(const T& x)
 }
 
 template<Container T>
-	//requires Clonable<typename T::value_type>
+	//requires Cloneable<typename T::value_type>
 inline T clone(const T& x)
 {
 	T copy;
@@ -35,4 +35,4 @@ inline T clone(const T& x)
 	return copy;
 }
 
-} // namespace common::clonable
+} // namespace common::cloneable

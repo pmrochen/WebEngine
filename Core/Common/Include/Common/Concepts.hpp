@@ -48,7 +48,7 @@ concept Container = requires(T a, const T b)
 };
 
 template<typename T>
-concept Clonable = requires(/*const*/ T a)
+concept Cloneable = requires(/*const*/ T a)
 {
     { a.clone() } -> std::convertible_to<T*>;
 };
