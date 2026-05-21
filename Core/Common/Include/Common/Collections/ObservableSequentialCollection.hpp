@@ -43,7 +43,7 @@ public:
     using AllocatorType = typename T::allocator_type;
     using ConstReference = typename T::const_reference;
     using SizeType = typename T::size_type;
-    using Iterator = typename T::iterator;
+    //using Iterator = typename T::iterator;
     using ConstIterator = typename T::const_iterator;
     using Signal = sigslot::signal<typename T::value_type&>;
 
@@ -205,6 +205,59 @@ public:
         return c_.at(pos);
     }
 
+    ConstReference get(SizeType pos) const
+    {
+        return c_.at(pos);
+    }
+
+	void set(SizeType pos, const ValueType& value)
+	{
+		if (pos < c_.size())
+		{
+			onElementAdding(value);
+			onElementRemoving(c_.at(pos));
+
+			if (onElementRemoved.slot_count())
+			{
+				ValueType prev = c_.at(pos);
+				c_.at(pos) = value;
+				onElementRemoved(prev);
+				onElementAdded(c_.at(pos));
+			}
+			else
+			{
+				c_.at(pos) = value;
+				onElementAdded(c_.at(pos));
+			}
+		}
+		else
+			c_.at(pos) = value;
+	}
+
+	void set(SizeType pos, ValueType&& value)
+	{
+		if (pos < c_.size())
+		{
+			onElementAdding(value);
+			onElementRemoving(c_.at(pos));
+
+			if (onElementRemoved.slot_count())
+			{
+				ValueType prev = c_.at(pos);
+				c_.at(pos) = std::forward<ValueType>(value);
+				onElementRemoved(prev);
+				onElementAdded(c_.at(pos));
+			}
+			else
+			{
+				c_.at(pos) = std::forward<ValueType>(value);
+				onElementAdded(c_.at(pos));
+			}
+		}
+		else
+			c_.at(pos) = std::forward<ValueType>(value);
+	}
+
     ConstReference front() const
     {
         return c_.front();
@@ -275,55 +328,85 @@ public:
 		    c_.clear();
 	}
 
-    Iterator insert(ConstIterator pos, const ValueType& value)
+    ConstIterator insert(ConstIterator pos, const ValueType& value)
     {
-		onElementAdding(value);
-        Iterator result = c_.insert(pos, value);
-        onElementAdded(*result);
-        return result;
+		if ((pos >= c_.begin()) && (pos <= c_.end()))
+		{
+			onElementAdding(value);
+			ConstIterator result = c_.insert(pos, value);
+			onElementAdded(*result);
+			return result;
+		}
+		else
+			return c_.insert(pos, value);
     }
 
-    Iterator insert(ConstIterator pos, ValueType&& value)
+    ConstIterator insert(ConstIterator pos, ValueType&& value)
     {
-		onElementAdding(value);
-        Iterator result = c_.insert(pos, std::forward<ValueType>(value));
-        onElementAdded(*result);
-        return result;
+		if ((pos >= c_.begin()) && (pos <= c_.end()))
+		{
+			onElementAdding(value);
+			ConstIterator result = c_.insert(pos, std::forward<ValueType>(value));
+			onElementAdded(*result);
+			return result;
+		}
+		else
+			return c_.insert(pos, value);
     }
 
-    Iterator insert(ConstIterator pos, SizeType count, const ValueType& value)
+    ConstIterator insert(ConstIterator pos, SizeType count, const ValueType& value)
     {
-		detail::emit(onElementAdding, count, value);
-        Iterator result = c_.insert(pos, count, value);
-		detail::emit(onElementAdded, result, result + count);
-        return result;
+		if ((pos >= c_.begin()) && (pos <= c_.end()))
+		{
+			detail::emit(onElementAdding, count, value);
+			ConstIterator result = c_.insert(pos, count, value);
+			detail::emit(onElementAdded, result, result + count);
+			return result;
+		}
+		else
+			return c_.insert(pos, count, value);
     }
     
     template<class InputIt>
-    Iterator insert(ConstIterator pos, InputIt first, InputIt last)
+    ConstIterator insert(ConstIterator pos, InputIt first, InputIt last)
     {
-		detail::emit(onElementAdding, first, last);
-        Iterator result = c_.insert(pos, first, last);
-		detail::emit(onElementAdded, result, result + (last - first));
-        return result;
+		if ((pos >= c_.begin()) && (pos <= c_.end()))
+		{
+			detail::emit(onElementAdding, first, last);
+			ConstIterator result = c_.insert(pos, first, last);
+			detail::emit(onElementAdded, result, result + (last - first));
+			return result;
+		}
+		else
+			return c_.insert(pos, first, last);
     }
 
-    Iterator insert(ConstIterator pos, std::initializer_list<ValueType> list)
+    ConstIterator insert(ConstIterator pos, std::initializer_list<ValueType> list)
     {
-		detail::emit(onElementAdding, list.begin(), list.end());
-        Iterator result = c_.insert(pos, list);
-		detail::emit(onElementAdded, result, result + init.size());
-        return result;
+		if ((pos >= c_.begin()) && (pos <= c_.end()))
+		{
+			detail::emit(onElementAdding, list.begin(), list.end());
+			ConstIterator result = c_.insert(pos, list);
+			detail::emit(onElementAdded, result, result + init.size());
+			return result;
+		}
+		else
+			return c_.insert(pos, list);
     }
     
     template<class... Args>
-    Iterator emplace(ConstIterator pos, Args&&... args)
+    ConstIterator emplace(ConstIterator pos, Args&&... args)
     {
-		if (onElementAdding.slot_count())
-			onElementAdding({ args... });
-        Iterator result = c_.emplace(pos, std::forward<Args>(args)...);
-        onElementAdded(*result);
-        return result;
+		if ((pos >= c_.begin()) && (pos <= c_.end()))
+		{
+			if (onElementAdding.slot_count())
+				onElementAdding({ args... });
+			ConstIterator result = c_.emplace(pos, std::forward<Args>(args)...);
+			onElementAdded(*result);
+			return result;
+		}
+		else
+			return c_.emplace(pos, std::forward<Args>(args)...);
     }
 
     void push_back(const ValueType& value)
@@ -349,15 +432,15 @@ public:
         onElementAdded(c_.back());
     }
 
-    Iterator erase(ConstIterator pos)
+    ConstIterator erase(ConstIterator pos)
     {
-        if ((pos >= begin()) && (pos < end()))
+        if ((pos >= c_.begin()) && (pos < c_.end()))
 		{
             onElementRemoving(*pos);
 			if (onElementRemoved.slot_count())
 			{
 				ValueType prev = *pos;
-				Iterator result = c_.erase(pos);
+				ConstIterator result = c_.erase(pos);
 				onElementRemoved(prev);
 				return result;
 			}
@@ -368,15 +451,15 @@ public:
         	return c_.erase(pos);
     }
 
-    Iterator erase(ConstIterator first, ConstIterator last)
+    ConstIterator erase(ConstIterator first, ConstIterator last)
     {
-        if ((last >= begin()) && (first < end()))
+        if ((last >= c_.begin()) && (first < c_.end()))
         {
 			detail::emit(onElementRemoving, first, last);
 			if (onElementRemoved.slot_count())
 			{
 				ContainerType removed(first, last, c_.get_allocator());
-				Iterator result = c_.erase(first, last);
+				ConstIterator result = c_.erase(first, last);
 				detail::emit(onElementRemoved, removed.begin(), removed.end());
 				return result;
 			}
