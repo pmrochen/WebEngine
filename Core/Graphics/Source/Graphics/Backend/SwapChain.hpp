@@ -10,11 +10,11 @@
 #include <Imaging/Pixel/PixelFormat.hpp>
 #include <Imaging/Geometry/Size.hpp>
 //#include <Imaging/Geometry/Rectangle.hpp>
-#include "DepthStencilFormat.hpp"
-#include "MultisampleMode.hpp"
-#include "AttributeMask.hpp"
-#include "FramebufferAttributes.hpp"
-//#include "Viewport.hpp"
+#include "../Rasterization/DepthStencilFormat.hpp"
+#include "../Rasterization/MultisampleMode.hpp"
+#include "../Rasterization/AttributeMask.hpp"
+#include "../Rasterization/FramebufferAttributes.hpp"
+//#include "../Rasterization/Viewport.hpp"
 #include "Renderer.hpp"
 
 namespace graphics {
@@ -32,8 +32,8 @@ public:
 	virtual ~SwapChain() {}
 
 	// Properties
-	int getWidth() const { return getSize().x; }
-	int getHeight() const { return getSize().y; }
+	int getWidth() const { return getSize().width; }
+	int getHeight() const { return getSize().height; }
 	virtual Size getSize() const { return size_; }
 	virtual FramebufferAttributes getAttributes() const { return attributes_; }
 	virtual PixelFormat getPixelFormat() const { return attributes_.getPixelFormat(); }
