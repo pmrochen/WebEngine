@@ -40,6 +40,20 @@ File(uri, (mode | FileOpenMode::SEQUENTIAL_SCAN) & ~FileOpenMode::RANDOM_ACCESS)
 		load();
 }
 
+BufferedFile::BufferedFile(VirtualFilesystem* filesystem, const PathChar* path, FileOpenMode mode) :
+	File(filesystem, path, (mode | FileOpenMode::SEQUENTIAL_SCAN) & ~FileOpenMode::RANDOM_ACCESS)
+{
+	if ((int)mode_ & FileOpenMode::READ)
+		load();
+}
+
+BufferedFile::BufferedFile(VirtualFilesystem* filesystem, const PathString& path, FileOpenMode mode) :
+	File(filesystem, path, (mode | FileOpenMode::SEQUENTIAL_SCAN) & ~FileOpenMode::RANDOM_ACCESS)
+{
+	if ((int)mode_ & FileOpenMode::READ)
+		load();
+}
+
 BufferedFile::~BufferedFile()
 {
 	if (((int)mode_ & FileOpenMode::WRITE) && dirty_)

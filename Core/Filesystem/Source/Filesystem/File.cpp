@@ -33,6 +33,34 @@ File::File(const PathString& uri, FileOpenMode mode) :
 	file_ = filesystem_->open(normalizedPath_, mode);
 }
 
+File::File(VirtualFilesystem* filesystem, const PathChar* path, FileOpenMode mode) :
+	uri_(path ? path : PATH_CSTR("")),
+	mode_(mode),
+	filesystem_(filesystem)
+{
+	normalizedPath_ = std::filesystem::path(uri_).lexically_normal();
+	path_ = toPathString(normalizedPath_);
+
+	if (!filesystem)
+		throw FilesystemException(normalizedPath_, FilesystemError::NOT_SUPPORTED);
+
+	file_ = filesystem_->open(normalizedPath_, mode);
+}
+
+File::File(VirtualFilesystem* filesystem, const PathString& path, FileOpenMode mode) :
+	uri_(path),
+	mode_(mode),
+	filesystem_(filesystem)
+{
+	normalizedPath_ = std::filesystem::path(uri_).lexically_normal();
+	path_ = toPathString(normalizedPath_);
+
+	if (!filesystem)
+		throw FilesystemException(normalizedPath_, FilesystemError::NOT_SUPPORTED);
+
+	file_ = filesystem_->open(normalizedPath_, mode);
+}
+
 File::~File()
 {
 	if (filesystem_ && file_) 

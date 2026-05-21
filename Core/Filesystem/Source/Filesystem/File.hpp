@@ -40,6 +40,8 @@ class File
 public:
 	File(const PathChar* uri, FileOpenMode mode); // throw (FilesystemException);
 	File(const PathString& uri, FileOpenMode mode); // throw (FilesystemException);
+	File(VirtualFilesystem* filesystem, const PathChar* path, FileOpenMode mode); // throw (FilesystemException);
+	File(VirtualFilesystem* filesystem, const PathString& path, FileOpenMode mode); // throw (FilesystemException);
 	virtual ~File();
 
 	static bool exists(const PathChar* uri);

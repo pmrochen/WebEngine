@@ -30,6 +30,8 @@ public:
 	explicit BufferedFile(FileOpenMode mode = FileOpenMode::READ | FileOpenMode::WRITE) noexcept : File(mode) {}
 	BufferedFile(const PathChar* uri, FileOpenMode mode); // throw (FilesystemException);
 	BufferedFile(const PathString& uri, FileOpenMode mode); // throw (FilesystemException);
+	BufferedFile(VirtualFilesystem* filesystem, const PathChar* path, FileOpenMode mode); // throw (FilesystemException);
+	BufferedFile(VirtualFilesystem* filesystem, const PathString& path, FileOpenMode mode); // throw (FilesystemException);
 	virtual ~BufferedFile();
 
 	static BufferedFile* open(const PathChar* uri, FileOpenMode mode) { return new BufferedFile(uri, mode); } // throw (FilesystemException);
