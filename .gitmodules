@@ -28,3 +28,6 @@
 [submodule "Core/Common/intrusive_shared_ptr"]
 	path = Core/Common/intrusive_shared_ptr
 	url = https://github.com/gershnik/intrusive_shared_ptr.git
+[submodule "Core/Common/json"]
+	path = Core/Common/json
+	url = https://github.com/nlohmann/json.git
