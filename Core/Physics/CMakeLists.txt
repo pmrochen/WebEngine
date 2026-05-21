@@ -29,11 +29,17 @@ target_link_libraries(${PHYSICS_LIB_NAME} INTERFACE Core::Imaging) # for bitwise
 target_link_libraries(${PHYSICS_LIB_NAME} PUBLIC Core::Graphics)
 
 target_sources(${PHYSICS_LIB_NAME}
+	PRIVATE
+		#Source/Physics/Collision/CollisionShape.cpp
+		#Source/Physics/Constraints/Constraint.cpp
+
 	PUBLIC
     	FILE_SET publicHeaders
 	    TYPE HEADERS
 		BASE_DIRS Source
     	FILES
+			#Source/Physics/Collision/CollisionShape.hpp
+			Source/Physics/Collision/CollisionShapeType.hpp
 			Source/Physics/Collision/ContactPoint.hpp
 			Source/Physics/Collision/ContactPointFlags.hpp
 			Source/Physics/Collision/PhysicalMaterial.hpp
