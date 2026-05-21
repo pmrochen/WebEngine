@@ -35,6 +35,7 @@ target_link_libraries(${CORE_LIB_NAME}
         -Wl,--whole-archive
         ${IMAGING_LIB_NAME}
         ${GRAPHICS_LIB_NAME}
+        ${PHYSICS_LIB_NAME}
         -Wl,--no-whole-archive
 )
 
