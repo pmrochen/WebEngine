@@ -25,9 +25,11 @@ add_library(${GRAPHICS_LIB_NAME} STATIC)
 add_library(Core::${GRAPHICS_LIB_NAME} ALIAS ${GRAPHICS_LIB_NAME})
 #set_target_properties(${GRAPHICS_LIB_NAME} PROPERTIES EXPORT_NAME Core::${GRAPHICS_LIB_NAME})
 
-target_link_libraries(${GRAPHICS_LIB_NAME} INTERFACE Core::Common)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC oup::oup)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC isptr::isptr)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Common)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Filesystem)
-target_link_libraries(${GRAPHICS_LIB_NAME} INTERFACE Core::Mathematics)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Mathematics)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Imaging)
 
 target_sources(${GRAPHICS_LIB_NAME}
