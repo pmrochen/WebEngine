@@ -16,6 +16,10 @@ project(Physics
 
 set(PHYSICS_LIB_NAME Physics)
 
+if(DEFINED MATHEMATICS_DOUBLE_PRECISION)
+	set(PHYSICS_DOUBLE_PRECISION "${MATHEMATICS_DOUBLE_PRECISION}")
+endif()
+
 add_library(${PHYSICS_LIB_NAME} STATIC)
 add_library(Core::${PHYSICS_LIB_NAME} ALIAS ${PHYSICS_LIB_NAME})
 #set_target_properties(${PHYSICS_LIB_NAME} PROPERTIES EXPORT_NAME Core::${PHYSICS_LIB_NAME})
@@ -55,4 +59,9 @@ target_sources(${PHYSICS_LIB_NAME}
 target_compile_features(${PHYSICS_LIB_NAME} 
     PUBLIC 
         cxx_std_20
+)
+
+target_compile_definitions(${PHYSICS_LIB_NAME}
+	PUBLIC 
+		PHYSICS_DOUBLE_PRECISION=$<BOOL:${PHYSICS_DOUBLE_PRECISION}>
 )
