@@ -16,6 +16,10 @@ project(Graphics
 
 set(GRAPHICS_LIB_NAME Graphics)
 
+if(DEFINED MATHEMATICS_DOUBLE_PRECISION)
+	set(GRAPHICS_DOUBLE_PRECISION "${MATHEMATICS_DOUBLE_PRECISION}")
+endif()
+
 find_package(OpenMP)
 if(MSVC)
 	set(OpenMP_RUNTIME_MSVC "llvm")
@@ -37,6 +41,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 		#Source/Graphics/Backend/ComputeEngine.cpp
 		#Source/Graphics/Backend/Renderer.cpp
 		#Source/Graphics/Backend/ResourceManager.cpp
+		#Source/Graphics/Geometry/Heightfield.cpp
 		#Source/Graphics/Geometry/Mesh.cpp
 		Source/Graphics/Rasterization/Framebuffer.cpp
 		#Source/Graphics/SceneGraph/Locator.cpp
@@ -67,6 +72,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Backend/SwapChain.hpp
 			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Geometry/GeometryType.hpp
+			#Source/Graphics/Geometry/Heightfield.hpp
 			#Source/Graphics/Geometry/Mesh.hpp
 			Source/Graphics/Geometry/PrimitiveTopology.hpp
 			Source/Graphics/Geometry/PrimitiveType.hpp
@@ -114,4 +120,9 @@ target_sources(${GRAPHICS_LIB_NAME}
 target_compile_features(${GRAPHICS_LIB_NAME} 
     PUBLIC 
         cxx_std_20
+)
+
+target_compile_definitions(${GRAPHICS_LIB_NAME}
+	PUBLIC 
+		GRAPHICS_DOUBLE_PRECISION=$<BOOL:${GRAPHICS_DOUBLE_PRECISION}>
 )

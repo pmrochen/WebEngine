@@ -854,7 +854,7 @@ private:
 
 } // namespace templates
 
-#if MATHEMATICS_DOUBLE
+#if GRAPHICS_DOUBLE_PRECISION
 using ViewVolume = templates::ViewVolume<double>;
 using ViewVolumeArg = templates::ViewVolume<double>::ConstArg;
 using ViewVolumeResult = templates::ViewVolume<double>::ConstResult;
