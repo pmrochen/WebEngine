@@ -31,6 +31,7 @@ add_library(Core::${GRAPHICS_LIB_NAME} ALIAS ${GRAPHICS_LIB_NAME})
 
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC oup::oup)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC isptr::isptr)
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Pal::Sigslot)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Common)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Filesystem)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Mathematics)
