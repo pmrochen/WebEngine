@@ -12,13 +12,13 @@
 #include <oup/observable_unique_ptr.hpp>
 #include <intrusive_shared_ptr/ref_counted.h>
 #include <intrusive_shared_ptr/refcnt_ptr.h>
+#include <sigslot/signal.hpp>
 #include <Common/Collections/ObservableVector.hpp>
 #include <Common/Strings/NameString.hpp>
 #include <Mathematics/Constants.hpp>
 #include <Mathematics/Algebra/Vector2.hpp>
 #include <Imaging/Color/ColorSpace.hpp>
 #include <Imaging/Pixel/PixelFormat.hpp>
-//#include <Imaging/Sampling/ImageInterpolationMode.hpp>
 #include <Imaging/Geometry/Size.hpp>
 #include <Imaging/Geometry/Rectangle.hpp>
 #include "DepthStencilFormat.hpp"
@@ -37,23 +37,20 @@ using mathematics::Constants;
 using mathematics::Vector2;
 using imaging::ColorSpace;
 using imaging::PixelFormat;
-//using imaging::ImageInterpolationMode;
 using imaging::Size;
 using imaging::Rectangle;
 
 class Framebuffer final : public isptr::weak_ref_counted<Framebuffer>
 {
-	friend class RenderBuffer;
-	friend class Renderer;
-
 public:
+	using Real = typename Vector2::Real;
 	using RenderBufferVector = ObservableVector<isptr::refcnt_ptr<RenderBuffer>>;
 
 	Framebuffer();
 	explicit Framebuffer(const NameString& name);
 	explicit Framebuffer(NameString&& name);
 	Framebuffer(const NameString& name, int width, int height, MultisampleMode multisampleMode = MultisampleMode::NONE); 
-	Framebuffer(const NameString& name, float widthRatio, float heightRatio, MultisampleMode multisampleMode = MultisampleMode::NONE); 
+	Framebuffer(const NameString& name, Real widthRatio, Real heightRatio, MultisampleMode multisampleMode = MultisampleMode::NONE); 
 	Framebuffer(const Framebuffer& framebuffer);
 	Framebuffer(Framebuffer&& framebuffer);
 	~Framebuffer();
@@ -62,12 +59,14 @@ public:
 	Framebuffer& operator=(Framebuffer&& framebuffer); // throw (std::runtime_error);
 
 	// Create
-	static Framebuffer* create(const NameString& name, int width, int height, std::size_t nColorBuffers, PixelFormat colorFormat,
-		ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
-		MultisampleMode multisampleMode = MultisampleMode::NONE);
-	static Framebuffer* create(const NameString& name, float widthRatio, float heightRatio, std::size_t nColorBuffers, 
-		PixelFormat colorFormat, ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
-		MultisampleMode multisampleMode = MultisampleMode::NONE);
+	// template<typename T> // #TODO
+	// static Framebuffer* create(const NameString& name, int width, int height, std::size_t nColorBuffers, PixelFormat colorFormat,
+	// 	ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
+	// 	MultisampleMode multisampleMode = MultisampleMode::NONE);
+	// template<typename T>
+	// static Framebuffer* create(const NameString& name, Real widthRatio, Real heightRatio, std::size_t nColorBuffers, 
+	// 	PixelFormat colorFormat, ColorSpace colorSpace = ColorSpace::SRGB, DepthStencilFormat depthFormat = DepthStencilFormat::UNSPECIFIED, 
+	// 	MultisampleMode multisampleMode = MultisampleMode::NONE);
 
 	// Clone
 	Framebuffer* clone() const;
@@ -77,51 +76,43 @@ public:
 	void setName(const NameString& name) { name_ = name; }
 	void setName(NameString&& name) { name_ = std::move(name); }
 
-	// Associatiom
-	bool isBound() const noexcept { return !renderers_.empty(); }
-	// #TODO bool isBoundTo(Renderer*)
-	bool isMutable() const noexcept { return mutable_; }
-	void makeImmutable() { mutable_ = false; }
-
-	// Properties
+	// Attributes
 	bool isEmpty() const noexcept { return colorBuffers_.empty() && !depthBuffer_; }
-	bool isValid() const;
-	int getWidth() const;
-	int getWidth(const Viewport& viewport) const;
-	int getHeight() const;
-	int getHeight(const Viewport& viewport) const;
-	Size getSize() const;
-	Size getSize(const Viewport& viewport) const;
-	float getViewportWidthRatio() const;
-	float getViewportHeightRatio() const;
-	//Vector2 getViewportSizeRatio() const;
+	bool isValid() const noexcept;
+	int getWidth() const noexcept { return getSize().width; }
+	int getWidth(const Viewport& viewport) const noexcept { return getSize(viewport).width; }
+	int getHeight() const noexcept { return getSize().height; }
+	int getHeight(const Viewport& viewport) const noexcept { return getSize(viewport).height; }
+	Size getSize() const noexcept;
+	Size getSize(const Viewport& viewport) const noexcept;
+	Real getViewportWidthRatio() const noexcept { return getViewportSizeRatio().x; }
+	Real getViewportHeightRatio() const noexcept { return getViewportSizeRatio().y; }
+	Vector2 getViewportSizeRatio() const noexcept;
 	const FramebufferAttributes& getAttributes() const noexcept { return attributes_; }
-	PixelFormat getPixelFormat() const;
-	ColorSpace getColorSpace() const;
+	PixelFormat getPixelFormat() const noexcept;
+	ColorSpace getColorSpace() const noexcept;
 	DepthStencilFormat getDepthStencilFormat() const noexcept { return attributes_.depthStencilFormat; }
 	MultisampleMode getMultisampleMode() const noexcept { return attributes_.multisampleMode; }
 
 	// Buffers
-	//RenderBufferIteratorRange getColorBuffers() const noexcept { return RenderBufferIteratorRange(colorBuffers_.begin(), colorBuffers_.end()); }
 	RenderBufferVector& getColorBuffers() const noexcept { return colorBuffers_; }
 	std::size_t getColorBufferCount() const noexcept { return colorBuffers_.size(); }
-	std::ptrdiff_t getIndexOfColorBuffer(RenderBuffer* buffer) const;
+	std::ptrdiff_t getIndexOfColorBuffer(RenderBuffer* buffer) const noexcept;
 	RenderBuffer* getColorBuffer() const noexcept { return colorBuffers_.empty() ? nullptr : colorBuffers_[0].get(); }
-	RenderBuffer* getColorBuffer(std::size_t index) const;
+	RenderBuffer* getColorBuffer(std::size_t index) const noexcept { return (index < colorBuffers_.size()) ? colorBuffers_[index].get() : nullptr; }
 	void setColorBuffer(RenderBuffer* buffer); // throw (std::runtime_error, std::invalid_argument);
 	void setColorBuffer(std::size_t index, RenderBuffer* buffer); // throw (std::runtime_error, std::out_of_range, std::invalid_argument);
-	void addColorBuffer(RenderBuffer* buffer); // throw (std::runtime_error, std::invalid_argument);
+	void addColorBuffer(RenderBuffer* buffer) { colorBuffers_.emplace_back(buffer); } // throw (std::runtime_error, std::invalid_argument);
 	void insertColorBuffer(std::size_t index, RenderBuffer* buffer); // throw (std::runtime_error, std::out_of_range, std::invalid_argument);
 	bool removeColorBuffer(RenderBuffer* buffer); // throw (std::runtime_error);
 	bool removeColorBufferAt(std::size_t index); // throw (std::runtime_error);
-	void deleteAllColorBuffers(); // throw (std::runtime_error);
+	void deleteAllColorBuffers() { colorBuffers_.resize(0); } // throw (std::runtime_error);
 	RenderBuffer* getDepthStencilBuffer() const noexcept { return depthBuffer_.get(); }
 	void setDepthStencilBuffer(RenderBuffer* buffer); // throw (std::runtime_error, std::invalid_argument);
-	void makeUnique();
-
+	
 	// Aspect ratio
-	float getPixelAspectRatio() const noexcept { return pixelAspectRatio_; }
-	void setPixelAspectRatio(float aspectRatio) noexcept { pixelAspectRatio_ = std::max(aspectRatio, Constants<float>::EPSILON); }
+	Real getPixelAspectRatio() const noexcept { return pixelAspectRatio_; }
+	void setPixelAspectRatio(Real aspectRatio) noexcept { pixelAspectRatio_ = std::max(aspectRatio, Constants<Real>::EPSILON); }
 
 	// Viewport
 	const Viewport& getViewport();
@@ -144,17 +135,19 @@ public:
 	void setSrgbEncodingEnabled(bool enabled); // throw (std::runtime_error);
 
 	// Multiview
-	bool isMultiviewRenderingEnabled() const noexcept { return multiviewRenderingEnabled_; }
-	void setMultiviewRenderingEnabled(bool enabled);
+	//bool isMultiviewRenderingEnabled() const noexcept { return multiviewRenderingEnabled_; }
+	//void setMultiviewRenderingEnabled(bool enabled) noexcept { multiviewRenderingEnabled_ = enabled; }
 
-	// Resource
-	// void discard(Renderer* renderer, AttributeMask attributeMask);
-	// void clear(Renderer* renderer, const ClearOptions& clearOptions);
-	// static void blit(Renderer* renderer, Framebuffer* srcFramebuffer, Framebuffer* destFramebuffer, bool colorMask, bool depthMask,
-	// 	bool stencilMask, ImageInterpolationMode interpolation, bool synchronize = false);
-	// static void blit(Renderer* renderer, Framebuffer* srcFramebuffer, const Rectangle& srcRectangle, Framebuffer* destFramebuffer, 
-	// 	const Rectangle& destRectangle, bool colorMask, bool depthMask, bool stencilMask, ImageInterpolationMode interpolation,
-	// 	bool synchronize = false);
+	// Mutability
+	bool isMutable() const noexcept { return mutable_; }
+	void makeImmutable() noexcept { mutable_ = false; }
+
+	// Signals
+	sigslot::signal<> onViewportChanged;
+	sigslot::signal<> onScissorTestEnabledChanged;
+	sigslot::signal<> onScissorTestRectangleChanged;
+	sigslot::signal<> onClipOriginChanged;
+	sigslot::signal<> onSrgbEncodingEnabledChanged;
 
 private:
 	// Attributes
@@ -166,15 +159,15 @@ private:
 	Size size_;
 	Vector2 viewportSizeRatio_;
 	FramebufferAttributes attributes_;
-	float pixelAspectRatio_ = 1.0f;
+	Real pixelAspectRatio_ = Real(1);
 	Viewport viewport_;
 	bool defaultViewport_ = true;
 	bool scissorTestEnabled_ = false;
 	Rectangle scissorTestRectangle_;
 	ClipOrigin clipOrigin_ = ClipOrigin::UNSPECIFIED;
 	bool srgbEncodingEnabled_ = true;
-	bool multiviewRenderingEnabled_ = false;
-	std::vector<oup::observer_ptr<Renderer>/*Renderer* */> renderers_;
+	//bool multiviewRenderingEnabled_ = false;
+	//std::vector<oup::observer_ptr<Renderer>/*Renderer* */> renderers_; // #TODO Store weak_ptr<Framebuffer> in Renderer instead
 	bool mutable_ = true;
 };
 
