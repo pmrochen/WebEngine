@@ -39,6 +39,8 @@ template<typename T, typename U>
 	requires ((std::floating_point<T> || std::integral<T>) && std::floating_point<U>)
 struct Viewport
 {
+	using BoundsComponentType = T;
+	using DepthComponentType = U;
 	using ConstArg = const Viewport&;
 	using ConstResult = const Viewport&;
 
@@ -136,19 +138,19 @@ struct Viewport
 	void setSize(const Vector2<T>& size) noexcept { bounds.size.set(size.x, size.y); }
 	Vector2<T> getMinimum() const noexcept { return Vector2<T>(bounds.location.x, bounds.location.y); }
 	Vector2<T> getMaximum() const noexcept { return Vector2<T>(bounds.location.x + bounds.size.width, bounds.location.y + bounds.size.height); }
-	T getX() const noexcept { return location.x; }
-	void setX(T x) noexcept { location.x = x; }
-	T getY() const noexcept { return location.y; }
-	void setY(T y) noexcept { location.y = y; }
-	T getWidth() const noexcept { return size.width; }
-	void setWidth(T width) noexcept { size.width = width; }
-	T getHeight() const noexcept { return size.height; }
-	void setHeight(T height) noexcept { size.height = height; }
-	T getLeft() const noexcept { return location.x; }
-	T getTop() const noexcept { return location.y; }
-	T getRight() const noexcept { return location.x + size.width; }
-	T getBottom() const noexcept { return location.y + size.height; }
-	U getAspectRatio() const noexcept { return size.getAspectRatio<U>(); }
+	T getX() const noexcept { return bounds.location.x; }
+	void setX(T x) noexcept { bounds.location.x = x; }
+	T getY() const noexcept { return bounds.location.y; }
+	void setY(T y) noexcept { bounds.location.y = y; }
+	T getWidth() const noexcept { return bounds.size.width; }
+	void setWidth(T width) noexcept { bounds.size.width = width; }
+	T getHeight() const noexcept { return bounds.size.height; }
+	void setHeight(T height) noexcept { bounds.size.height = height; }
+	T getLeft() const noexcept { return bounds.location.x; }
+	T getTop() const noexcept { return bounds.location.y; }
+	T getRight() const noexcept { return bounds.location.x + bounds.size.width; }
+	T getBottom() const noexcept { return bounds.location.y + bounds.size.height; }
+	U getAspectRatio() const noexcept { return bounds.size.getAspectRatio<U>(); }
 	const Interval<U>& getDepthRange() const noexcept { return depthRange; }
 	void setDepthRange(const Interval<U>& depthRange) noexcept { this->depthRange = depthRange; }
 	U getMinDepth() const noexcept { return depthRange.minimum; }
@@ -158,8 +160,8 @@ struct Viewport
 
 	AffineTransform<U> getTransformation() const noexcept
 	{
-		U halfW = U(size.width)*U(0.5);
-		U halfH = U(size.height)*U(0.5);
+		U halfW = U(bounds.size.width)*U(0.5);
+		U halfH = U(bounds.size.height)*U(0.5);
 		return AffineTransform<U>(halfW, U(0), U(0),
 			U(0), -halfH, U(0),
 			U(0), U(0), depthRange.maximum - depthRange.minimum,
@@ -168,8 +170,8 @@ struct Viewport
 
 	AffineTransform<U> getInverseTransformation() const noexcept
 	{
-		return AffineTransform<U>(U(2)/U(size.width), U(0), U(0),
-			U(0), -U(2)/U(size.height), U(0),
+		return AffineTransform<U>(U(2)/U(bounds.size.width), U(0), U(0),
+			U(0), -U(2)/U(bounds.size.height), U(0),
 			U(0), U(0), U(1)/(depthRange.maximum - depthRange.minimum),
 			U(-1), U(1), -depthRange.minimum/(depthRange.maximum - depthRange.minimum));
 	}
