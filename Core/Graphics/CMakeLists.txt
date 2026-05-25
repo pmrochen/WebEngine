@@ -66,6 +66,8 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Animation/FCurveExtrapolationMode.hpp
 			Source/Graphics/Animation/FCurveInterpolationMode.hpp
 			Source/Graphics/Backend/ComputeEngine.hpp
+			Source/Graphics/Backend/DispatchSizeMode.hpp
+			Source/Graphics/Backend/DisplaySynchronizationMode.hpp
 			Source/Graphics/Backend/Renderer.hpp
 			Source/Graphics/Backend/ResourceManager.hpp
 			Source/Graphics/Backend/ResourceStorageFlags.hpp

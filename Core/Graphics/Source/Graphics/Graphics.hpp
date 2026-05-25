@@ -32,6 +32,8 @@
 #include "Backend/VertexStorageFlags.hpp"
 #include "Geometry/Sidedness.hpp"
 #include "Geometry/GeometryType.hpp"
+#include "Backend/DispatchSizeMode.hpp"
+#include "Backend/DisplaySynchronizationMode.hpp"
 #include "SceneGraph/LightTypes.hpp"
 #include "SceneGraph/AppearanceFlags.hpp"
 #include "Animation/FCurveInterpolationMode.hpp"
