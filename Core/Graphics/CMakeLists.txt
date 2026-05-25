@@ -60,6 +60,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 	    TYPE HEADERS
 		BASE_DIRS Source
     	FILES
+			Source/Graphics/Animation/AnimationPlayMode.hpp
 			#Source/Graphics/Animation/FCurve.hpp
 			Source/Graphics/Animation/FCurveAttributes.hpp
 			Source/Graphics/Animation/FCurveChannel.hpp
@@ -75,6 +76,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Backend/SwapChain.hpp
 			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Geometry/GeometryType.hpp
+			Source/Graphics/Geometry/GeometryViewTarget.hpp
 			#Source/Graphics/Geometry/Heightfield.hpp
 			#Source/Graphics/Geometry/Mesh.hpp
 			Source/Graphics/Geometry/PrimitiveTopology.hpp
@@ -109,12 +111,18 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Rasterization/Viewport.hpp
 			Source/Graphics/SceneGraph/AppearanceFlags.hpp
 			Source/Graphics/SceneGraph/AppearanceOptions.hpp
+			Source/Graphics/SceneGraph/AttenuationType.hpp
 			#Source/Graphics/SceneGraph/Locator.hpp
 			Source/Graphics/SceneGraph/LightTypes.hpp
 			Source/Graphics/SceneGraph/Projection.hpp
+			Source/Graphics/SceneGraph/ReferenceFrame.hpp
+			Source/Graphics/SceneGraph/RotationType.hpp
+			Source/Graphics/SceneGraph/TransformMode.hpp
 			Source/Graphics/SceneGraph/ViewVolume.hpp
 			Source/Graphics/Shading/Material.hpp
 			Source/Graphics/Shading/SamplerState.hpp
+			Source/Graphics/Shading/ShaderStage.hpp
+			Source/Graphics/Shading/ShaderVariableQualifier.hpp
 			Source/Graphics/Shading/TextureFilter.hpp
 			Source/Graphics/Shading/TextureWrapMode.hpp
 			Source/Graphics/Graphics.hpp
