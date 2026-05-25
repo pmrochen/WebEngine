@@ -125,7 +125,7 @@ struct FramebufferAttributes
 
 } // namespace graphics
 
-#include "Hash.inl"
+#include <Common/Collections/Hash.inl>
 
 namespace std {
 
@@ -138,7 +138,7 @@ struct hash<::graphics::FramebufferAttributes>
 	size_t operator()(const ::graphics::FramebufferAttributes& attributes) const noexcept
 	{
 		static_assert((sizeof(::graphics::FramebufferAttributes) & (sizeof(size_t) - 1)) == 0);
-		return ::graphics::hash::range/*boost::hash_range*/((const size_t*)&attributes,
+		return ::common::hash::range((const size_t*)&attributes,
 			(const size_t*)&attributes + sizeof(::graphics::FramebufferAttributes)/sizeof(size_t));
 	}
 };

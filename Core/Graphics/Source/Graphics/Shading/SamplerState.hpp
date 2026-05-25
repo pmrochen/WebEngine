@@ -170,7 +170,7 @@ struct SamplerState
 
 } // namespace graphics
 
-#include "Hash.inl"
+#include <Common/Collections/Hash.inl>
 
 namespace std {
 
@@ -183,7 +183,7 @@ struct hash<::graphics::SamplerState>
 	size_t operator()(const ::graphics::SamplerState& state) const noexcept
 	{
 		static_assert((sizeof(::graphics::SamplerState) & (sizeof(size_t) - 1)) == 0);
-		return ::graphics::hash::range/*boost::hash_range*/((const size_t*)&state, 
+		return ::common::hash::range((const size_t*)&state, 
 			(const size_t*)&state + sizeof(::graphics::SamplerState)/sizeof(size_t));
 	}
 };

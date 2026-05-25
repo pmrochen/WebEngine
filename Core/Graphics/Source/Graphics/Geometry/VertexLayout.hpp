@@ -99,7 +99,7 @@ struct VertexLayout
 
 } // namespace graphics
 
-#include "Hash.inl"
+#include <Common/Collections/Hash.inl>
 
 namespace std {
 
@@ -112,7 +112,7 @@ struct hash<::graphics::VertexLayout>
 	size_t operator()(const ::graphics::VertexLayout& layout) const noexcept
 	{
 		static_assert((sizeof(::graphics::VertexLayout) & (sizeof(size_t) - 1)) == 0);
-		return ::graphics::hash::range/*boost::hash_range*/((const size_t*)&layout,
+		return ::common::hash::range((const size_t*)&layout,
 			(const size_t*)&layout + sizeof(::graphics::VertexLayout)/sizeof(size_t));
 	}
 };
