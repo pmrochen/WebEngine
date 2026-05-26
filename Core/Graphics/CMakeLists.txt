@@ -20,6 +20,10 @@ if(DEFINED MATHEMATICS_DOUBLE_PRECISION)
 	set(GRAPHICS_DOUBLE_PRECISION "${MATHEMATICS_DOUBLE_PRECISION}")
 endif()
 
+if(DEFINED MATHEMATICS_HAS_SIMD)
+	set(GRAPHICS_HAS_SIMD "${MATHEMATICS_HAS_SIMD}")
+endif()
+
 find_package(OpenMP)
 if(MSVC)
 	set(OpenMP_RUNTIME_MSVC "llvm")
@@ -36,6 +40,10 @@ target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Common)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Filesystem)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Mathematics)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Imaging)
+
+if(GRAPHICS_HAS_SIMD)
+	target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Core::Simd)
+endif()
 
 target_sources(${GRAPHICS_LIB_NAME}
 	PRIVATE
@@ -61,7 +69,7 @@ target_sources(${GRAPHICS_LIB_NAME}
 		BASE_DIRS Source
     	FILES
 			Source/Graphics/Animation/AnimationPlayMode.hpp
-			#Source/Graphics/Animation/FCurve.hpp
+			Source/Graphics/Animation/FCurve.hpp
 			Source/Graphics/Animation/FCurveAttributes.hpp
 			Source/Graphics/Animation/FCurveChannel.hpp
 			Source/Graphics/Animation/FCurveExtrapolationMode.hpp
@@ -77,8 +85,8 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Geometry/GeometryType.hpp
 			Source/Graphics/Geometry/GeometryViewTarget.hpp
-			#Source/Graphics/Geometry/Heightfield.hpp
-			#Source/Graphics/Geometry/Mesh.hpp
+			Source/Graphics/Geometry/Heightfield.hpp
+			Source/Graphics/Geometry/Mesh.hpp
 			Source/Graphics/Geometry/PrimitiveTopology.hpp
 			Source/Graphics/Geometry/PrimitiveType.hpp
 			Source/Graphics/Geometry/Sidedness.hpp
@@ -112,17 +120,22 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/SceneGraph/AppearanceFlags.hpp
 			Source/Graphics/SceneGraph/AppearanceOptions.hpp
 			Source/Graphics/SceneGraph/AttenuationType.hpp
-			#Source/Graphics/SceneGraph/Locator.hpp
 			Source/Graphics/SceneGraph/LightTypes.hpp
+			Source/Graphics/SceneGraph/Locator.hpp
 			Source/Graphics/SceneGraph/Projection.hpp
 			Source/Graphics/SceneGraph/ReferenceFrame.hpp
 			Source/Graphics/SceneGraph/RotationType.hpp
 			Source/Graphics/SceneGraph/TransformMode.hpp
 			Source/Graphics/SceneGraph/ViewVolume.hpp
+			Source/Graphics/Shading/ComputeTechnique.hpp
 			Source/Graphics/Shading/Material.hpp
+			Source/Graphics/Shading/RenderTechnique.hpp
 			Source/Graphics/Shading/SamplerState.hpp
+			Source/Graphics/Shading/Shader.hpp
+			#Source/Graphics/Shading/ShaderDataSource.hpp
 			Source/Graphics/Shading/ShaderStage.hpp
 			Source/Graphics/Shading/ShaderVariableQualifier.hpp
+			Source/Graphics/Shading/Technique.hpp
 			Source/Graphics/Shading/TextureFilter.hpp
 			Source/Graphics/Shading/TextureWrapMode.hpp
 			Source/Graphics/Graphics.hpp
@@ -136,4 +149,5 @@ target_compile_features(${GRAPHICS_LIB_NAME}
 target_compile_definitions(${GRAPHICS_LIB_NAME}
 	PUBLIC 
 		GRAPHICS_DOUBLE_PRECISION=$<BOOL:${GRAPHICS_DOUBLE_PRECISION}>
+        GRAPHICS_HAS_SIMD=$<BOOL:${GRAPHICS_HAS_SIMD}>
 )

@@ -9,6 +9,9 @@
 #include <functional>
 #include <cstddef>
 #include <cstdint>
+#if GRAPHICS_HAS_SIMD
+#include <Simd/Intrinsics.hpp>
+#endif
 #include "ComparisonFunction.hpp"
 #include "BlendFunction.hpp"
 #include "BlendEquation.hpp"
@@ -24,9 +27,14 @@ struct RasterizerState
 		// 	(blendEquation == state.blendEquation) && (depthFunction == state.depthFunction) && 
 		// 	(constantDepthBias == state.constantDepthBias) && (slopeScaleDepthBias == state.slopeScaleDepthBias) && 
 		// 	(rasterizerFlags == state.rasterizerFlags);
+#if SIMD_HAS_INT4
+		static_assert(sizeof(RasterizerState) == 16);	// 128 bits
+		return simd::all4(simd::equal(simd::load4((const int*)this), simd::load4((const int*)&state)));
+#else
 		static_assert((sizeof(RasterizerState) & (sizeof(std::size_t) - 1)) == 0);
 		return std::equal((const std::size_t*)this, (const std::size_t*)this + sizeof(RasterizerState)/sizeof(std::size_t),
 			(const std::size_t*)&state);
+#endif
 	}
 
 	bool operator!=(const RasterizerState& state) const noexcept 
@@ -77,7 +85,7 @@ struct RasterizerState
 	//float depthBoundsTestMin;
 	//float depthBoundsTestMax;
 	//float coverage = 1.f;
-	RasterizerFlags rasterizerFlags = RasterizerFlags::DEFAULT;
+	RasterizerFlags rasterizerFlags = RasterizerFlags::DEFAULT;		// 4*uint8_t + 2*float + int = 128 bits
 };
 
 } // namespace graphics
@@ -100,9 +108,14 @@ struct hash<::graphics::RasterizerState>
 		// seed ^= hasher(state.slopeScaleDepthBias) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 		// seed ^= hash<RasterizerFlags>()(state.rasterizerFlags) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 		// return seed;
+#if SIMD_HAS_INT4
+		static_assert(sizeof(RasterizerState) == 16);	// 128 bits
+		return simd::hash(simd::load4((const int*)&state));
+#else
 		static_assert((sizeof(::graphics::RasterizerState) & (sizeof(size_t) - 1)) == 0);
 		return ::common::hash::range((const size_t*)&state, 
 			(const size_t*)&state + sizeof(::graphics::RasterizerState)/sizeof(size_t));
+#endif
 	}
 };
 

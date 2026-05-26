@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <functional>
 #include <cstddef>
+#if GRAPHICS_HAS_SIMD
+#include <Simd/Intrinsics.hpp>
+#endif
 #include "../Rasterization/ComparisonFunction.hpp"
 #include "TextureWrapMode.hpp"
 #include "TextureFilter.hpp"
@@ -63,9 +66,14 @@ struct SamplerState
 
 	bool operator==(const SamplerState& state) const noexcept
 	{
+#if SIMD_HAS_INT4
+		static_assert(sizeof(SamplerState) == 16);	// 128 bits
+		return simd::all4(simd::equal(simd::load4((const int*)this), simd::load4((const int*)&state)));
+#else
 		static_assert((sizeof(SamplerState) & (sizeof(std::size_t) - 1)) == 0);
 		return std::equal((const std::size_t*)this, (const std::size_t*)this + sizeof(SamplerState)/sizeof(std::size_t),
 			(const std::size_t*)&state);
+#endif
 	}
 
 	bool operator!=(const SamplerState& state) const noexcept
@@ -182,9 +190,14 @@ struct hash<::graphics::SamplerState>
 {
 	size_t operator()(const ::graphics::SamplerState& state) const noexcept
 	{
+#if SIMD_HAS_INT4
+		static_assert(sizeof(SamplerState) == 16);	// 128 bits
+		return simd::hash(simd::load4((const int*)&state));
+#else
 		static_assert((sizeof(::graphics::SamplerState) & (sizeof(size_t) - 1)) == 0);
 		return ::common::hash::range((const size_t*)&state, 
 			(const size_t*)&state + sizeof(::graphics::SamplerState)/sizeof(size_t));
+#endif
 	}
 };
 
