@@ -34,3 +34,6 @@
 	path = Core/Common/json
 	url = https://github.com/nlohmann/json.git
 	branch = master
+[submodule "Core/Graphics/meshoptimizer"]
+	path = Core/Graphics/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer.git
