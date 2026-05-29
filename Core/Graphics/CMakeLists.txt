@@ -74,14 +74,20 @@ target_sources(${GRAPHICS_LIB_NAME}
 			Source/Graphics/Animation/FCurveChannel.hpp
 			Source/Graphics/Animation/FCurveExtrapolationMode.hpp
 			Source/Graphics/Animation/FCurveInterpolationMode.hpp
+			Source/Graphics/Backend/BufferCache.hpp
 			Source/Graphics/Backend/ComputeEngine.hpp
 			Source/Graphics/Backend/DispatchSizeMode.hpp
 			Source/Graphics/Backend/DisplaySynchronizationMode.hpp
+			Source/Graphics/Backend/GeometryCache.hpp
 			Source/Graphics/Backend/Renderer.hpp
+			Source/Graphics/Backend/ResourceCache.hpp
 			Source/Graphics/Backend/ResourceManager.hpp
 			Source/Graphics/Backend/ResourceStorageFlags.hpp
 			Source/Graphics/Backend/ResourceTypes.hpp
+			Source/Graphics/Backend/ShaderCache.hpp
 			Source/Graphics/Backend/SwapChain.hpp
+			Source/Graphics/Backend/TechniqueCache.hpp
+			Source/Graphics/Backend/TextureCache.hpp
 			Source/Graphics/Backend/VertexStorageFlags.hpp
 			Source/Graphics/Geometry/GeometryType.hpp
 			Source/Graphics/Geometry/GeometryViewTarget.hpp
