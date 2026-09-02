@@ -2,6 +2,13 @@
 
 cmake_minimum_required(VERSION 3.25)
 
+include(FetchContent)
+
+FetchContent_Declare(sigslot
+		GIT_REPOSITORY https://github.com/palacaze/sigslot.git
+		GIT_TAG v1.2.3
+)
+
 if(NOT DEFINED CACHE{COMMON_LIB_VERSION})
 	string(TIMESTAMP VER_YEAR "%y")
 	string(TIMESTAMP VER_MONTH "%m")
@@ -16,10 +23,7 @@ project(Common
 
 set(COMMON_LIB_NAME Common)
 
-add_subdirectory(observable_unique_ptr)
-add_subdirectory(intrusive_shared_ptr)
-add_subdirectory(sigslot)
-add_subdirectory(json)
+FetchContent_MakeAvailable(sigslot)
 
 add_library(${COMMON_LIB_NAME} INTERFACE)
 add_library(Core::${COMMON_LIB_NAME} ALIAS ${COMMON_LIB_NAME})

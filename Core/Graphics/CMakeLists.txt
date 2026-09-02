@@ -2,6 +2,38 @@
 
 cmake_minimum_required(VERSION 3.25)
 
+include(FetchContent)
+
+FetchContent_Declare(bitwise-enum
+		GIT_REPOSITORY https://github.com/jonesinator/bitwise-enum.git
+		GIT_TAG cb1afd271eef0d9fcf43d9a2a55157c7f807f4c8
+)
+
+#FetchContent_Declare(MikkTSpace
+#		GIT_REPOSITORY https://github.com/mmikk/MikkTSpace.git
+#		GIT_TAG 3e895b49d05ea07e4c2133156cfa94369e19e409
+#)
+
+FetchContent_Declare(observable_unique_ptr
+		GIT_REPOSITORY https://github.com/cschreib/observable_unique_ptr.git
+		GIT_TAG v0.7.3
+)
+
+FetchContent_Declare(intrusive_shared_ptr
+		GIT_REPOSITORY https://github.com/gershnik/intrusive_shared_ptr.git
+		GIT_TAG v1.13
+)
+
+FetchContent_Declare(sigslot
+		GIT_REPOSITORY https://github.com/palacaze/sigslot.git
+		GIT_TAG v1.2.3
+)
+
+FetchContent_Declare(meshoptimizer
+		GIT_REPOSITORY https://github.com/zeux/meshoptimizer.git
+		GIT_TAG v1.2
+)
+
 if(NOT DEFINED CACHE{GRAPHICS_LIB_VERSION})
 	string(TIMESTAMP VER_YEAR "%y")
 	string(TIMESTAMP VER_MONTH "%m")
@@ -29,10 +61,24 @@ if(MSVC)
 	set(OpenMP_RUNTIME_MSVC "llvm")
 endif()
 
+#FetchContent_GetProperties(bitwise-enum)
+#if(NOT bitwise-enum_POPULATED)
+	FetchContent_MakeAvailable(bitwise-enum)
+#endif()
+if(NOT TARGET bitwise-enum::bitwise-enum)
+	add_library(bitwise-enum::bitwise-enum INTERFACE)
+	target_include_directories(bitwise-enum::bitwise-enum INTERFACE ${bitwise-enum_SOURCE_DIR})
+endif()
+
+FetchContent_MakeAvailable(observable_unique_ptr intrusive_shared_ptr sigslot)
+
 add_library(${GRAPHICS_LIB_NAME} STATIC)
 add_library(Core::${GRAPHICS_LIB_NAME} ALIAS ${GRAPHICS_LIB_NAME})
 #set_target_properties(${GRAPHICS_LIB_NAME} PROPERTIES EXPORT_NAME Core::${GRAPHICS_LIB_NAME})
 
+#target_include_directories(${PHYSICS_LIB_NAME} PUBLIC ${bitwise-enum_SOURCE_DIR})
+
+target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC bitwise-enum::bitwise-enum)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC oup::oup)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC isptr::isptr)
 target_link_libraries(${GRAPHICS_LIB_NAME} PUBLIC Pal::Sigslot)

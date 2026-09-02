@@ -1,34 +1,12 @@
-[submodule "Core/Graphics/MikkTSpace"]
-	path = Core/Graphics/MikkTSpace
-	url = https://github.com/mmikk/MikkTSpace.git
-[submodule "Core/Physics/bullet3"]
-	path = Core/Physics/bullet3
-	url = https://github.com/pmrochen/bullet3.git
-[submodule "Core/Filesystem/minizip-ng"]
-	path = Core/Filesystem/minizip-ng
-	url = https://github.com/zlib-ng/minizip-ng.git
 [submodule "Core/Mathematics"]
 	path = Core/Mathematics
 	url = https://github.com/pmrochen/Mathematics.git
 [submodule "Core/Imaging"]
 	path = Core/Imaging
 	url = https://github.com/pmrochen/Imaging.git
-[submodule "Core/Filesystem/cereal"]
-	path = Core/Filesystem/cereal
-	url = https://github.com/USCiLab/cereal.git
-[submodule "Core/Common/sigslot"]
-	path = Core/Common/sigslot
-	url = https://github.com/palacaze/sigslot.git
-[submodule "Core/Common/observable_unique_ptr"]
-	path = Core/Common/observable_unique_ptr
-	url = https://github.com/cschreib/observable_unique_ptr.git
-[submodule "Core/Common/intrusive_shared_ptr"]
-	path = Core/Common/intrusive_shared_ptr
-	url = https://github.com/gershnik/intrusive_shared_ptr.git
-[submodule "Core/Common/json"]
-	path = Core/Common/json
-	url = https://github.com/nlohmann/json.git
-	branch = master
-[submodule "Core/Graphics/meshoptimizer"]
-	path = Core/Graphics/meshoptimizer
-	url = https://github.com/zeux/meshoptimizer.git
+[submodule "Core/Graphics/MikkTSpace"]
+	path = Core/Graphics/MikkTSpace
+	url = https://github.com/mmikk/MikkTSpace.git
+[submodule "Core/Physics/bullet3"]
+	path = Core/Physics/bullet3
+	url = https://github.com/pmrochen/bullet3.git
